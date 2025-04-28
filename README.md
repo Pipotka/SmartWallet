@@ -6,6 +6,7 @@ erDiagram
     CashVault {
         guid id PK
         guid userId FK
+        string name
         double value
         Date deletedAt
     }
@@ -14,8 +15,8 @@ erDiagram
     SpendingArea{
         guid id PK
         guid userId FK
+        string name
         double value
-        bool canBeDeleted
         Date deletedAt
     }
 
@@ -46,3 +47,6 @@ erDiagram
 sequenceDiagram
   
 ```
+## Возможные улучшения
+ - Добать под области трат, которые находятся в областях трат, а также могут иметь в себе свои под области. Возможно для хранения под областей стоит использовать графовую БД 
+ - Добавить интеграцию с банками

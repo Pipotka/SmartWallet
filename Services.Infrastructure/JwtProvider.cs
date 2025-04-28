@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Nasurino.SmartWallet.Options;
-using Nasurino.SmartWallet.Service.Models;
+using Nasurino.SmartWallet.Service.Models.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

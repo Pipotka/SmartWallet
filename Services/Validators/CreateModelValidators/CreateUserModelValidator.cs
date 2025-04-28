@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 
 namespace Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
@@ -11,13 +12,15 @@ public class CreateUserModelValidator : AbstractValidator<CreateUserModel>
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="CreateUserModelValidator"/>
 	/// </summary>
-	public CreateUserModelValidator()
+	public CreateUserModelValidator(UserRepository userRepository)
 	{
 		RuleFor(x => x.Email)
 			.NotEmpty()
 			.WithMessage("Электронная почта не должна быть пустой")
 			.EmailAddress()
-			.WithMessage($"Строка не является адресом электронной почты");
+			.WithMessage($"Строка не является адресом электронной почты")
+			.MustAsync(async (email, token)
+				=> await userRepository.GetUserByEmailAsync(email, token) is null);
 		RuleFor(x => x.Password)
 			.Length(8, 33)
 			.WithMessage("Пароль должен быть больше 8 и меньше 34 символов")

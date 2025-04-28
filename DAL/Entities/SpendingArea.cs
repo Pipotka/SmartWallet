@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Entities;
+﻿using Nasurino.SmartWallet.Entities.Contracts;
+
+namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
 /// Область трат
@@ -16,14 +18,14 @@ public class SpendingArea : SmartDeletedEntity
 	public User User { get; set; }
 
 	/// <summary>
-	/// Значение
+	/// Название
 	/// </summary>
-	public double Value { get; set; }
+	public string Name { get; set; } = string.Empty;
 
 	/// <summary>
-	/// Флаг возможности удаления пользователем
+	/// Значение
 	/// </summary>
-	public bool CanBeDeleted { get; set; }
+	public double Value { get; set; } = 0.0;
 
 	/// <summary>
 	/// Навигационное свойство

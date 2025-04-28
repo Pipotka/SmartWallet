@@ -1,7 +1,11 @@
-﻿using Nasurino.SmartWallet.Context.Repository;
+﻿using AutoMapper;
+using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
+using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.UpdateModels;
 using Nasurino.SmartWallet.Services.Validators;
 
 namespace Nasurino.SmartWallet.Services;
@@ -9,10 +13,18 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис для работы с пользователем
 /// </summary>
-public class UserService(UserRepository userRepository, ISmartWalletValidateService validateService)
+public class UserService(UnitOfWork unitOfWork,
+	SmartWalletValidateService validateService,
+	JwtProvider jwtProvider,
+	IMapper mapper)
 {
-	private readonly UserRepository userRepository = userRepository;
-	private readonly ISmartWalletValidateService validateService = validateService;
+	private readonly UnitOfWork unitOfWork = unitOfWork;
+	private readonly UserRepository userRepository = unitOfWork.UserRepository;
+	private readonly CashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
+	private readonly SpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
+	private readonly SmartWalletValidateService validateService = validateService;
+	private readonly JwtProvider jwtProvider = jwtProvider;
+	private readonly IMapper mapper = mapper;
 
 
 	/// <summary>
@@ -21,23 +33,49 @@ public class UserService(UserRepository userRepository, ISmartWalletValidateServ
 	public async Task Registration(CreateUserModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		// Создание User модели для нового пользователя при помощи mapper
-		PasswordHasher.Generate(model.Password);
-		// Присвоение Хэша пользователю
+		var user = mapper.Map<User>(model);
+		user.Id = Guid.NewGuid();
+		user.HashedPassword = PasswordHasher.Generate(model.Password);
+		userRepository.Add(user);
 
 		//Создание базовых областей трат для пользователя
+		foreach (var spendingAreaName in new[] { 
+			"Продукты", "Кафе и рестораны","Транспорт",
+			"Жилье", "Здоровье", "Одежда и обувь",
+			"Развлечения", "Путешествия", "Образование",
+			"Подарки"})
+		{
+			spendingAreaRepository.Add(new()
+			{
+				Id = Guid.NewGuid(),
+				UserId = user.Id,
+				Name = spendingAreaName,
+				Value = 0.0
+			});
+		}
 
 		//Создание базовых денежных хранилищ для пользователя
-
+		foreach (var cashVaultName in new[] {"Кошелёк", "Карта"})
+		{
+			cashVaultRepository.Add(new()
+			{
+				Id = Guid.NewGuid(),
+				UserId = user.Id,
+				Name = cashVaultName,
+				Value = 0.0
+			});
+		}
+		await unitOfWork.SaveChangesAsync(token);
 	}
 
 	/// <summary>
 	/// Вход в аккаунт
 	/// </summary>
-	public async Task LogIn(LogInModel model, CancellationToken token)
+	public async Task<string> LogIn(LogInModel model, CancellationToken token)
 	{
-		var user = await userRepository.GetUserByEmail(model.Email, token);
-		if (user == null)
+		await validateService.ValidateAsync(model, token);
+		var user = await userRepository.GetUserByEmailAsync(model.Email, token);
+		if (user is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с адрессом электронной почты = {model.Email} не найден.");
 		}
@@ -45,6 +83,25 @@ public class UserService(UserRepository userRepository, ISmartWalletValidateServ
 		{
 			throw new AuthenticationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
 		}
-		var n = new JwtProvider()
+		return jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
+	}
+
+	/// <summary>
+	/// Обновление пользователя
+	/// </summary>
+	public async Task<UserModel> Update(UpdateUserModel model, CancellationToken token)
+	{
+		await validateService.ValidateAsync(model, token);
+
+		var user = await userRepository.GetUserByIdAsync(model.Id, token);
+		if (user is null)
+		{
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
+		}
+		mapper.Map(model, user);
+		userRepository.Update(user);
+		await unitOfWork.SaveChangesAsync(token);
+
+		return mapper.Map<UserModel>(user);
 	}
 }

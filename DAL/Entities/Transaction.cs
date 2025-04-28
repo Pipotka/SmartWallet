@@ -38,7 +38,7 @@ public class Transaction : SmartDeletedEntity
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; }
+	public double Value { get; set; } = 0.0;
 
 	/// <summary>
 	/// Дата создания

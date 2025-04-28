@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Nasurino.SmartWallet.Service.Models;
+using Nasurino.SmartWallet.Service.Models.Models;
 
 namespace Nasurino.SmartWallet.Services.Validators.ModelValidators;
 
@@ -13,6 +13,9 @@ public class UserModelValidator : AbstractValidator<UserModel>
 	/// </summary>
 	public UserModelValidator()
 	{
+		RuleFor(x => x.Id)
+			.NotEmpty()
+			.WithMessage("Id не должен быть пустым");
 		RuleFor(x => x.Email)
 			.NotEmpty()
 			.WithMessage("Электронная почта не должна быть пустой")
@@ -23,6 +26,6 @@ public class UserModelValidator : AbstractValidator<UserModel>
 			.WithMessage("Имя не должно быть пустым");
 		RuleFor(x => x.LastName)
 			.NotEmpty()
-			.WithMessage("Фамилия не должно быть пустым");
+			.WithMessage("Фамилия не должна быть пустой");
 	}
 }

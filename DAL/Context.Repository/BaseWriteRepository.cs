@@ -1,11 +1,12 @@
 ﻿using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Contracts;
 
 namespace Nasurino.SmartWallet.Context.Repository;
 
 /// <summary>
 /// Базовый репозиторий запись
 /// </summary>
-public abstract class BaseWriteRepository<TEntity> where TEntity : class
+public abstract class BaseWriteRepository<TEntity> where TEntity : class 
 {
 	private readonly SmartWalletContext writer;
 
@@ -41,10 +42,4 @@ public abstract class BaseWriteRepository<TEntity> where TEntity : class
 		}
 		writer.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
 	}
-
-	/// <summary>
-	/// Сохраняет изменения
-	/// </summary>
-	public Task SaveChangesAsync(CancellationToken cancellationToken)
-		=> writer.SaveChangesAsync(cancellationToken);
 }

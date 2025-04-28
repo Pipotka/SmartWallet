@@ -11,6 +11,12 @@ public class UserRepository(SmartWalletContext context) : BaseWriteRepository<Us
 	/// <summary>
 	/// Возвращает пользователя по электронной почте
 	/// </summary>
-	public Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken)
+	public Task<User?> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
 		=> context.Set<User>().AsNoTracking().FirstOrDefaultAsync(x => x.Email == email.ToLower(), cancellationToken);
+
+	/// <summary>
+	/// Возвращает пользователя по идентификатору
+	/// </summary>
+	public Task<User?> GetUserByIdAsync(Guid id, CancellationToken cancellationToken)
+		=> context.Set<User>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 }

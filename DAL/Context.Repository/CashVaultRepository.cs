@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nasurino.SmartWallet.Entities;
+using System.Threading;
 
 namespace Nasurino.SmartWallet.Context.Repository;
 
@@ -11,6 +12,12 @@ public class CashVaultRepository(SmartWalletContext context) : BaseWriteReposito
 	/// <summary>
 	/// Возвращает список денежных хранилищ по идентификатору пользователя
 	/// </summary>
-	public Task<List<CashVault>> GetListCashVaultByUserId(Guid userId, CancellationToken cancellationToken)
+	public Task<List<CashVault>> GetListCashVaultByUserIdAsync(Guid userId, CancellationToken cancellationToken)
 		=> context.Set<CashVault>().AsNoTracking().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+
+	/// <summary>
+	/// Возвращает денежное хранилище по идентификатору
+	/// </summary>
+	public Task<CashVault?> GetCashVaultByIdAsync(Guid id, CancellationToken cancellationToken)
+		=> context.Set<CashVault>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 }

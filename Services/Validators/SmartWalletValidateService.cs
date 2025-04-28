@@ -1,27 +1,37 @@
-﻿
-using FluentValidation;
+﻿using FluentValidation;
+using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
+using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.UpdateModels;
 using Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
+using Nasurino.SmartWallet.Services.Validators.ModelValidators;
+using Nasurino.SmartWallet.Services.Validators.UpdateModelValidators;
 
 namespace Nasurino.SmartWallet.Services.Validators;
 
 /// <summary>
 /// Сервис валиадции
 /// </summary>
-public class SmartWalletValidateService : ISmartWalletValidateService
+public class SmartWalletValidateService
 {
 	private readonly IDictionary<Type, IValidator> validators;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletValidateService"/>
 	/// </summary>
-	public SmartWalletValidateService()
+	public SmartWalletValidateService(UserRepository userRepository)
 	{
 		validators = new Dictionary<Type, IValidator>();
 
 		#region Регистрация валидаторов
-		validators.Add(typeof(CreateUserModel), new CreateUserModelValidator());
+		#region Валидаторы для моделей пользователя
+		validators.Add(typeof(CreateUserModel), new CreateUserModelValidator(userRepository));
+		validators.Add(typeof(LogInModel), new LogInModelValidator());
+		validators.Add(typeof(UserModel), new UserModelValidator());
+		validators.Add(typeof(UpdateUserModel), new UpdateUserModelValidator());
+		#endregion
+
 		#endregion
 
 	}

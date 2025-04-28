@@ -1,9 +1,11 @@
-﻿namespace Nasurino.SmartWallet.Entities;
+﻿using Nasurino.SmartWallet.Entities.Contracts;
+
+namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
 /// Базавоя сущность
 /// </summary>
-public abstract class BaseEntity
+public abstract class BaseEntity : IBaseEntity
 {
 	/// <summary>
 	/// Идентификатор

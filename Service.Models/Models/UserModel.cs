@@ -1,4 +1,4 @@
-﻿namespace Nasurino.SmartWallet.Service.Models;
+﻿namespace Nasurino.SmartWallet.Service.Models.Models;
 
 /// <summary>
 /// Модель пользователя
