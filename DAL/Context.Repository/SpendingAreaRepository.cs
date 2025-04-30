@@ -19,4 +19,10 @@ public class SpendingAreaRepository(SmartWalletContext context) : BaseWriteRepos
 	/// </summary>
 	public Task<SpendingArea?> GetSpendingAreaByIdAsync(Guid id, CancellationToken cancellationToken)
 		=> context.Set<SpendingArea>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+	/// <summary>
+	/// Удаляет все области трат по идентификатору пользователя
+	/// </summary>
+	public void DeleteSpendingAreasByUserId(Guid userId)
+		=> DeleteEverythingBy(e => e.UserId == userId);
 }

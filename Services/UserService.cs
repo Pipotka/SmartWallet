@@ -4,6 +4,7 @@ using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
+using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 using Nasurino.SmartWallet.Services.Validators;
@@ -21,6 +22,7 @@ public class UserService(UnitOfWork unitOfWork,
 	private readonly UnitOfWork unitOfWork = unitOfWork;
 	private readonly UserRepository userRepository = unitOfWork.UserRepository;
 	private readonly CashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
+	private readonly TransactionRepository transactionRepository = unitOfWork.TransactionRepository;
 	private readonly SpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
 	private readonly SmartWalletValidateService validateService = validateService;
 	private readonly JwtProvider jwtProvider = jwtProvider;
@@ -103,5 +105,29 @@ public class UserService(UnitOfWork unitOfWork,
 		await unitOfWork.SaveChangesAsync(token);
 
 		return mapper.Map<UserModel>(user);
+	}
+
+	/// <summary>
+	/// Удаление пользователя
+	/// </summary>
+	public async Task Delete(DeleteUserModel model, CancellationToken token)
+	{
+		await validateService.ValidateAsync(model, token);
+
+		var user = await userRepository.GetUserByIdAsync(model.Id, token);
+		if (user is null)
+		{
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
+		}
+		if (!PasswordHasher.Verify(model.Password, user.HashedPassword))
+		{
+			throw new AuthenticationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
+		}
+		userRepository.Delete(user);
+		cashVaultRepository.DeleteCashVaultsByUserId(user.Id);
+		spendingAreaRepository.DeleteSpendingAreasByUserId(user.Id);
+		transactionRepository.DeleteTransactionsByUserId(user.Id);
+
+		await unitOfWork.SaveChangesAsync(token);
 	}
 }

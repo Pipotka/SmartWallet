@@ -26,4 +26,10 @@ public class TransactionRepository(SmartWalletContext context) : BaseWriteReposi
 		entity.MadeAt = DateTime.UtcNow;
 		base.Add(entity);
 	}
+
+	/// <summary>
+	/// Удаляет все транзакций по идентификатору пользователя
+	/// </summary>
+	public void DeleteTransactionsByUserId(Guid userId)
+		=> DeleteEverythingBy(e => e.UserId == userId);
 }

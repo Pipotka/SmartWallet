@@ -23,7 +23,7 @@ public class SmartWalletValidateService
 	public SmartWalletValidateService(UserRepository userRepository)
 	{
 		validators = new Dictionary<Type, IValidator>();
-
+		// [TODO] Зарегистрировать валидаторы
 		#region Регистрация валидаторов
 		#region Валидаторы для моделей пользователя
 		validators.Add(typeof(CreateUserModel), new CreateUserModelValidator(userRepository));
