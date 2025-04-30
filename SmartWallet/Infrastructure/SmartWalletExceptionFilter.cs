@@ -65,6 +65,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 					StatusCode = StatusCodes.Status422UnprocessableEntity
 				}, context);
 				break;
+				// [TODO] добавить фильтр для EntityAccessServiceException
 		}
 
 		return;

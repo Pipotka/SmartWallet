@@ -11,13 +11,13 @@ public class TransactionRepository(SmartWalletContext context) : BaseWriteReposi
 	/// <summary>
 	/// Возвращает список транзакций по идентификатору пользователя
 	/// </summary>
-	public Task<List<Transaction>> GetListTransactionByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+	public Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
 		=> context.Set<Transaction>().AsNoTracking().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
 	/// <summary>
 	/// Возвращает транзакцию по идентификатору
 	/// </summary>
-	public Task<Transaction?> GetTransactionByIdAsync(Guid id, CancellationToken cancellationToken)
+	public Task<Transaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
 		=> context.Set<Transaction>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 	/// <inheritdoc/>

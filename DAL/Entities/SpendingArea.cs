@@ -1,6 +1,4 @@
-﻿using Nasurino.SmartWallet.Entities.Contracts;
-
-namespace Nasurino.SmartWallet.Entities;
+﻿namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
 /// Область трат

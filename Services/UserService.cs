@@ -28,11 +28,21 @@ public class UserService(UnitOfWork unitOfWork,
 	private readonly JwtProvider jwtProvider = jwtProvider;
 	private readonly IMapper mapper = mapper;
 
+	/// <summary>
+	/// Возвращает пользователя по Id
+	/// </summary>
+	public async Task<UserModel> GetUserByIdAsync(Guid userId, CancellationToken token)
+	{
+		var user = await userRepository.GetUserByIdAsync(userId, token)
+			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		
+		return mapper.Map<UserModel>(user);
+	}
 
 	/// <summary>
 	/// Регистрация
 	/// </summary>
-	public async Task Registration(CreateUserModel model, CancellationToken token)
+	public async Task<UserModel> RegistrationAsync(CreateUserModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		var user = mapper.Map<User>(model);
@@ -68,19 +78,18 @@ public class UserService(UnitOfWork unitOfWork,
 			});
 		}
 		await unitOfWork.SaveChangesAsync(token);
+
+		return mapper.Map<UserModel>(user);
 	}
 
 	/// <summary>
 	/// Вход в аккаунт
 	/// </summary>
-	public async Task<string> LogIn(LogInModel model, CancellationToken token)
+	public async Task<string> LogInAsync(LogInModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		var user = await userRepository.GetUserByEmailAsync(model.Email, token);
-		if (user is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с адрессом электронной почты = {model.Email} не найден.");
-		}
+		var user = await userRepository.GetUserByEmailAsync(model.Email, token)
+			?? throw new EntityNotFoundServiceException($"Пользователь с адрессом электронной почты = {model.Email} не найден.");
 		if (!PasswordHasher.Verify(model.Password, user.HashedPassword))
 		{
 			throw new AuthenticationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
@@ -91,15 +100,12 @@ public class UserService(UnitOfWork unitOfWork,
 	/// <summary>
 	/// Обновление пользователя
 	/// </summary>
-	public async Task<UserModel> Update(UpdateUserModel model, CancellationToken token)
+	public async Task<UserModel> UpdateAsync(UpdateUserModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 
-		var user = await userRepository.GetUserByIdAsync(model.Id, token);
-		if (user is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
-		}
+		var user = await userRepository.GetUserByIdAsync(model.Id, token)
+			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
 		mapper.Map(model, user);
 		userRepository.Update(user);
 		await unitOfWork.SaveChangesAsync(token);
@@ -110,15 +116,13 @@ public class UserService(UnitOfWork unitOfWork,
 	/// <summary>
 	/// Удаление пользователя
 	/// </summary>
-	public async Task Delete(DeleteUserModel model, CancellationToken token)
+	public async Task DeleteAsync(DeleteUserModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 
-		var user = await userRepository.GetUserByIdAsync(model.Id, token);
-		if (user is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
-		}
+		var user = await userRepository.GetUserByIdAsync(model.Id, token) 
+			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
+
 		if (!PasswordHasher.Verify(model.Password, user.HashedPassword))
 		{
 			throw new AuthenticationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
