@@ -11,6 +11,11 @@ public class UpdateSpendingAreaModel
 	public Guid Id { get; set; }
 
 	/// <summary>
+	/// Идентификатор пользователя
+	/// </summary>
+	public Guid UserId { get; set; }
+
+	/// <summary>
 	/// Название
 	/// </summary>
 	public string Name { get; set; } = string.Empty;

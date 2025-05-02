@@ -32,7 +32,6 @@ public class TransactionService(UnitOfWork unitOfWork,
 
 		var transactionList = await TransactionRepository.GetListByUserIdAsync(userId, token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<List<TransactionModel>>(transactionList);
 	}
 
@@ -41,13 +40,11 @@ public class TransactionService(UnitOfWork unitOfWork,
 	/// </summary>
 	public async Task<TransactionModel> CreateAsync(Guid userId, CreateTransactionModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
 		}
-		// [TODO] Написать маппер
 		var Transaction = mapper.Map<Transaction>(model);
 		Transaction.Id = Guid.NewGuid();
 		Transaction.UserId = userId;
@@ -55,7 +52,6 @@ public class TransactionService(UnitOfWork unitOfWork,
 
 		await unitOfWork.SaveChangesAsync(token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<TransactionModel>(Transaction);
 	}
 
@@ -64,7 +60,6 @@ public class TransactionService(UnitOfWork unitOfWork,
 	/// </summary>
 	public async Task DeleteAsync(Guid userId, DeleteTransactionModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{

@@ -14,6 +14,7 @@ public class SmartWalletContext : DbContext
 	public SmartWalletContext(DbContextOptions<SmartWalletContext> options)
 		: base(options)
 	{
+		Database.EnsureCreated();
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)

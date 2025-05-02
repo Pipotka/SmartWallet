@@ -33,56 +33,49 @@ public class CashVaultService(UnitOfWork unitOfWork,
 
 		var cashVaultList = await cashVaultRepository.GetListByUserIdAsync(userId, token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<List<CashVaultModel>>(cashVaultList);
 	}
 
 	/// <summary>
 	/// Создание нового денежного храшнилища
 	/// </summary>
-	public async Task<CashVaultModel> CreateAsync(Guid userId, CreateCashVaultModel model, CancellationToken token)
+	public async Task<CashVaultModel> CreateAsync(CreateCashVaultModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
+		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
 		}
-		// [TODO] Написать маппер
 		var cashVault = mapper.Map<CashVault>(model);
 		cashVault.Id = Guid.NewGuid();
-		cashVault.UserId = userId;
+		cashVault.UserId = model.UserId;
 		cashVaultRepository.Add(cashVault);
 
 		await unitOfWork.SaveChangesAsync(token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<CashVaultModel>(cashVault);
 	}
 
 	/// <summary>
 	/// Обновление денежного храшнилища
 	/// </summary>
-	public async Task<CashVaultModel> UpdateAsync(Guid userId, UpdateCashVaultModel model, CancellationToken token)
+	public async Task<CashVaultModel> UpdateAsync(UpdateCashVaultModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
+		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
 		}
 		var cashVault = await cashVaultRepository.GetByIdAsync(model.Id, token) 
 			?? throw new EntityNotFoundServiceException($"Денежное хранилище с Id = {model.Id} не найдено.");
-		if (cashVault.UserId != userId)
+		if (cashVault.UserId != model.UserId)
 		{
-			throw new EntityAccessServiceException($"Пользователь с Id = {userId} не является владельцем денежного храшнилища.");
+			throw new EntityAccessServiceException($"Пользователь с Id = {model.UserId} не является владельцем денежного храшнилища.");
 		}
-		// [TODO] Написать маппер
 		mapper.Map(model, cashVault);
 		cashVaultRepository.Update(cashVault);
 
 		await unitOfWork.SaveChangesAsync(token);
-		// [TODO] Написать маппер
 		return mapper.Map<CashVaultModel>(cashVault);
 	}
 
@@ -91,7 +84,6 @@ public class CashVaultService(UnitOfWork unitOfWork,
 	/// </summary>
 	public async Task DeleteAsync(Guid userId, DeleteCashVaultModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{

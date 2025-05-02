@@ -19,7 +19,8 @@ public class SpendingAreaService(UnitOfWork unitOfWork,
 {
 	private readonly UnitOfWork unitOfWork = unitOfWork;
 	private readonly UserRepository userRepository = unitOfWork.UserRepository;
-	private readonly SpendingAreaRepository SpendingAreaRepository = unitOfWork.SpendingAreaRepository;
+	private readonly SpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
+	private readonly TransactionRepository transactionRepository = unitOfWork.TransactionRepository;
 	private readonly SmartWalletValidateService validateService = validateService;
 	private readonly IMapper mapper = mapper;
 
@@ -31,58 +32,51 @@ public class SpendingAreaService(UnitOfWork unitOfWork,
 		var user = await userRepository.GetUserByIdAsync(userId, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
 
-		var spendingAreaList = await SpendingAreaRepository.GetListByUserIdAsync(userId, token);
+		var spendingAreaList = await spendingAreaRepository.GetListByUserIdAsync(userId, token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<List<SpendingAreaModel>>(spendingAreaList);
 	}
 
 	/// <summary>
 	/// Создание новой области трат
 	/// </summary>
-	public async Task<SpendingAreaModel> CreateAsync(Guid userId, CreateSpendingAreaModel model, CancellationToken token)
+	public async Task<SpendingAreaModel> CreateAsync(CreateSpendingAreaModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
+		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
 		}
-		// [TODO] Написать маппер
 		var SpendingArea = mapper.Map<SpendingArea>(model);
 		SpendingArea.Id = Guid.NewGuid();
-		SpendingArea.UserId = userId;
-		SpendingAreaRepository.Add(SpendingArea);
+		SpendingArea.UserId = model.UserId;
+		spendingAreaRepository.Add(SpendingArea);
 
 		await unitOfWork.SaveChangesAsync(token);
 
-		// [TODO] Написать маппер
 		return mapper.Map<SpendingAreaModel>(SpendingArea);
 	}
 
 	/// <summary>
 	/// Обновление области трат
 	/// </summary>
-	public async Task<SpendingAreaModel> UpdateAsync(Guid userId, UpdateSpendingAreaModel model, CancellationToken token)
+	public async Task<SpendingAreaModel> UpdateAsync(UpdateSpendingAreaModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
+		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
+			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
 		}
-		var SpendingArea = await SpendingAreaRepository.GetByIdAsync(model.Id, token)
+		var SpendingArea = await spendingAreaRepository.GetByIdAsync(model.Id, token)
 			?? throw new EntityNotFoundServiceException($"Область трат с Id = {model.Id} не найдено.");
-		if (SpendingArea.UserId != userId)
+		if (SpendingArea.UserId != model.UserId)
 		{
-			throw new EntityAccessServiceException($"Пользователь с Id = {userId} не является владельцем области трат.");
+			throw new EntityAccessServiceException($"Пользователь с Id = {model.UserId} не является владельцем области трат.");
 		}
-		// [TODO] Написать маппер
 		mapper.Map(model, SpendingArea);
-		SpendingAreaRepository.Update(SpendingArea);
+		spendingAreaRepository.Update(SpendingArea);
 
 		await unitOfWork.SaveChangesAsync(token);
-		// [TODO] Написать маппер
 		return mapper.Map<SpendingAreaModel>(SpendingArea);
 	}
 
@@ -91,21 +85,24 @@ public class SpendingAreaService(UnitOfWork unitOfWork,
 	/// </summary>
 	public async Task DeleteAsync(Guid userId, DeleteSpendingAreaModel model, CancellationToken token)
 	{
-		// [TODO] создать валидатор
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
 		}
-		var SpendingArea = await SpendingAreaRepository.GetByIdAsync(model.Id, token)
+		var spendingArea = await spendingAreaRepository.GetByIdAsync(model.Id, token)
 			?? throw new EntityNotFoundServiceException($"Область трат с Id = {model.Id} не найдено.");
 
-		if (SpendingArea.UserId != userId)
+		if (spendingArea.UserId != userId)
 		{
 			throw new EntityAccessServiceException($"Пользователь с Id = {userId} не является владельцем области трат.");
 		}
 
-		SpendingAreaRepository.Delete(SpendingArea);
+		spendingAreaRepository.Delete(spendingArea);
+		if (model.IsDeleteAllRelatedTransactions)
+		{
+			transactionRepository.DeleteTransactionsBySpendingAreaId(spendingArea.Id);
+		}
 
 		await unitOfWork.SaveChangesAsync(token);
 	}

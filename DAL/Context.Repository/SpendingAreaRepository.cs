@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Nasurino.SmartWallet.Context.Repository.Specification;
 using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context.Repository;
@@ -12,13 +13,20 @@ public class SpendingAreaRepository(SmartWalletContext context) : BaseWriteRepos
 	/// Возвращает список областей трат идентификатору пользователя
 	/// </summary>
 	public Task<List<SpendingArea>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> context.Set<SpendingArea>().AsNoTracking().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+		=> context.Set<SpendingArea>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
 	/// <summary>
 	/// Возвращает область трат по идентификатору
 	/// </summary>
 	public Task<SpendingArea?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> context.Set<SpendingArea>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+		=> context.Set<SpendingArea>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+	/// <summary>
+	/// Возвращает область трат по названию и идентификатору пользователя
+	/// </summary>
+	public Task<SpendingArea?> GetByNameAndUserIdAsync(Guid userId, string name, CancellationToken cancellationToken)
+		=> context.Set<SpendingArea>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId)
+		.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower(), cancellationToken);
 
 	/// <summary>
 	/// Удаляет все области трат по идентификатору пользователя

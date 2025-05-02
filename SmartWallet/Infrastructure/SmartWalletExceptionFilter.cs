@@ -23,7 +23,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 		switch (exception)
 		{
 			case InvalidOperationSmartWalletEntityServiceException ex:
-				SetExecptionContext(new BadRequestObjectResult(new ApiExceptionDetails() 
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails() 
 				{ 
 					Message = ex.Message,
 					StatusCode = 406
@@ -34,7 +34,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 
 			case AuthenticationServiceException ex:
-				SetExecptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails()
 				{
 					Message = ex.Message,
 					StatusCode = 401
@@ -45,7 +45,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 
 			case EntityNotFoundServiceException ex:
-				SetExecptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
 				{
 					Message = ex.Message,
 					StatusCode = 404
@@ -56,7 +56,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 
 			case SmartWalletValidationException ex:
-				SetExecptionContext(new UnprocessableEntityObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new UnprocessableEntityObjectResult(new ApiExceptionDetails()
 				{
 					Message = ex.Message,
 					StatusCode = 422
@@ -65,12 +65,21 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 					StatusCode = StatusCodes.Status422UnprocessableEntity
 				}, context);
 				break;
-				// [TODO] добавить фильтр для EntityAccessServiceException
+			case EntityAccessServiceException ex:
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
+				{
+					Message = ex.Message,
+					StatusCode = 403
+				})
+				{
+					StatusCode = StatusCodes.Status403Forbidden
+				}, context);
+				break;
 		}
 
 		return;
 
-		static void SetExecptionContext(ObjectResult result, ExceptionContext context)
+		static void SetExceptionContext(ObjectResult result, ExceptionContext context)
 		{
 			context.ExceptionHandled = true;
 			var response = context.HttpContext.Response;

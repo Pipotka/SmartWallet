@@ -9,4 +9,9 @@ public class DeleteSpendingAreaModel
 	/// Идентификатор
 	/// </summary>
 	public Guid Id { get; set; }
+
+	/// <summary>
+	/// Флаг, указывающий нужно ли удалить все транзакции связанные с данной областью трат
+	/// </summary>
+	public bool IsDeleteAllRelatedTransactions { get; set; } = false;
 }

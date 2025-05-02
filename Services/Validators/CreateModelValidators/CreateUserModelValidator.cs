@@ -21,7 +21,8 @@ public class CreateUserModelValidator : AbstractValidator<CreateUserModel>
 			.EmailAddress()
 			.WithMessage($"Строка не является адресом электронной почты")
 			.MustAsync(async (email, token)
-				=> await userRepository.GetUserByEmailAsync(email, token) is null);
+				=> await userRepository.GetUserByEmailAsync(email, token) is null)
+			.WithMessage($"Пользователь с подобным адресом уже существует");
 		RuleFor(x => x.Password)
 			.MustBePassword();
 		RuleFor(x => x.FirstName)
