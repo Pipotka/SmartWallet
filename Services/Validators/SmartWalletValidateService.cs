@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
@@ -9,22 +9,23 @@ using Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
 using Nasurino.SmartWallet.Services.Validators.DeleteModelValidators;
 using Nasurino.SmartWallet.Services.Validators.ModelValidators;
 using Nasurino.SmartWallet.Services.Validators.UpdateModelValidators;
+using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services.Validators;
 
 /// <summary>
 /// Сервис валиадции
 /// </summary>
-public class SmartWalletValidateService
+public class SmartWalletValidateService : ISmartWalletValidateService
 {
 	private readonly IDictionary<Type, IValidator> validators;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletValidateService"/>
 	/// </summary>
-	public SmartWalletValidateService(UserRepository userRepository,
-		CashVaultRepository cashVaultRepository,
-		SpendingAreaRepository spendingAreaRepository)
+	public SmartWalletValidateService(IUserRepository userRepository,
+		ICashVaultRepository cashVaultRepository,
+		ISpendingAreaRepository spendingAreaRepository)
 	{
 		validators = new Dictionary<Type, IValidator>();
 		#region Регистрация валидаторов
@@ -45,10 +46,7 @@ public class SmartWalletValidateService
 
 	}
 
-	/// <summary>
-	/// Валидация модели
-	/// </summary>
-	public async Task ValidateAsync<TModel>(TModel model, CancellationToken token) where TModel : class
+	async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
 	{
 		validators.TryGetValue(typeof(TModel), out var validator);
 

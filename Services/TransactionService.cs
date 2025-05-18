@@ -1,80 +1,91 @@
 ﻿using AutoMapper;
-using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
-using Nasurino.SmartWallet.Services.Validators;
+using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
 
 /// <summary>
 /// Сервис для работы с транзакциями
 /// </summary>
-public class TransactionService(UnitOfWork unitOfWork,
-	SmartWalletValidateService validateService,
-	IMapper mapper)
+public class TransactionService(IUnitOfWork unitOfWork,
+	ISmartWalletValidateService validateService,
+	IMapper mapper) : ITransactionService
 {
-	private readonly UnitOfWork unitOfWork = unitOfWork;
-	private readonly UserRepository userRepository = unitOfWork.UserRepository;
-	private readonly TransactionRepository TransactionRepository = unitOfWork.TransactionRepository;
-	private readonly SmartWalletValidateService validateService = validateService;
+	private readonly IUnitOfWork unitOfWork = unitOfWork;
+	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
+	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
+	private readonly ICashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
+	private readonly ISpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
+	private readonly ISmartWalletValidateService validateService = validateService;
 	private readonly IMapper mapper = mapper;
 
-	/// <summary>
-	/// Возвращет список транзакций по идентификатору пользователя
-	/// </summary>
-	public async Task<List<TransactionModel>> GetListByUserIdAsync(Guid userId, CancellationToken token)
+	async Task<List<TransactionModel>> ITransactionService.GetListByUserIdAsync(Guid userId, CancellationToken token)
 	{
 		var user = await userRepository.GetUserByIdAsync(userId, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
 
-		var transactionList = await TransactionRepository.GetListByUserIdAsync(userId, token);
+		var transactionList = await transactionRepository.GetListByUserIdAsync(userId, token);
 
 		return mapper.Map<List<TransactionModel>>(transactionList);
 	}
 
-	/// <summary>
-	/// Создание новой транзакции
-	/// </summary>
-	public async Task<TransactionModel> CreateAsync(Guid userId, CreateTransactionModel model, CancellationToken token)
+	async Task<TransactionModel> ITransactionService.CreateAsync(Guid userId, CreateTransactionModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
 		}
-		var Transaction = mapper.Map<Transaction>(model);
-		Transaction.Id = Guid.NewGuid();
-		Transaction.UserId = userId;
-		TransactionRepository.Add(Transaction);
+		var transaction = mapper.Map<Transaction>(model);
+		transaction.Id = Guid.NewGuid();
+		transaction.UserId = userId;
 
+		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(transaction.FromCashVaultId, userId, token)
+			?? throw new EntityNotFoundServiceException($"Денежное хранилище с Id = {transaction.FromCashVaultId} не найдена.");
+		var spendingArea = await spendingAreaRepository.GetByIdAndUserIdAsync(transaction.ToSpendingAreaId, userId, token)
+			?? throw new EntityNotFoundServiceException($"Область трат с Id = {transaction.ToSpendingAreaId} не найдена.");
+
+		cashVault.Value -= transaction.Value;
+		spendingArea.Value += transaction.Value;
+
+		transactionRepository.Add(transaction);
+		cashVaultRepository.Update(cashVault);
+		spendingAreaRepository.Update(spendingArea);
 		await unitOfWork.SaveChangesAsync(token);
 
-		return mapper.Map<TransactionModel>(Transaction);
+		return mapper.Map<TransactionModel>(transaction);
 	}
 
-	/// <summary>
-	/// Удаление транзакции
-	/// </summary>
-	public async Task DeleteAsync(Guid userId, DeleteTransactionModel model, CancellationToken token)
+	async Task ITransactionService.DeleteAsync(Guid userId, DeleteTransactionModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
 		}
-		var Transaction = await TransactionRepository.GetByIdAsync(model.Id, token)
+		var transaction = await transactionRepository.GetByIdAndUserIdAsync(model.Id, userId, token)
 			?? throw new EntityNotFoundServiceException($"Транзакция с Id = {model.Id} не найдена.");
 
-		if (Transaction.UserId != userId)
+		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(transaction.FromCashVaultId, userId, token);
+		var spendingArea = await spendingAreaRepository.GetByIdAndUserIdAsync(transaction.ToSpendingAreaId, userId, token);
+
+		if (cashVault is not null)
 		{
-			throw new EntityAccessServiceException($"Пользователь с Id = {userId} не является владельцем транзакции.");
+			cashVault.Value += transaction.Value;
+			cashVaultRepository.Update(cashVault);
+		}
+		if (spendingArea is not null)
+		{
+			spendingArea.Value -= transaction.Value;
+			spendingAreaRepository.Update(spendingArea);
 		}
 
-		TransactionRepository.Delete(Transaction);
-
+		transactionRepository.Delete(transaction);
 		await unitOfWork.SaveChangesAsync(token);
 	}
 }

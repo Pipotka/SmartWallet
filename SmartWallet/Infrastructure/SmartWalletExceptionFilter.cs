@@ -33,7 +33,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				}, context);
 				break;
 
-			case AuthenticationServiceException ex:
+			case AuthorizationServiceException ex:
 				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails()
 				{
 					Message = ex.Message,

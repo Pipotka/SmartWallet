@@ -3,9 +3,9 @@
 /// <summary>
 /// Ошибка аутентификации сервиса
 /// </summary>
-public class AuthenticationServiceException : ServiceException
+public class AuthorizationServiceException : ServiceException
 {
-	public AuthenticationServiceException(string message) 
+	public AuthorizationServiceException(string message) 
 		: base(message)
 	{
 	}

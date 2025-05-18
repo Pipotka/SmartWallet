@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Nasurino.SmartWallet.Context.Repository.Specification;
+using Nasurino.SmartWallet.Context.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Specification;
 using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context.Repository;
@@ -7,19 +9,16 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// <summary>
 /// Репозиторий для <see cref="Transaction"/>
 /// </summary>
-public class TransactionRepository(SmartWalletContext context) : BaseWriteRepository<Transaction>(context)
+public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepository<Transaction>(storage), ITransactionRepository
 {
-	/// <summary>
-	/// Возвращает список транзакций по идентификатору пользователя
-	/// </summary>
-	public Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> context.Set<Transaction>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
-	/// <summary>
-	/// Возвращает транзакцию по идентификатору
-	/// </summary>
-	public Task<Transaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> context.Set<Transaction>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+	Task<Transaction?> ITransactionRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
+		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
+		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
 	/// <inheritdoc/>
 	public override void Add(Transaction entity)
@@ -28,15 +27,9 @@ public class TransactionRepository(SmartWalletContext context) : BaseWriteReposi
 		base.Add(entity);
 	}
 
-	/// <summary>
-	/// Удаляет все транзакций по идентификатору области трат
-	/// </summary>
-	public void DeleteTransactionsBySpendingAreaId(Guid spendingAreaId)
+	void ITransactionRepository.DeleteTransactionsBySpendingAreaId(Guid spendingAreaId)
 		=> DeleteEverythingBy(e => e.ToSpendingAreaId == spendingAreaId);
 
-	/// <summary>
-	/// Удаляет все транзакций по идентификатору пользователя
-	/// </summary>
-	public void DeleteTransactionsByUserId(Guid userId)
+	void ITransactionRepository.DeleteTransactionsByUserId(Guid userId)
 		=> DeleteEverythingBy(e => e.UserId == userId);
 }

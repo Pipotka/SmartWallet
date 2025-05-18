@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Services.Validators.CustomRules;
 
@@ -13,7 +13,7 @@ public class CreateUserModelValidator : AbstractValidator<CreateUserModel>
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="CreateUserModelValidator"/>
 	/// </summary>
-	public CreateUserModelValidator(UserRepository userRepository)
+	public CreateUserModelValidator(IUserRepository userRepository)
 	{
 		RuleFor(x => x.Email)
 			.NotEmpty()

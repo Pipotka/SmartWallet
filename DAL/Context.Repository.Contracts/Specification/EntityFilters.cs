@@ -1,6 +1,6 @@
 ﻿using Nasurino.SmartWallet.Entities.Contracts;
 
-namespace Nasurino.SmartWallet.Context.Repository.Specification;
+namespace Nasurino.SmartWallet.Context.Repository.Contracts.Specification;
 
 /// <summary>
 /// Спецификация фильтров сущностей
@@ -12,6 +12,6 @@ public static class EntityFilters
 	/// </summary>
 	public static IQueryable<TEntity> NotDeleted<TEntity>(this IQueryable<TEntity> query) where TEntity : class
 		=> typeof(ISmartDeletedEntity).IsAssignableFrom(typeof(TEntity))
-			? query.Where(x => ((ISmartDeletedEntity)x).DeletedAt == null) 
+			? query.Where(x => ((ISmartDeletedEntity)x).DeletedAt == null)
 			: query;
 }

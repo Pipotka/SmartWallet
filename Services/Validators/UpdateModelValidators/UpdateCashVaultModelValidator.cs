@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.Services.Validators.UpdateModelValidators;
@@ -12,7 +12,7 @@ public class UpdateCashVaultModelValidator : AbstractValidator<UpdateCashVaultMo
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="UpdateCashVaultModelValidator"/>
 	/// </summary>
-	public UpdateCashVaultModelValidator(CashVaultRepository cashVaultRepository)
+	public UpdateCashVaultModelValidator(ICashVaultRepository cashVaultRepository)
 	{
 		RuleFor(x => x.Id)
 			.NotEmpty()

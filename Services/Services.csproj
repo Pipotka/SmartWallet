@@ -9,10 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
+    <ProjectReference Include="..\DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj" />
     <ProjectReference Include="..\Service.Exceptions\Service.Exceptions.csproj" />
+    <ProjectReference Include="..\Service.Infrastructure.Contracts\Service.Infrastructure.Contracts.csproj" />
     <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
-    <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
+    <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

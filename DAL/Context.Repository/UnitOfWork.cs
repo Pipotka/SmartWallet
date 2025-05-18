@@ -1,27 +1,23 @@
-﻿namespace Nasurino.SmartWallet.Context.Repository;
+﻿using Nasurino.SmartWallet.Context.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
+
+namespace Nasurino.SmartWallet.Context.Repository;
 
 /// <summary>
 /// Паттерн единица работы
 /// </summary>
-public class UnitOfWork(SmartWalletContext context)
+public class UnitOfWork(IDataStorageContext storage) : IUnitOfWork
 {
-	private readonly SmartWalletContext context = context;
+	private readonly IDataStorageContext storage = storage;
 
-	/// <inheritdoc cref="Repository.UserRepository"/>
-	public UserRepository UserRepository { get; set; } = new(context);
+	IUserRepository IUnitOfWork.UserRepository { get; set; } = new UserRepository(storage);
 
-	/// <inheritdoc cref="Repository.CashVaultRepository"/>
-	public CashVaultRepository CashVaultRepository { get; set; } = new(context);
+	ICashVaultRepository IUnitOfWork.CashVaultRepository { get; set; } = new CashVaultRepository(storage);
 
-	/// <inheritdoc cref="Repository.TransactionRepository"/>
-	public TransactionRepository TransactionRepository { get; set; } = new(context);
+	ITransactionRepository IUnitOfWork.TransactionRepository { get; set; } = new TransactionRepository(storage);
 
-	/// <inheritdoc cref="Repository.SpendingAreaRepository"/>
-	public SpendingAreaRepository SpendingAreaRepository { get; set; } = new(context);
+	ISpendingAreaRepository IUnitOfWork.SpendingAreaRepository { get; set; } = new SpendingAreaRepository(storage);
 
-	/// <summary>
-	/// Сохраняет изменения
-	/// </summary>
-	public Task SaveChangesAsync(CancellationToken cancellationToken)
-		=> context.SaveChangesAsync(cancellationToken);
+	Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
+		=> storage.SaveChangesAsync(cancellationToken);
 }

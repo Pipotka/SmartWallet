@@ -1,32 +1,29 @@
 ﻿using AutoMapper;
-using Nasurino.SmartWallet.Context.Repository;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
-using Nasurino.SmartWallet.Services.Validators;
+using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
 
 /// <summary>
 /// Сервис для работы с денежными хранилищами
 /// </summary>
-public class CashVaultService(UnitOfWork unitOfWork,
-	SmartWalletValidateService validateService,
-	IMapper mapper)
+public class CashVaultService(IUnitOfWork unitOfWork,
+	ISmartWalletValidateService validateService,
+	IMapper mapper) : ICashVaultService
 {
-	private readonly UnitOfWork unitOfWork = unitOfWork;
-	private readonly UserRepository userRepository = unitOfWork.UserRepository;
-	private readonly CashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
-	private readonly SmartWalletValidateService validateService = validateService;
+	private readonly IUnitOfWork unitOfWork = unitOfWork;
+	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
+	private readonly ICashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
+	private readonly ISmartWalletValidateService validateService = validateService;
 	private readonly IMapper mapper = mapper;
 
-	/// <summary>
-	/// Возвращет список денежных хранилищ по идентификатору пользователя
-	/// </summary>
-	public async Task<List<CashVaultModel>> GetListByUserIdAsync(Guid userId, CancellationToken token)
+	async Task<List<CashVaultModel>> ICashVaultService.GetListByUserIdAsync(Guid userId, CancellationToken token)
 	{
 		var user = await userRepository.GetUserByIdAsync(userId, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
@@ -36,10 +33,7 @@ public class CashVaultService(UnitOfWork unitOfWork,
 		return mapper.Map<List<CashVaultModel>>(cashVaultList);
 	}
 
-	/// <summary>
-	/// Создание нового денежного храшнилища
-	/// </summary>
-	public async Task<CashVaultModel> CreateAsync(CreateCashVaultModel model, CancellationToken token)
+	async Task<CashVaultModel> ICashVaultService.CreateAsync(CreateCashVaultModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
@@ -56,22 +50,16 @@ public class CashVaultService(UnitOfWork unitOfWork,
 		return mapper.Map<CashVaultModel>(cashVault);
 	}
 
-	/// <summary>
-	/// Обновление денежного храшнилища
-	/// </summary>
-	public async Task<CashVaultModel> UpdateAsync(UpdateCashVaultModel model, CancellationToken token)
+	async Task<CashVaultModel> ICashVaultService.UpdateAsync(UpdateCashVaultModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
 		}
-		var cashVault = await cashVaultRepository.GetByIdAsync(model.Id, token) 
+		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
 			?? throw new EntityNotFoundServiceException($"Денежное хранилище с Id = {model.Id} не найдено.");
-		if (cashVault.UserId != model.UserId)
-		{
-			throw new EntityAccessServiceException($"Пользователь с Id = {model.UserId} не является владельцем денежного храшнилища.");
-		}
+
 		mapper.Map(model, cashVault);
 		cashVaultRepository.Update(cashVault);
 
@@ -79,23 +67,15 @@ public class CashVaultService(UnitOfWork unitOfWork,
 		return mapper.Map<CashVaultModel>(cashVault);
 	}
 
-	/// <summary>
-	/// Удаление денежного храшнилища
-	/// </summary>
-	public async Task DeleteAsync(Guid userId, DeleteCashVaultModel model, CancellationToken token)
+	async Task ICashVaultService.DeleteAsync(Guid userId, DeleteCashVaultModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		if (await userRepository.GetUserByIdAsync(userId, token) is null)
 		{
 			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
 		}
-		var cashVault = await cashVaultRepository.GetByIdAsync(model.Id, token)
+		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(model.Id, userId, token)
 			?? throw new EntityNotFoundServiceException($"Денежное хранилище с Id = {model.Id} не найдено.");
-
-		if (cashVault.UserId != userId)
-		{
-			throw new EntityAccessServiceException($"Пользователь с Id = {userId} не является владельцем денежного храшнилища.");
-		}
 
 		cashVaultRepository.Delete(cashVault);
 

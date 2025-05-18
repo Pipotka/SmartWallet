@@ -4,10 +4,10 @@ using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 
-namespace Nasurino.SmartWallet.Service.Models.Mappings;
+namespace Nasurino.SmartWallet.Services.AutoMappers;
 
 /// <summary>
-/// Мапер моделей сервиса
+/// Маппер моделей сервиса
 /// </summary>
 public class ServiceModelMapper : Profile
 {

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Nasurino.SmartWallet.Context.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities.Contracts;
 using System.Linq.Expressions;
 
@@ -7,29 +9,29 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// <summary>
 /// Базовый репозиторий запись
 /// </summary>
-public abstract class BaseWriteRepository<TEntity> where TEntity : class 
+public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntity> where TEntity : class
 {
-	private readonly SmartWalletContext writer;
+	private readonly IDataStorageContext storage;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="BaseWriteRepository{TEntity}"/>
 	/// </summary>
-	protected BaseWriteRepository(SmartWalletContext writer)
+	protected BaseWriteRepository(IDataStorageContext storage)
 	{
-		this.writer = writer;
+		this.storage = storage;
 	}
 
 	/// <summary>
 	/// Добавить новую сущность
 	/// </summary>
 	public virtual void Add(TEntity entity)
-		=> writer.Entry(entity).State = EntityState.Added;
+		=> storage.Create(entity);
 
 	/// <summary>
 	/// Изменить сущность
 	/// </summary>
 	public virtual void Update(TEntity entity)
-		=> writer.Entry(entity).State = EntityState.Modified;
+		=> storage.Update(entity);
 
 	/// <summary>
 	/// Удалить сущность
@@ -39,9 +41,10 @@ public abstract class BaseWriteRepository<TEntity> where TEntity : class
 		if (entity is ISmartDeletedEntity smartDeletedEntity)
 		{
 			smartDeletedEntity.DeletedAt = DateTime.UtcNow;
+			storage.Update(smartDeletedEntity);
 			return;
 		}
-		writer.Entry(entity).State = EntityState.Deleted;
+		storage.Delete(entity);
 	}
 
 	/// <summary>
@@ -49,7 +52,7 @@ public abstract class BaseWriteRepository<TEntity> where TEntity : class
 	/// </summary>
 	protected virtual void DeleteEverythingBy(Expression<Func<TEntity, bool>> predicate)
 	{
-		var query = writer.Set<TEntity>().Where(predicate);
+		var query = storage.Read<TEntity>().Where(predicate);
 		if (typeof(ISmartDeletedEntity).IsAssignableFrom(typeof(TEntity)))
 		{
 			query.ExecuteUpdate(x => x

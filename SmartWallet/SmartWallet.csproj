@@ -11,13 +11,20 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.Infrastructure.Contracts\Common.Infrastructure.Contracts.csproj" />
+    <ProjectReference Include="..\Common\Common.Infrastructure\Common.Infrastructure.csproj" />
+    <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
+    <ProjectReference Include="..\DAL\Context\Context.csproj" />
     <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
+    <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
+    <ProjectReference Include="..\SmartWallet.Options\SmartWallet.Options.csproj" />
   </ItemGroup>
 
   <ItemGroup>
