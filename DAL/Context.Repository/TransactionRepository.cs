@@ -12,18 +12,23 @@ namespace Nasurino.SmartWallet.Context.Repository;
 public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepository<Transaction>(storage), ITransactionRepository
 {
 	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+		=> storage.Read<Transaction>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+
+	Task<List<Transaction>> ITransactionRepository.GetListByMonthAndUserIdAsync(Guid userId, DateOnly monthOfYear, CancellationToken cancellationToken)
+		=> storage.Read<Transaction>().NotDeleted()
+		.Where(x => x.MadeAt.Month == monthOfYear.Month 
+		&& x.MadeAt.Year == monthOfYear.Year).ToListAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public override void Add(Transaction entity)
 	{
-		entity.MadeAt = DateTime.UtcNow;
+		entity.MadeAt = DateOnly.FromDateTime(DateTime.Now);
 		base.Add(entity);
 	}
 

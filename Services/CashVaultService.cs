@@ -7,6 +7,7 @@ using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 using Services.Contracts;
+using System.Transactions;
 
 namespace Nasurino.SmartWallet.Services;
 

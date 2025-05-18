@@ -80,20 +80,18 @@ public class SpendingAreaService(IUnitOfWork unitOfWork,
 			?? throw new EntityNotFoundServiceException($"Область трат с Id = {model.Id} не найдено.");
 
 		spendingAreaRepository.Delete(spendingArea);
-		if (model.IsDeleteAllRelatedTransactions)
+
+		var transactions = await transactionRepository.GetListByUserIdAsync(userId, token);
+		var cashVaults = (await cashVaultRepository.GetListByUserIdAsync(userId, token)).ToDictionary(x => x.Id, x => x);
+		foreach (var transaction in transactions)
 		{
-			var transactions = await transactionRepository.GetListByUserIdAsync(userId, token);
-			var cashVaults = (await cashVaultRepository.GetListByUserIdAsync(userId, token)).ToDictionary(x => x.Id, x => x);
-			foreach (var transaction in transactions)
+			if (cashVaults.TryGetValue(transaction.FromCashVaultId, out var cashVault))
 			{
-				if (cashVaults.TryGetValue(transaction.FromCashVaultId, out var cashVault))
-				{
-					cashVault.Value += transaction.Value;
-					cashVaultRepository.Update(cashVault);
-				}
+				cashVault.Value += transaction.Value;
+				cashVaultRepository.Update(cashVault);
 			}
-			transactionRepository.DeleteTransactionsBySpendingAreaId(spendingArea.Id);
 		}
+		transactionRepository.DeleteTransactionsBySpendingAreaId(spendingArea.Id);
 
 		await unitOfWork.SaveChangesAsync(token);
 	}

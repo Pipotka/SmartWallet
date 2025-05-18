@@ -12,16 +12,16 @@ namespace Nasurino.SmartWallet.Context.Repository;
 public class SpendingAreaRepository(IDataStorageContext storage) : BaseWriteRepository<SpendingArea>(storage), ISpendingAreaRepository
 {
 	Task<List<SpendingArea>> ISpendingAreaRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<SpendingArea>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+		=> storage.Read<SpendingArea>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
 	Task<SpendingArea?> ISpendingAreaRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> storage.Read<SpendingArea>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+		=> storage.Read<SpendingArea>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 	Task<SpendingArea?> ISpendingAreaRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<SpendingArea>().AsNoTracking().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+		=> storage.Read<SpendingArea>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
 	Task<SpendingArea?> ISpendingAreaRepository.GetByNameAndUserIdAsync(Guid userId, string name, CancellationToken cancellationToken)
-		=> storage.Read<SpendingArea>().AsNoTracking().NotDeleted().Where(x => x.UserId == userId)
+		=> storage.Read<SpendingArea>().NotDeleted().Where(x => x.UserId == userId)
 		.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower(), cancellationToken);
 
 	void ISpendingAreaRepository.DeleteSpendingAreasByUserId(Guid userId)

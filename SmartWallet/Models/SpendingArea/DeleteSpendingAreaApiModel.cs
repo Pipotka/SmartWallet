@@ -9,9 +9,4 @@ public class DeleteSpendingAreaApiModel
 	/// Идентификатор
 	/// </summary>
 	public Guid Id { get; set; }
-
-	/// <summary>
-	/// Флаг удаления всех связанных транзакции
-	/// </summary>
-	public bool IsDeleteAllRelatedTransactions { get; set; }
 }

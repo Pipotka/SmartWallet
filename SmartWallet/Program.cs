@@ -106,6 +106,7 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ICashVaultService, CashVaultService>();
 builder.Services.AddScoped<ISpendingAreaService, SpendingAreaService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IFinancialAnalyticsService, FinancialAnalyticsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();

@@ -28,5 +28,5 @@ public class TransactionApiModel
 	/// <summary>
 	/// Дата создания
 	/// </summary>
-	public DateTime MadeAt { get; set; }
+	public DateOnly MadeAt { get; set; }
 }

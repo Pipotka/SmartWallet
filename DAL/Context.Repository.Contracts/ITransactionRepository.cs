@@ -28,6 +28,12 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		Task<Transaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
 		/// <summary>
+		/// Возвращает список транзакций пользователя, созданный в указанный месяц
+		/// </summary>
+		/// <param name="monthOfYear">месяц года</param>
+		Task<List<Transaction>> GetListByMonthAndUserIdAsync(Guid userId, DateOnly monthOfYear, CancellationToken cancellationToken);
+
+		/// <summary>
 		/// Возвращает список транзакций по идентификатору пользователя
 		/// </summary>
 		Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);

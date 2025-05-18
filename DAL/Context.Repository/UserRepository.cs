@@ -11,8 +11,8 @@ namespace Nasurino.SmartWallet.Context.Repository;
 public class UserRepository(IDataStorageContext storage) : BaseWriteRepository<User>(storage), IUserRepository
 {
 	Task<User?> IUserRepository.GetUserByEmailAsync(string email, CancellationToken cancellationToken)
-		=> storage.Read<User>().AsNoTracking().FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+		=> storage.Read<User>().FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
 
 	Task<User?> IUserRepository.GetUserByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> storage.Read<User>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+		=> storage.Read<User>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 }
