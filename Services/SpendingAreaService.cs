@@ -81,7 +81,8 @@ public class SpendingAreaService(IUnitOfWork unitOfWork,
 
 		spendingAreaRepository.Delete(spendingArea);
 
-		var transactions = await transactionRepository.GetListByUserIdAsync(userId, token);
+		var transactions = (await transactionRepository.GetListByUserIdAsync(userId, token))
+			.Where(x => x.ToSpendingAreaId == spendingArea.Id).ToList();
 		var cashVaults = (await cashVaultRepository.GetListByUserIdAsync(userId, token)).ToDictionary(x => x.Id, x => x);
 		foreach (var transaction in transactions)
 		{
