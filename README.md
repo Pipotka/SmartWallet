@@ -33,7 +33,7 @@ erDiagram
         guid fromCashVaultId FK
         guid toSpendingAreaId FK
         double value
-        Date madeAt
+        DateTime madeAt
         Date deletedAt
     }
 
