@@ -28,5 +28,5 @@ public class TransactionModel
 	/// <summary>
 	/// Дата создания
 	/// </summary>
-	public DateOnly MadeAt { get; set; }
+	public DateTime MadeAt { get; set; }
 }
