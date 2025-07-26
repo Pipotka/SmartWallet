@@ -29,20 +29,22 @@ public class FinancialAnalyticsController : Controller
 	}
 
 	/// <summary>
-	/// Получает категоризированные траты пользователя в процентах по месяцу года
+	/// Получает категоризированные траты пользователя по месяцу года
 	/// </summary>
-	[HttpPut("categorized-spending-in-percent")]
+	[HttpPut("categorized-spending")]
 	[ProducesResponseType(typeof(CategorizingSpendingApiResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetCategorizingSpendingByMonthOfYear([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
-		var result = await financialAnalyticsService.GetCategorizingSpendingByMonthOfYearAndUserIdAsync(identityProvider.Id, request.MouthOfYear, token);
-		var response = new CategorizingSpendingApiResponse
-		{
-			SpendingAmount = result.SpendingAmount,
-			CategorizedSpendingInPercent = result.CategorizedSpendingInPercent
-		};
+		var minDateInMonth = new DateTime(request.Year, request.Month, 1);
+		var minDateInNextMonth = minDateInMonth.AddMonths(1);
+		var result = await financialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(identityProvider.Id,
+			minDateInMonth,
+			minDateInNextMonth,
+			request.AsPercentage,
+			token);
+		var response = new CategorizingSpendingApiResponse(result.SpendingAmount, result.CategorizedSpending);
 		return Ok(response);
 	}
 }
