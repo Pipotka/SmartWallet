@@ -1,4 +1,5 @@
-﻿using Nasurino.SmartWallet.Entities;
+﻿using System.Collections.Immutable;
+using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context.Repository.Contracts
 {
@@ -30,8 +31,13 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		/// <summary>
 		/// Возвращает список транзакций пользователя, созданный в указанный месяц
 		/// </summary>
-		/// <param name="monthOfYear">месяц года</param>
-		Task<List<Transaction>> GetListByMonthAndUserIdAsync(Guid userId, DateOnly monthOfYear, CancellationToken cancellationToken);
+		/// <param name="startTimeRange">Начало временного диапазона</param>
+		/// <param name="endTimeRange">Конец временного диапазона</param>
+		/// <remarks><paramref name="endTimeRange"/> - исключенный верхний предел временного диапазона</remarks>
+		Task<IReadOnlyCollection<Transaction>> GetListByTimeRangeAndUserIdAsync(Guid userId,
+			DateTime startTimeRange,
+			DateTime endTimeRange,
+			CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Возвращает список транзакций по идентификатору пользователя
