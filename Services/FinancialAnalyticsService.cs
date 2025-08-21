@@ -1,5 +1,6 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
@@ -12,7 +13,7 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
 
-	async Task<(double SpendingAmount, Dictionary<Guid, double> CategorizedSpendingInPercent)> IFinancialAnalyticsService.GetCategorizingSpendingByMonthOfYearAndUserIdAsync(Guid userId,
+	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByMonthOfYearAndUserIdAsync(Guid userId,
 		DateOnly monthOfYear,
 		CancellationToken token)
 	{
@@ -38,7 +39,7 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 			categorizedSpending[category] = GetPercentage(spendingAmount, categorizedSpending[category]);
 		}
 
-		return (spendingAmount, categorizedSpending);
+		return new SpendingCategoryModel(spendingAmount, categorizedSpending);
 	}
 
 	public static double GetPercentage(double sum, double part, int decimals = 2)
