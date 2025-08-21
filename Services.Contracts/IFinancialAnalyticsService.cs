@@ -1,4 +1,4 @@
-﻿using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Service.Models.Models;
 
 namespace Services.Contracts
 {
@@ -10,7 +10,14 @@ namespace Services.Contracts
 		/// <summary>
 		/// Возвращает категоризированные траты пользователя в процентах по месяцу года
 		/// </summary>
-		/// <param name="monthOfYear">месяц года</param>
-		Task<SpendingCategoryModel> GetCategorizingSpendingByMonthOfYearAndUserIdAsync(Guid userId, DateOnly monthOfYear, CancellationToken token);
+		/// <param name="startTimeRange">Начало временного диапазона</param>
+		/// <param name="endTimeRange">Конец временного диапазона</param>
+		/// <param name="asPercentage">Флаг, указывающий, что результаты должны быть в процентах</param>
+		/// <remarks><paramref name="endTimeRange"/> - исключенный верхний предел временного диапазона</remarks>
+		Task<SpendingCategoryModel> GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
+			DateTime startTimeRange,
+			DateTime endTimeRange,
+			bool asPercentage,
+			CancellationToken token);
 	}
 }

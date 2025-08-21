@@ -41,7 +41,7 @@ public class Transaction : SmartDeletedEntity
 	public double Value { get; set; } = 0.0;
 
 	/// <summary>
-	/// Дата создания
+	/// Дата и время создания
 	/// </summary>
-	public DateOnly MadeAt { get; set; }
+	public DateTime MadeAt { get; set; }
 }

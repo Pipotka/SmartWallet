@@ -1,8 +1,8 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+﻿namespace Nasurino.SmartWallet.Service.Models.Models;
 
 /// <summary>
-/// Траты по категориям
+/// Расходы по категориям
 /// </summary>
-/// <param name="SpendingAmount">Сумма трат</param>
-/// <param name="CategorizedSpendingInPercent">Категоризированные траты в процентах</param>
-public record SpendingCategoryModel(double SpendingAmount, Dictionary<Guid, double> CategorizedSpendingInPercent);
+/// <param name="SpendingAmount">Общая сумма расходов</param>
+/// <param name="CategorizedSpending">Категоризированные расходы</param>
+public record SpendingCategoryModel(double SpendingAmount, Dictionary<Guid, double> CategorizedSpending);

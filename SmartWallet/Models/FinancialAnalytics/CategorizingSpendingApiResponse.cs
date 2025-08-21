@@ -4,7 +4,7 @@
 /// Модель Api ответа категоризации трат
 /// </summary>
 /// <param name="SpendingAmount">Сумма трат</param>
-/// <param name="CategorizedSpendingInPercent">Категоризированные траты в процентах</param>
+/// <param name="CategorizedSpending">Категоризированные траты</param>
 public record CategorizingSpendingApiResponse(
     double SpendingAmount,
-    Dictionary<Guid, double> CategorizedSpendingInPercent);
+    Dictionary<Guid, double> CategorizedSpending);

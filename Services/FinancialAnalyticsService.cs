@@ -1,6 +1,6 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
-using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Service.Models.Models;
 using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
@@ -13,14 +13,19 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
 
-	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByMonthOfYearAndUserIdAsync(Guid userId,
-		DateOnly monthOfYear,
+	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
+		DateTime startTimeRange,
+		DateTime endTimeRange,
+		bool asPercentage,
 		CancellationToken token)
 	{
-		var user = await userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		if (await userRepository.GetUserByIdAsync(userId, token) is null) 
+			throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
 
-		var source = await transactionRepository.GetListByMonthAndUserIdAsync(userId, monthOfYear, token);
+		var source = await transactionRepository.GetListByTimeRangeAndUserIdAsync(userId,
+			NormalizeDateTime(startTimeRange),
+			NormalizeDateTime(endTimeRange),
+			token);
 
 		var categorizedTransactions = source.GroupBy(x => x.ToSpendingAreaId).ToList();
 		var spendingAmount = 0.0;
@@ -34,14 +39,26 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 				categorizedSpending[category.Key] += transaction.Value;
 			}
 		}
-		foreach (var category in categorizedSpending.Keys)
+
+		if (asPercentage)
 		{
-			categorizedSpending[category] = GetPercentage(spendingAmount, categorizedSpending[category]);
+			foreach (var category in categorizedSpending.Keys)
+			{
+				categorizedSpending[category] = GetPercentage(spendingAmount, categorizedSpending[category]);
+			}
 		}
 
 		return new SpendingCategoryModel(spendingAmount, categorizedSpending);
 	}
 
-	public static double GetPercentage(double sum, double part, int decimals = 2)
+	static DateTime NormalizeDateTime(DateTime unnormalizedDateTime)
+		=> unnormalizedDateTime.Kind switch
+		{
+			DateTimeKind.Utc => unnormalizedDateTime,
+			DateTimeKind.Local => unnormalizedDateTime.ToUniversalTime(),
+			_ => DateTime.SpecifyKind(unnormalizedDateTime, DateTimeKind.Utc),
+		};
+
+	static double GetPercentage(double sum, double part, int decimals = 2)
 		=> sum <= 0.0 ? 0.0 : Math.Round((part / sum) * 100, decimals);
 }

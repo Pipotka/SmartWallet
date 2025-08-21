@@ -20,15 +20,18 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
 		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
-	Task<List<Transaction>> ITransactionRepository.GetListByMonthAndUserIdAsync(Guid userId, DateOnly monthOfYear, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().NotDeleted()
-		.Where(x => x.MadeAt.Month == monthOfYear.Month 
-		&& x.MadeAt.Year == monthOfYear.Year).ToListAsync(cancellationToken);
+	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByTimeRangeAndUserIdAsync(Guid userId,
+		DateTime startTimeRange,
+		DateTime endTimeRange,
+		CancellationToken cancellationToken)
+		=> await storage.Read<Transaction>().NotDeleted()
+		.Where(x => startTimeRange <= x.MadeAt && x.MadeAt < endTimeRange)
+		.ToListAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public override void Add(Transaction entity)
 	{
-		entity.MadeAt = DateOnly.FromDateTime(DateTime.Now);
+		entity.MadeAt = DateTime.UtcNow;
 		base.Add(entity);
 	}
 
