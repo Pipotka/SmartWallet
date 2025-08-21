@@ -38,11 +38,9 @@ public class FinancialAnalyticsController : Controller
 	public async Task<IActionResult> GetCategorizingSpendingByMonthOfYear([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
 		var result = await financialAnalyticsService.GetCategorizingSpendingByMonthOfYearAndUserIdAsync(identityProvider.Id, request.MouthOfYear, token);
-		var response = new CategorizingSpendingApiResponse
-		{
-			SpendingAmount = result.SpendingAmount,
-			CategorizedSpendingInPercent = result.CategorizedSpendingInPercent
-		};
+		var response = new CategorizingSpendingApiResponse(result.SpendingAmount,
+			result.CategorizedSpendingInPercent);
+		
 		return Ok(response);
 	}
 }
