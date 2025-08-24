@@ -1,6 +1,7 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Service.Infrastructure.Contracts;
 using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
@@ -8,7 +9,7 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис финансовой аналитики
 /// </summary>
-public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnalyticsService
+public class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator) : IFinancialAnalyticsService
 {
 	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
@@ -44,7 +45,7 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 		{
 			foreach (var category in categorizedSpending.Keys)
 			{
-				categorizedSpending[category] = GetPercentage(spendingAmount, categorizedSpending[category]);
+				categorizedSpending[category] = calculator.GetPercentage(spendingAmount, categorizedSpending[category]);
 			}
 		}
 
@@ -58,7 +59,4 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork) : IFinancialAnaly
 			DateTimeKind.Local => unnormalizedDateTime.ToUniversalTime(),
 			_ => DateTime.SpecifyKind(unnormalizedDateTime, DateTimeKind.Utc),
 		};
-
-	static double GetPercentage(double sum, double part, int decimals = 2)
-		=> sum <= 0.0 ? 0.0 : Math.Round((part / sum) * 100, decimals);
 }
