@@ -6,7 +6,7 @@
 public class User : BaseEntity
 {
 	/// <summary>
-	/// электронная почта
+	/// Электронная почта
 	/// </summary>
 	public string Email { get; set; }
 

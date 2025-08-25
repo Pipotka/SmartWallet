@@ -13,7 +13,7 @@ public class Transaction : SmartDeletedEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public User User { get; set; }
+	public User? User { get; set; }
 
 	/// <summary>
 	/// Идентификатор денежного хранилища 
@@ -23,7 +23,7 @@ public class Transaction : SmartDeletedEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public CashVault CashVault { get; set; }
+	public CashVault? CashVault { get; set; }
 
 	/// <summary>
 	/// Идентификатор области трат
@@ -33,7 +33,7 @@ public class Transaction : SmartDeletedEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public SpendingArea SpendingArea { get; set; }
+	public SpendingArea? SpendingArea { get; set; }
 
 	/// <summary>
 	/// Значение

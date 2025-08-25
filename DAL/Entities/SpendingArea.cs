@@ -13,7 +13,7 @@ public class SpendingArea : SmartDeletedEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public User User { get; set; }
+	public User? User { get; set; }
 
 	/// <summary>
 	/// Название
