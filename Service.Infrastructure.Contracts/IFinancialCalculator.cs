@@ -32,5 +32,5 @@ public interface IFinancialCalculator
     /// var result4 = CalculatePercentageOfSum(1000, -10); // Возвращает 0
     /// </code>
     /// </example>
-    double CalculatePercentageOfSum(double sum, double percentage);
+    double PercentageOfSum(double sum, double percentage);
 }
