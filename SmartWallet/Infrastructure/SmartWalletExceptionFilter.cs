@@ -22,17 +22,6 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 
 		switch (exception)
 		{
-			case InvalidOperationSmartWalletEntityServiceException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails() 
-				{ 
-					Message = ex.Message,
-					StatusCode = 406
-				})
-				{
-					StatusCode = StatusCodes.Status406NotAcceptable
-				}, context);
-				break;
-
 			case AuthorizationServiceException ex:
 				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails()
 				{
