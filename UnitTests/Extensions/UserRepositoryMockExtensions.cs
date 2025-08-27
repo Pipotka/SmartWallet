@@ -19,7 +19,7 @@ public static class UserRepositoryMockExtensions
         Guid userId = default,
         CancellationToken token = default)
         => mockedUserRepository.SetupGetUserById(userId, token)
-            .ReturnsAsync(new User());
+            .ReturnsAsync(new User{ Id = userId });
 
     private static ISetup<IUserRepository, Task<User?>> SetupGetUserById(
         this Mock<IUserRepository> mockedUserRepository,
