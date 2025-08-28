@@ -3,7 +3,7 @@ using Moq.Language.Flow;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 
-namespace Nasurino.SmartWallet.UnitTests.Extensions;
+namespace Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
 
 /// <summary>
 /// Методы-расширения для моков <see cref="ITransactionRepository"/>

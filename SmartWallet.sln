@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Tests", "Service.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{30CC5426-AB53-4B8D-A427-173266FAF388}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests.Services", "UnitTests.Services\UnitTests.Services.csproj", "{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests.Services.Infrastructure", "UnitTests.Services.Infrastructure\UnitTests.Services.Infrastructure.csproj", "{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
