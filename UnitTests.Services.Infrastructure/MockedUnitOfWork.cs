@@ -1,7 +1,7 @@
 ﻿using Moq;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 
-namespace Nasurino.SmartWallet.UnitTests;
+namespace Nasurino.SmartWallet.UnitTests.Services.Infrastructure;
 
 /// <summary>
 /// Замоканый unit of work
