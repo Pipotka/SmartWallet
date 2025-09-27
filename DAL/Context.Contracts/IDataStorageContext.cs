@@ -3,7 +3,7 @@
 /// <summary>
 /// Интерфейс хранилища данных
 /// </summary>
-public interface IDataStorageContext
+public interface IDataStorageContext : IDisposable
 {
 	/// <summary>
 	/// Чтение данных из хранилища
