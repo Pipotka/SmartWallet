@@ -22,7 +22,6 @@
       <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
       <ProjectReference Include="..\UnitTests.Services.Infrastructure\UnitTests.Services.Infrastructure.csproj" />
-      <ProjectReference Include="..\UnitTests\UnitTests.csproj" />
     </ItemGroup>
 
 </Project>
