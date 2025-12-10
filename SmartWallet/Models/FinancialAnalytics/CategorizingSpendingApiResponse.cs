@@ -3,15 +3,8 @@
 /// <summary>
 /// Модель Api ответа категоризации трат
 /// </summary>
-public class CategorizingSpendingApiResponse
-{
-	/// <summary>
-	/// Сумма трат
-	/// </summary>
-	public double SpendingAmount {  get; set; }
-
-	/// <summary>
-	/// Категоризированные траты в процентах
-	/// </summary>
-	public Dictionary<Guid, double> CategorizedSpendingInPercent {  get; set; }
-}
+/// <param name="SpendingAmount">Сумма трат</param>
+/// <param name="CategorizedSpending">Категоризированные траты</param>
+public record CategorizingSpendingApiResponse(
+    double SpendingAmount,
+    Dictionary<Guid, double> CategorizedSpending);

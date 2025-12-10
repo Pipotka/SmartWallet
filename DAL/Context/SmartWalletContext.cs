@@ -29,6 +29,19 @@ public class SmartWalletContext : DbContext, IDataStorageContext
 	void IDataStorageContext.Update<TEntity>(TEntity entity)
 		=> Entry(entity).State = EntityState.Modified;
 
+	/// <inheritdoc />
+	async Task<int> IDataStorageContext.SaveChangesAsync(CancellationToken cancellationToken)
+	{
+		var count = await base.SaveChangesAsync(cancellationToken);
+
+		foreach (var entry in base.ChangeTracker.Entries().ToArray())
+		{
+			entry.State = EntityState.Unchanged;
+		}
+		
+		return count;
+	}
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartWalletAnchorEntity).Assembly);

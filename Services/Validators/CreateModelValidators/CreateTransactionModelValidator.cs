@@ -20,7 +20,7 @@ public class CreateTransactionModelValidator : AbstractValidator<CreateTransacti
 			.NotEmpty()
 			.WithMessage("источник не должен быть пустым");
 		RuleFor(x => x.Value)
-			.GreaterThanOrEqualTo(0.0)
-			.WithMessage("Значение должно быть больше или равно нулю");
+			.GreaterThan(0.0)
+			.WithMessage("Значение должно быть больше нуля");
 	}
 }

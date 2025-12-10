@@ -6,16 +6,16 @@
 	public interface IUnitOfWork
 	{
 		/// <inheritdoc cref="ICashVaultRepository"/>
-		ICashVaultRepository CashVaultRepository { get; set; }
+		ICashVaultRepository CashVaultRepository { get; }
 
 		/// <inheritdoc cref="ISpendingAreaRepository"/>
-		ISpendingAreaRepository SpendingAreaRepository { get; set; }
+		ISpendingAreaRepository SpendingAreaRepository { get; }
 
 		/// <inheritdoc cref="ITransactionRepository"/>
-		ITransactionRepository TransactionRepository { get; set; }
+		ITransactionRepository TransactionRepository { get; }
 
 		/// <inheritdoc cref="IUserRepository"/>
-		IUserRepository UserRepository { get; set; }
+		IUserRepository UserRepository { get; }
 
 		/// <summary>
 		/// Сохраняет изменения

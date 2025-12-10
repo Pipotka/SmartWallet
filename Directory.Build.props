@@ -1,0 +1,8 @@
+<Project>
+ <ItemGroup Condition="'$(MSBuildProjectName.EndsWith(`Tests`))' == 'True'">
+    <PackageReference Include="Ahatornn.TestGenerator" Version="1.1.29" />
+    <PackageReference Include="FluentAssertions" Version="7.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+</Project>

@@ -58,8 +58,8 @@ public class TransactionController : Controller
 	public async Task<IActionResult> Create([FromBody] CreateTransactionApiModel request, CancellationToken token)
 	{
 		var model = mapper.Map<CreateTransactionModel>(request);
-		var responce = await transactionService.CreateAsync(identityProvider.Id, model, token);
-		return Ok(mapper.Map<TransactionApiModel>(responce));
+		var response = await transactionService.CreateAsync(identityProvider.Id, model, token);
+		return Ok(mapper.Map<TransactionApiModel>(response));
 	}
 
 	/// <summary>
