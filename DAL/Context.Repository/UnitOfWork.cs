@@ -6,17 +6,30 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// <summary>
 /// Паттерн единица работы
 /// </summary>
-public class UnitOfWork(IDataStorageContext storage) : IUnitOfWork
+public class UnitOfWork : IUnitOfWork
 {
-	private readonly IDataStorageContext storage = storage;
+	private readonly IDataStorageContext storage;
 
-	IUserRepository IUnitOfWork.UserRepository { get; set; } = new UserRepository(storage);
+	public IUserRepository UserRepository { get; init; }
 
-	ICashVaultRepository IUnitOfWork.CashVaultRepository { get; set; } = new CashVaultRepository(storage);
+	public ICashVaultRepository CashVaultRepository { get; init; }
 
-	ITransactionRepository IUnitOfWork.TransactionRepository { get; set; } = new TransactionRepository(storage);
+	public ITransactionRepository TransactionRepository { get; init; }
 
-	ISpendingAreaRepository IUnitOfWork.SpendingAreaRepository { get; set; } = new SpendingAreaRepository(storage);
+	public ISpendingAreaRepository SpendingAreaRepository { get; init; }
+	
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="UnitOfWork"/>
+	/// </summary>
+	public UnitOfWork(IDataStorageContext storage)
+	{
+		this.storage =  storage;
+
+		UserRepository = new UserRepository(storage);
+		CashVaultRepository	= new CashVaultRepository(storage);
+		TransactionRepository = new TransactionRepository(storage);
+		SpendingAreaRepository = new SpendingAreaRepository(storage);
+	}
 
 	Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
 		=> storage.SaveChangesAsync(cancellationToken);

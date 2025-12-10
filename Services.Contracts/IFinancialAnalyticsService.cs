@@ -14,7 +14,7 @@ namespace Services.Contracts
 		/// <param name="endTimeRange">Конец временного диапазона</param>
 		/// <param name="asPercentage">Флаг, указывающий, что результаты должны быть в процентах</param>
 		/// <remarks><paramref name="endTimeRange"/> - исключенный верхний предел временного диапазона</remarks>
-		Task<CategorizedSpendingModel> GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
+		Task<SpendingCategoryModel> GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
 			DateTime startTimeRange,
 			DateTime endTimeRange,
 			bool asPercentage,
