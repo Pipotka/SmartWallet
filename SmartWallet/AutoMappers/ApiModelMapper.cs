@@ -27,16 +27,25 @@ public class ApiModelMapper : Profile
 		CreateMap<DeleteUserApiModel, DeleteUserModel>(MemberList.Destination)
 			.ForMember(x => x.Id, opt => opt.Ignore());
 
-		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
+		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination)
+			.ForMember(x => x.FromCashVaultId, opt => opt.Ignore())
+			.ForMember(x => x.ToSpendingAreaId, opt => opt.Ignore())
+			.ForMember(x => x.Value, opt => opt.Ignore());
 		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
+			.ForMember(x => x.SourceAccountId, opt => opt.Ignore())
+			.ForMember(x => x.DestinationAccountId, opt => opt.Ignore())
+			.ForMember(x => x.Amount, opt => opt.Ignore())
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 
 		CreateMap<TransactionEndpointModel, TransactionEndpointApiModel>(MemberList.Destination);
 		CreateMap<CreateTransactionEndpointApiModel, CreateTransactionEndpointModel>(MemberList.Destination)
+			.ForMember(x => x.Limitation, opt => opt.Ignore())
+			.ForMember(x => x.IsStorage, opt => opt.Ignore())
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 		CreateMap<UpdateTransactionEndpointApiModel, UpdateTransactionEndpointModel>(MemberList.Destination)
+			.ForMember(x => x.Limitation, opt => opt.Ignore())
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 		CreateMap<DeleteTransactionEndpointApiModel, DeleteTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());

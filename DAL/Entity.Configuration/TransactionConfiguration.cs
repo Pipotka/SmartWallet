@@ -4,7 +4,6 @@ using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Entity.Configuration;
 
-// TODO Сконфигурировать
 /// <summary>
 /// Конфигурация <see cref="Transaction"/>
 /// </summary>

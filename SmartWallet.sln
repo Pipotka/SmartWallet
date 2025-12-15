@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Tests", "DAL\Context.Tests\Context.Tests.csproj", "{8CE4F429-24B5-424B-AF87-F440D7F83AF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMapperTests", "AutoMapperTests\AutoMapperTests.csproj", "{389AAB71-D49A-454E-93B3-83B083DCD34E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,10 @@ Global
 		{8CE4F429-24B5-424B-AF87-F440D7F83AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE4F429-24B5-424B-AF87-F440D7F83AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE4F429-24B5-424B-AF87-F440D7F83AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

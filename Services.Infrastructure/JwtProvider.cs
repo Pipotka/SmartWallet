@@ -9,7 +9,6 @@ using System.Text;
 
 namespace Nasurino.SmartWallet.Service.Infrastructure;
 
-// [TODO] Регистрация проекта
 /// <summary>
 /// Провайдер JWT
 /// </summary>
