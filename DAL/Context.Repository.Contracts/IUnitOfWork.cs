@@ -5,11 +5,8 @@
 	/// </summary>
 	public interface IUnitOfWork
 	{
-		/// <inheritdoc cref="ICashVaultRepository"/>
-		ICashVaultRepository CashVaultRepository { get; }
-
-		/// <inheritdoc cref="ISpendingAreaRepository"/>
-		ISpendingAreaRepository SpendingAreaRepository { get; }
+		/// <inheritdoc cref="TransactionEndpointRepository"/>
+		ITransactionEndpointRepository TransactionEndpointRepository { get; }
 
 		/// <inheritdoc cref="ITransactionRepository"/>
 		ITransactionRepository TransactionRepository { get; }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель Api для удаления денежного хранилища
 /// </summary>
-public class DeleteCashVaultApiModel
+public class DeleteTransactionEndpointApiModel
 {
 	/// <summary>
 	/// Идентификатор

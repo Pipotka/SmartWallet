@@ -5,14 +5,14 @@ using Nasurino.SmartWallet.Service.Models.UpdateModels;
 namespace Nasurino.SmartWallet.Services.Validators.UpdateModelValidators;
 
 /// <summary>
-/// Валидатор <see cref="UpdateSpendingAreaModel"/>
+/// Валидатор <see cref="UpdateTransactionEndpointModel"/>
 /// </summary>
-public class UpdateSpendingAreaModelValidator : AbstractValidator<UpdateSpendingAreaModel>
+public class UpdateTransactionEndpointModelValidator : AbstractValidator<UpdateTransactionEndpointModel>
 {
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="UpdateSpendingAreaModelValidator"/>
+	/// Инициализирует новый экземпляр <see cref="UpdateTransactionEndpointModelValidator"/>
 	/// </summary>
-	public UpdateSpendingAreaModelValidator(ISpendingAreaRepository spendingAreaRepository)
+	public UpdateTransactionEndpointModelValidator(ITransactionEndpointRepository transactionEndpointRepository)
 	{
 		RuleFor(x => x.Id)
 			.NotEmpty()
@@ -30,12 +30,12 @@ public class UpdateSpendingAreaModelValidator : AbstractValidator<UpdateSpending
 				&& request.UserId != Guid.Empty
 				&& request.Id != Guid.Empty)
 				{
-					var model = await spendingAreaRepository.GetByNameAndUserIdAsync(request.UserId, request.Name, token);
+					var model = await transactionEndpointRepository.GetByNameAndUserIdAsync(request.UserId, request.Name, token);
 					return model is null || model.Id == request.Id;
 				}
 				return false;
 			})
 			.WithName(x => x.Name)
-			.WithMessage($"Область трат с подобным именем уже существует");
+			.WithMessage($"Денежное хранилище с подобным именем уже существует");
 	}
 }

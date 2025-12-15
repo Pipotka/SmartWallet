@@ -5,21 +5,18 @@ using Nasurino.SmartWallet.Service.Models.CreateModels;
 namespace Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
 
 /// <summary>
-/// Валидатор <see cref="CreateCashVaultModel"/>
+/// Валидатор <see cref="CreateTransactionEndpointModel"/>
 /// </summary>
-public class CreateCashVaultModelValidator : AbstractValidator<CreateCashVaultModel>
+public class CreateTransactionEndpointValidator : AbstractValidator<CreateTransactionEndpointModel>
 {
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="CreateCashVaultModelValidator"/>
+	/// Инициализирует новый экземпляр <see cref="CreateTransactionEndpointValidator"/>
 	/// </summary>
-	public CreateCashVaultModelValidator(ICashVaultRepository cashVaultRepository)
+	public CreateTransactionEndpointValidator(ITransactionEndpointRepository transactionEndpointRepository)
 	{
 		RuleFor(x => x.Name)
 			.NotEmpty()
 			.WithMessage("Название не должно быть пустым");
-		RuleFor(x => x.Value)
-			.GreaterThanOrEqualTo(0.0)
-			.WithMessage("Значение должно быть больше или равно нулю");
 		RuleFor(x => x.UserId)
 			.NotEmpty()
 			.WithMessage("Идентификатор пользователя не должен быть пустым");
@@ -29,7 +26,7 @@ public class CreateCashVaultModelValidator : AbstractValidator<CreateCashVaultMo
 				if (!string.IsNullOrEmpty(request.Name)
 				&& request.UserId != Guid.Empty)
 				{
-					return await cashVaultRepository.GetByNameAndUserIdAsync(request.UserId, request.Name, token) is null;
+					return await transactionEndpointRepository.GetByNameAndUserIdAsync(request.UserId, request.Name, token) is null;
 				}
 				return false;
 			})

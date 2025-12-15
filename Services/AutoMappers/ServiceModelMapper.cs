@@ -20,24 +20,15 @@ public class ServiceModelMapper : Profile
 		CreateMap<CreateUserModel, User>(MemberList.Destination)
 			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
 			.ForMember(dest => dest.CashVaults, opt => opt.Ignore())
-			.ForMember(dest => dest.SpendingAreas, opt => opt.Ignore())
 			.ForMember(dest => dest.HashedPassword, opt => opt.Ignore());
 		CreateMap<UpdateUserModel, User>(MemberList.Destination);
 
-		CreateMap<CashVault, CashVaultModel>(MemberList.Destination);
-		CreateMap<UpdateCashVaultModel, CashVault>(MemberList.Destination)
+		CreateMap<TransactionEndpoint, TransactionEndpointModel>(MemberList.Destination)
+			.ForMember(x => x.Value, opt => opt.Ignore());
+		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Destination)
 			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
 			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-		CreateMap<CreateCashVaultModel, CashVault>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.Id, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-
-		CreateMap<SpendingArea, SpendingAreaModel>(MemberList.Destination);
-		CreateMap<UpdateSpendingAreaModel, SpendingArea>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-		CreateMap<CreateSpendingAreaModel, SpendingArea>(MemberList.Destination)
+		CreateMap<CreateTransactionEndpointModel, TransactionEndpoint>(MemberList.Destination)
 			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
 			.ForMember(dest => dest.Id, opt => opt.Ignore())
 			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());

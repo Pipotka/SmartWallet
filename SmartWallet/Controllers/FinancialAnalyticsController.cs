@@ -13,10 +13,10 @@ namespace Nasurino.SmartWallet.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class FinancialAnalyticsController : Controller
+public sealed class FinancialAnalyticsController : Controller
 {
-	private readonly IFinancialAnalyticsService financialAnalyticsService;
-	private readonly IIdentityProvider identityProvider;
+	private readonly IFinancialAnalyticsService _financialAnalyticsService;
+	private readonly IIdentityProvider _identityProvider;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="FinancialAnalyticsController"/>
@@ -24,8 +24,8 @@ public class FinancialAnalyticsController : Controller
 	public FinancialAnalyticsController(IFinancialAnalyticsService financialAnalyticsService,
 		IIdentityProvider identityProvider)
 	{
-		this.financialAnalyticsService = financialAnalyticsService;
-		this.identityProvider = identityProvider;
+		_financialAnalyticsService = financialAnalyticsService;
+		_identityProvider = identityProvider;
 	}
 
 	/// <summary>
@@ -35,13 +35,11 @@ public class FinancialAnalyticsController : Controller
 	[ProducesResponseType(typeof(CategorizingSpendingApiResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> GetCategorizingSpendingByMonthOfYear([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
+	public async Task<IActionResult> GetCategorizingSpendingByDateRange([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
-		var minDateInMonth = new DateTime(request.Year, request.Month, 1);
-		var minDateInNextMonth = minDateInMonth.AddMonths(1);
-		var result = await financialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(identityProvider.Id,
-			minDateInMonth,
-			minDateInNextMonth,
+		var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(_identityProvider.Id,
+			request.StartDate,
+			request.EndDate,
 			request.AsPercentage,
 			token);
 		var response = new CategorizingSpendingApiResponse(result.SpendingAmount, result.CategorizedSpending);

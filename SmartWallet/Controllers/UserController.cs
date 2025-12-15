@@ -17,11 +17,11 @@ namespace Nasurino.SmartWallet.Controllers;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : Controller
+public sealed class UserController : Controller
 {
-	private readonly IUserService userService;
-	private readonly IIdentityProvider identityProvider;
-	private readonly IMapper mapper;
+	private readonly IUserService _userService;
+	private readonly IIdentityProvider _identityProvider;
+	private readonly IMapper _mapper;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="UserController"/>
@@ -30,9 +30,9 @@ public class UserController : Controller
 		IIdentityProvider identityProvider,
 		IMapper mapper)
 	{
-		this.userService = userService;
-		this.identityProvider = identityProvider;
-		this.mapper = mapper;
+		_userService = userService;
+		_identityProvider = identityProvider;
+		_mapper = mapper;
 	}
 
 	/// <summary>
@@ -45,8 +45,8 @@ public class UserController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Get(CancellationToken token)
 	{
-		var responce = await userService.GetUserByIdAsync(identityProvider.Id, token);
-		return Ok(mapper.Map<UserApiModel>(responce));
+		var responce = await _userService.GetUserByIdAsync(_identityProvider.Id, token);
+		return Ok(_mapper.Map<UserApiModel>(responce));
 	}
 
 	/// <summary>
@@ -58,8 +58,8 @@ public class UserController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> SignIn([FromBody] CreateUserApiModel request, CancellationToken token)
 	{
-		var responce = await userService.RegistrationAsync(mapper.Map<CreateUserModel>(request), token);
-		return Ok(mapper.Map<UserApiModel>(responce));
+		var responce = await _userService.RegistrationAsync(_mapper.Map<CreateUserModel>(request), token);
+		return Ok(_mapper.Map<UserApiModel>(responce));
 	}
 
 	/// <summary>
@@ -73,7 +73,7 @@ public class UserController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> LogIn([FromBody] RequestLogInApiModel request, CancellationToken token)
 	{
-		var response = await userService.LogInAsync(mapper.Map<LogInModel>(request), token);
+		var response = await _userService.LogInAsync(_mapper.Map<LogInModel>(request), token);
 		return Ok(new ResponseLogInApiModel { JwtToken = response });
 	}
 
@@ -88,10 +88,10 @@ public class UserController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Update([FromBody] UpdateUserApiModel request, CancellationToken token)
 	{
-		var updateModel = mapper.Map<UpdateUserModel>(request);
-		updateModel.Id = identityProvider.Id;
-		var responce = await userService.UpdateAsync(updateModel, token);
-		return Ok(mapper.Map<UserApiModel>(responce));
+		var updateModel = _mapper.Map<UpdateUserModel>(request);
+		updateModel.Id = _identityProvider.Id;
+		var response = await _userService.UpdateAsync(updateModel, token);
+		return Ok(_mapper.Map<UserApiModel>(response));
 	}
 
 	/// <summary>
@@ -105,9 +105,9 @@ public class UserController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteUserApiModel request, CancellationToken token)
 	{
-		var updateModel = mapper.Map<DeleteUserModel>(request);
-		updateModel.Id = identityProvider.Id;
-		await userService.DeleteAsync(updateModel, token);
+		var updateModel = _mapper.Map<DeleteUserModel>(request);
+		updateModel.Id = _identityProvider.Id;
+		await _userService.DeleteAsync(updateModel, token);
 		return Ok();
 	}
 }

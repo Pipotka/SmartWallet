@@ -20,12 +20,13 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
 		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
-	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByTimeRangeAndUserIdAsync(Guid userId,
+	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
 		DateTime startTimeRange,
 		DateTime endTimeRange,
 		CancellationToken cancellationToken)
 		=> await storage.Read<Transaction>().NotDeleted()
-		.Where(x => startTimeRange <= x.MadeAt && x.MadeAt < endTimeRange)
+		.Where(x => InDateRange(x,  startTimeRange, endTimeRange)
+			&& x.UserId == userId)
 		.ToListAsync(cancellationToken);
 
 	/// <inheritdoc/>
@@ -36,8 +37,23 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 	}
 
 	void ITransactionRepository.DeleteTransactionsBySpendingAreaId(Guid spendingAreaId)
-		=> DeleteEverythingBy(e => e.ToSpendingAreaId == spendingAreaId);
+		=> DeleteEverythingBy(e => e.DestinationAccountId == spendingAreaId);
 
 	void ITransactionRepository.DeleteTransactionsByUserId(Guid userId)
 		=> DeleteEverythingBy(e => e.UserId == userId);
+	
+	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListExpenseByDateRangeAndUserIdAsync(Guid userId,
+		DateTime startDate,
+		DateTime endDate,
+		CancellationToken cancellationToken)
+		=> await storage.Read<Transaction>().NotDeleted()
+			.Where(x => InDateRange(x,  startDate, endDate)
+				&& x.UserId == userId
+				&& x.DestinationAccount != null && !x.DestinationAccount.IsStorage)
+			.ToListAsync(cancellationToken);
+
+	private bool InDateRange(Transaction transaction,
+		DateTime startTimeRange,
+		DateTime endTimeRange)
+		=> startTimeRange <= transaction.MadeAt && transaction.MadeAt < endTimeRange;
 }

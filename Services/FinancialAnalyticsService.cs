@@ -1,6 +1,7 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Service.Infrastructure.Contracts;
 using Services.Contracts;
 
@@ -9,35 +10,35 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис финансовой аналитики
 /// </summary>
-public class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator) : IFinancialAnalyticsService
+public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator) : IFinancialAnalyticsService
 {
-	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
-	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
+	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
+	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 
-	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
-		DateTime startTimeRange,
-		DateTime endTimeRange,
+	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(Guid userId,
+		DateOnly startDate,
+		DateOnly endDate,
 		bool asPercentage,
 		CancellationToken token)
 	{
-		if (await userRepository.GetUserByIdAsync(userId, token) is null) 
+		if (await _userRepository.GetUserByIdAsync(userId, token) is null) 
 			throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
 
-		var source = await transactionRepository.GetListByTimeRangeAndUserIdAsync(userId,
-			NormalizeDateTime(startTimeRange),
-			NormalizeDateTime(endTimeRange),
+		var source = await _transactionRepository.GetListExpenseByDateRangeAndUserIdAsync(userId,
+			startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+			endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
 			token);
 
-		var categorizedTransactions = source.GroupBy(x => x.ToSpendingAreaId).ToList();
+		var categorizedTransactions = source.GroupBy(x => x.DestinationAccountId).ToList();
 		var spendingAmount = 0.0;
 		var categorizedSpending = new Dictionary<Guid, double>();
 		foreach (var category in categorizedTransactions)
 		{
-			categorizedSpending.Add(category.Key, 0.0);
+			categorizedSpending.Add(category.Key!.Value, 0.0);
 			foreach (var transaction in category)
 			{
-				spendingAmount += transaction.Value;
-				categorizedSpending[category.Key] += transaction.Value;
+				spendingAmount += transaction.Amount;
+				categorizedSpending[category.Key!.Value] += transaction.Amount;
 			}
 		}
 
@@ -51,12 +52,4 @@ public class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalcula
 
 		return new SpendingCategoryModel(spendingAmount, categorizedSpending);
 	}
-
-	static DateTime NormalizeDateTime(DateTime unnormalizedDateTime)
-		=> unnormalizedDateTime.Kind switch
-		{
-			DateTimeKind.Utc => unnormalizedDateTime,
-			DateTimeKind.Local => unnormalizedDateTime.ToUniversalTime(),
-			_ => DateTime.SpecifyKind(unnormalizedDateTime, DateTimeKind.Utc),
-		};
 }

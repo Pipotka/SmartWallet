@@ -16,11 +16,11 @@ namespace Nasurino.SmartWallet.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class TransactionController : Controller
+public sealed class TransactionController : Controller
 {
-	private readonly ITransactionService transactionService;
-	private readonly IIdentityProvider identityProvider;
-	private readonly IMapper mapper;
+	private readonly ITransactionService _transactionService;
+	private readonly IIdentityProvider _identityProvider;
+	private readonly IMapper _mapper;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="TransactionController"/>
@@ -29,9 +29,9 @@ public class TransactionController : Controller
 		IIdentityProvider identityProvider,
 		IMapper mapper)
 	{
-		this.transactionService = transactionService;
-		this.identityProvider = identityProvider;
-		this.mapper = mapper;
+		_transactionService = transactionService;
+		_identityProvider = identityProvider;
+		_mapper = mapper;
 	}
 
 	/// <summary>
@@ -43,8 +43,8 @@ public class TransactionController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList(CancellationToken token)
 	{
-		var responce = await transactionService.GetListByUserIdAsync(identityProvider.Id, token);
-		return Ok(mapper.Map<List<TransactionApiModel>>(responce));
+		var response = await _transactionService.GetListByUserIdAsync(_identityProvider.Id, token);
+		return Ok(_mapper.Map<List<TransactionApiModel>>(response));
 	}
 
 	/// <summary>
@@ -57,9 +57,10 @@ public class TransactionController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Create([FromBody] CreateTransactionApiModel request, CancellationToken token)
 	{
-		var model = mapper.Map<CreateTransactionModel>(request);
-		var response = await transactionService.CreateAsync(identityProvider.Id, model, token);
-		return Ok(mapper.Map<TransactionApiModel>(response));
+		var model = _mapper.Map<CreateTransactionModel>(request);
+		model.UserId = _identityProvider.Id;
+		var response = await _transactionService.CreateAsync(model, token);
+		return Ok(_mapper.Map<TransactionApiModel>(response));
 	}
 
 	/// <summary>
@@ -72,8 +73,9 @@ public class TransactionController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteTransactionApiModel request, CancellationToken token)
 	{
-		var model = mapper.Map<DeleteTransactionModel>(request);
-		await transactionService.DeleteAsync(identityProvider.Id, model, token);
+		var model = _mapper.Map<DeleteTransactionModel>(request);
+		model.UserId = _identityProvider.Id;
+		await _transactionService.DeleteAsync(model, token);
 		return Ok();
 	}
 }

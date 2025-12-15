@@ -17,67 +17,67 @@ namespace Nasurino.SmartWallet.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CashVaultController : Controller
+public sealed class TransactionEndpointController : Controller
 {
-	private readonly ICashVaultService cashVaultService;
-	private readonly IIdentityProvider identityProvider;
-	private readonly IMapper mapper;
+	private readonly ITransactionEndpointService _transactionEndpointService;
+	private readonly IIdentityProvider _identityProvider;
+	private readonly IMapper _mapper;
 
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="CashVaultController"/>
+	/// Инициализирует новый экземпляр <see cref="TransactionEndpointController"/>
 	/// </summary>
-	public CashVaultController(ICashVaultService cashVaultService,
+	public TransactionEndpointController(ITransactionEndpointService transactionEndpointService,
 		IIdentityProvider identityProvider,
 		IMapper mapper)
 	{
-		this.cashVaultService = cashVaultService;
-		this.identityProvider = identityProvider;
-		this.mapper = mapper;
+		_transactionEndpointService = transactionEndpointService;
+		_identityProvider = identityProvider;
+		_mapper = mapper;
 	}
 
 	/// <summary>
 	/// Получает список денежных хранилищ по идентификатору пользователя
 	/// </summary>
 	[HttpGet("list")]
-	[ProducesResponseType(typeof(ICollection<CashVaultApiModel>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ICollection<TransactionEndpointApiModel>), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList(CancellationToken token)
 	{
-		var responce = await cashVaultService.GetListByUserIdAsync(identityProvider.Id, token);
-		return Ok(mapper.Map<List<CashVaultApiModel>>(responce));
+		var responce = await _transactionEndpointService.GetListByUserIdAsync(_identityProvider.Id, token);
+		return Ok(_mapper.Map<List<TransactionEndpointApiModel>>(responce));
 	}
 
 	/// <summary>
 	/// Создаёт новое денежное храшнилище
 	/// </summary>
 	[HttpPost]
-	[ProducesResponseType(typeof(CashVaultApiModel), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(TransactionEndpointApiModel), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> Create([FromBody] CreateCashVaultApiModel request, CancellationToken token)
+	public async Task<IActionResult> Create([FromBody] CreateTransactionEndpointApiModel request, CancellationToken token)
 	{
-		var model = mapper.Map<CreateCashVaultModel>(request);
-		model.UserId = identityProvider.Id;
-		var responce = await cashVaultService.CreateAsync(model, token);
-		return Ok(mapper.Map<CashVaultApiModel>(responce));
+		var model = _mapper.Map<CreateTransactionEndpointModel>(request);
+		model.UserId = _identityProvider.Id;
+		var response = await _transactionEndpointService.CreateAsync(model, token);
+		return Ok(_mapper.Map<TransactionEndpointApiModel>(response));
 	}
 
 	/// <summary>
 	/// Обновляет денежное храшнилище
 	/// </summary>
 	[HttpPut]
-	[ProducesResponseType(typeof(CashVaultApiModel), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(TransactionEndpointApiModel), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> Update([FromBody] UpdateCashVaultApiModel request, CancellationToken token)
+	public async Task<IActionResult> Update([FromBody] UpdateTransactionEndpointApiModel request, CancellationToken token)
 	{
-		var model = mapper.Map<UpdateCashVaultModel>(request);
-		model.UserId = identityProvider.Id;
-		var responce = await cashVaultService.UpdateAsync(model, token);
-		return Ok(mapper.Map<CashVaultApiModel>(responce));
+		var model = _mapper.Map<UpdateTransactionEndpointModel>(request);
+		model.UserId = _identityProvider.Id;
+		var response = await _transactionEndpointService.UpdateAsync(model, token);
+		return Ok(_mapper.Map<TransactionEndpointApiModel>(response));
 	}
 
 	/// <summary>
@@ -88,10 +88,11 @@ public class CashVaultController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> Delete([FromBody] DeleteCashVaultApiModel request, CancellationToken token)
+	public async Task<IActionResult> Delete([FromBody] DeleteTransactionEndpointApiModel request, CancellationToken token)
 	{
-		var model = mapper.Map<DeleteCashVaultModel>(request);
-		await cashVaultService.DeleteAsync(identityProvider.Id, model, token);
+		var model = _mapper.Map<DeleteTransactionEndpointModel>(request);
+		model.UserId = _identityProvider.Id;
+		await _transactionEndpointService.DeleteAsync(model, token);
 		return Ok();
 	}
 }

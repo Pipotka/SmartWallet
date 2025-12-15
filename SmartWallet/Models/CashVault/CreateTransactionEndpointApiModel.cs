@@ -1,9 +1,9 @@
-﻿namespace Nasurino.SmartWallet.Models.SpendingArea;
+﻿namespace Nasurino.SmartWallet.Models.CashVault;
 
 /// <summary>
-/// Api модель создания области трат
+/// Модель Api для создания денежного хранилища
 /// </summary>
-public class CreateSpendingAreaApiModel
+public class CreateTransactionEndpointApiModel
 {
 	/// <summary>
 	/// Название

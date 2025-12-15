@@ -38,12 +38,7 @@ public class User : BaseEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public ICollection<SpendingArea> SpendingAreas { get; set; }
-
-	/// <summary>
-	/// Навигационное свойство
-	/// </summary>
-	public ICollection<CashVault> CashVaults { get; set; }
+	public ICollection<TransactionEndpoint> CashVaults { get; set; }
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="User"/> 
@@ -51,7 +46,6 @@ public class User : BaseEntity
 	public User()
 	{
 		Transactions = new List<Transaction>();
-		SpendingAreas = new List<SpendingArea>();
-		CashVaults = new List<CashVault>();
+		CashVaults = new List<TransactionEndpoint>();
 	}
 }

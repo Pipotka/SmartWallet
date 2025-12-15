@@ -67,12 +67,12 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-#region Регистрация классов конфигурации
+#region Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃРѕРІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 builder.Services.Configure<JwtOptions>(builder.Configuration
     .GetSection("ApiSettings:JwtSettings"));
 #endregion
 
-#region Регистрация сервисов в контейнере
+#region Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃРµСЂРІРёСЃРѕРІ
 builder.Services.AddAutoMapper(typeof(ServiceModelMapper));
 builder.Services.AddAutoMapper(typeof(ApiModelMapper));
 builder.Services.AddAuthentication(x =>
@@ -98,13 +98,11 @@ builder.Services.AddScoped<IIdentityProvider, ApiIdentityProvider>();
 builder.Services.AddScoped<IDataStorageContext, SmartWalletContext>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ICashVaultRepository, CashVaultRepository>();
+builder.Services.AddScoped<ITransactionEndpointRepository, TransactionEndpointRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ISpendingAreaRepository, SpendingAreaRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
-builder.Services.AddScoped<ICashVaultService, CashVaultService>();
-builder.Services.AddScoped<ISpendingAreaService, SpendingAreaService>();
+builder.Services.AddScoped<ITransactionEndpointService, TransactionEndpointService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IFinancialAnalyticsService, FinancialAnalyticsService>();
 builder.Services.AddScoped<IUserService, UserService>();

@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Nasurino.SmartWallet.Entities;
+﻿using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context.Repository.Contracts
 {
@@ -29,19 +28,31 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		Task<Transaction?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает список транзакций пользователя, созданный в указанный месяц
+		/// Возвращает список транзакций пользователя, созданный в указанный временной диапазон
 		/// </summary>
-		/// <param name="startTimeRange">Начало временного диапазона</param>
-		/// <param name="endTimeRange">Конец временного диапазона</param>
-		/// <remarks><paramref name="endTimeRange"/> - исключенный верхний предел временного диапазона</remarks>
-		Task<IReadOnlyCollection<Transaction>> GetListByTimeRangeAndUserIdAsync(Guid userId,
-			DateTime startTimeRange,
-			DateTime endTimeRange,
+		/// <param name="startDate">Начало временного диапазона</param>
+		/// <param name="endDate">Конец временного диапазона</param>
+		/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
+		Task<IReadOnlyCollection<Transaction>> GetListByDateRangeAndUserIdAsync(Guid userId,
+			DateTime startDate,
+			DateTime endDate,
 			CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает список транзакций по идентификатору пользователя
+		/// Возвращает список транзакции по идентификатору пользователя
 		/// </summary>
 		Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Возвращает список транзакций пользователя у которых конечная точка - область трат
+		/// и которые созданы в указанный временной диапазон
+		/// </summary>
+		/// <param name="startDate">Начало временного диапазона</param>
+		/// <param name="endDate">Конец временного диапазона</param>
+		/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
+		Task<IReadOnlyCollection<Transaction>> GetListExpenseByDateRangeAndUserIdAsync(Guid userId,
+			DateTime startDate,
+			DateTime endDate,
+			CancellationToken cancellationToken);
 	}
 }

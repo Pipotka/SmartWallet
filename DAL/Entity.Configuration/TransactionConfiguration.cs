@@ -4,6 +4,7 @@ using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Entity.Configuration;
 
+// TODO Сконфигурировать
 /// <summary>
 /// Конфигурация <see cref="Transaction"/>
 /// </summary>
@@ -20,13 +21,13 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 			.WithMany(x => x.Transactions)
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
-		builder.HasOne(x => x.CashVault)
+		builder.HasOne(x => x.SourceAccount)
 			.WithMany(x => x.Transactions)
-			.HasForeignKey(x => x.FromCashVaultId)
+			.HasForeignKey(x => x.SourceAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
-		builder.HasOne(x => x.SpendingArea)
+		builder.HasOne(x => x.DestinationAccount)
 			.WithMany(x => x.Transactions)
-			.HasForeignKey(x => x.ToSpendingAreaId)
+			.HasForeignKey(x => x.DestinationAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
 	}
 }

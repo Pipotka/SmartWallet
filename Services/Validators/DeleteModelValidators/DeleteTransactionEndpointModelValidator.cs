@@ -4,14 +4,14 @@ using Nasurino.SmartWallet.Service.Models.DeleteModels;
 namespace Nasurino.SmartWallet.Services.Validators.DeleteModelValidators;
 
 /// <summary>
-/// Валидатор <see cref="DeleteTransactionModel"/>
+/// Валидатор <see cref="DeleteTransactionEndpointModel"/>
 /// </summary>
-public class DeleteTransactionModelValidator : AbstractValidator<DeleteTransactionModel>
+public class DeleteTransactionEndpointModelValidator : AbstractValidator<DeleteTransactionEndpointModel>
 {
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="DeleteTransactionModelValidator"/>
+	/// Инициализирует новый экземпляр <see cref="DeleteTransactionEndpointModelValidator"/>
 	/// </summary>
-	public DeleteTransactionModelValidator()
+	public DeleteTransactionEndpointModelValidator()
 	{
 		RuleFor(x => x.Id)
 			.NotEmpty()

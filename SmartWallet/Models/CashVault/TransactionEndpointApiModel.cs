@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель Api денежного хранилища
 /// </summary>
-public class CashVaultApiModel
+public class TransactionEndpointApiModel
 {
 	/// <summary>
 	/// Идентификатор

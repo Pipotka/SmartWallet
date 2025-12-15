@@ -1,4 +1,4 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.Models;
+﻿namespace Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 
 /// <summary>
 /// Расходы по категориям

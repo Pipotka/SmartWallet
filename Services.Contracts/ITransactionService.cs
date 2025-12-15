@@ -12,12 +12,12 @@ namespace Services.Contracts
 		/// <summary>
 		/// Создание новой транзакции
 		/// </summary>
-		Task<TransactionModel> CreateAsync(Guid userId, CreateTransactionModel model, CancellationToken token);
+		Task<TransactionModel> CreateAsync(CreateTransactionModel model, CancellationToken token);
 
 		/// <summary>
 		/// Удаление транзакции
 		/// </summary>
-		Task DeleteAsync(Guid userId, DeleteTransactionModel model, CancellationToken token);
+		Task DeleteAsync(DeleteTransactionModel model, CancellationToken token);
 
 		/// <summary>
 		/// Возвращет список транзакций по идентификатору пользователя

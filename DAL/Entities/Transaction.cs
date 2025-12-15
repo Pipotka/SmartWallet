@@ -16,29 +16,29 @@ public class Transaction : SmartDeletedEntity
 	public User? User { get; set; }
 
 	/// <summary>
-	/// Идентификатор денежного хранилища 
+	/// Идентификатор аккаунта-источника 
 	/// </summary>
-	public Guid FromCashVaultId { get; set; }
+	public Guid? SourceAccountId { get; set; }
 
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public CashVault? CashVault { get; set; }
+	public TransactionEndpoint? SourceAccount { get; set; }
 
 	/// <summary>
-	/// Идентификатор области трат
+	/// Идентификатор аккаунта назначения
 	/// </summary>
-	public Guid ToSpendingAreaId { get; set; }
+	public Guid? DestinationAccountId { get; set; }
 
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public SpendingArea? SpendingArea { get; set; }
+	public TransactionEndpoint? DestinationAccount { get; set; }
 
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public double Amount { get; set; } = 0.0;
 
 	/// <summary>
 	/// Дата и время создания

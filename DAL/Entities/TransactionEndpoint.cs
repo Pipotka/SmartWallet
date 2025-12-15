@@ -1,9 +1,9 @@
 ﻿namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
-/// Денежное хранилище
+/// Конечная точка потока денег
 /// </summary>
-public class CashVault : SmartDeletedEntity
+public class TransactionEndpoint : SmartDeletedEntity
 {
 	/// <summary>
 	/// Идентификатор пользователя
@@ -19,7 +19,17 @@ public class CashVault : SmartDeletedEntity
 	/// Название
 	/// </summary>
 	public string Name { get; set; } = string.Empty;
-
+	
+	/// <summary>
+	/// Ограничение трат
+	/// </summary>
+	public double? Limitation { get; set; }
+	
+	/// <summary>
+	/// Флаг указывающий, что конечная точка является денежным хранилищем
+	/// </summary>
+	public bool IsStorage { get; set; }
+	
 	/// <summary>
 	/// Значение
 	/// </summary>
@@ -31,9 +41,9 @@ public class CashVault : SmartDeletedEntity
 	public ICollection<Transaction> Transactions { get; set; }
 
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="CashVault"/> 
+	/// Инициализирует новый экземпляр <see cref="TransactionEndpoint"/> 
 	/// </summary>
-	public CashVault()
+	public TransactionEndpoint()
 	{
 		Transactions = new List<Transaction>();
 	}

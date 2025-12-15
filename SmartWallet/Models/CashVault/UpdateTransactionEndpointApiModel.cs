@@ -1,9 +1,9 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.Models;
+﻿namespace Nasurino.SmartWallet.Models.CashVault;
 
 /// <summary>
-/// Модель денежного хранилища
+/// Модель Api для обновления денежного хранилища
 /// </summary>
-public class CashVaultModel
+public class UpdateTransactionEndpointApiModel
 {
 	/// <summary>
 	/// Идентификатор

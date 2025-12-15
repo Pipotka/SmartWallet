@@ -1,9 +1,9 @@
 ﻿namespace Nasurino.SmartWallet.Service.Models.UpdateModels;
 
 /// <summary>
-/// Модель обновления области трат
+/// Модель обновления конечной точки транзакции
 /// </summary>
-public class UpdateSpendingAreaModel
+public class UpdateTransactionEndpointModel
 {
 	/// <summary>
 	/// Идентификатор
@@ -19,9 +19,9 @@ public class UpdateSpendingAreaModel
 	/// Название
 	/// </summary>
 	public string Name { get; set; } = string.Empty;
-
+	
 	/// <summary>
-	/// Значение
+	/// Ограничение трат
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public double? Limitation { get; set; }
 }

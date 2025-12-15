@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Models.CashVault;
-using Nasurino.SmartWallet.Models.SpendingArea;
 using Nasurino.SmartWallet.Models.Transaction;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
@@ -29,21 +28,17 @@ public class ApiModelMapper : Profile
 			.ForMember(x => x.Id, opt => opt.Ignore());
 
 		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
-		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination);
-		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination);
+		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
+		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
 
-		CreateMap<SpendingAreaModel, SpendingAreaApiModel>(MemberList.Destination);
-		CreateMap<CreateSpendingAreaApiModel, CreateSpendingAreaModel>(MemberList.Destination)
+		CreateMap<TransactionEndpointModel, TransactionEndpointApiModel>(MemberList.Destination);
+		CreateMap<CreateTransactionEndpointApiModel, CreateTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<UpdateSpendingAreaApiModel, UpdateSpendingAreaModel>(MemberList.Destination)
+		CreateMap<UpdateTransactionEndpointApiModel, UpdateTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<DeleteSpendingAreaApiModel, DeleteSpendingAreaModel>(MemberList.Destination);
-
-		CreateMap<CashVaultModel, CashVaultApiModel>(MemberList.Destination);
-		CreateMap<CreateCashVaultApiModel, CreateCashVaultModel>(MemberList.Destination)
+		CreateMap<DeleteTransactionEndpointApiModel, DeleteTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<UpdateCashVaultApiModel, UpdateCashVaultModel>(MemberList.Destination)
-			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<DeleteCashVaultApiModel, DeleteCashVaultModel>(MemberList.Destination);
 	}
 }

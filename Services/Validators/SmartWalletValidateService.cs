@@ -18,37 +18,33 @@ namespace Nasurino.SmartWallet.Services.Validators;
 /// </summary>
 public class SmartWalletValidateService : ISmartWalletValidateService
 {
-	private readonly IDictionary<Type, IValidator> validators;
+	private readonly IDictionary<Type, IValidator> _validators;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletValidateService"/>
 	/// </summary>
 	public SmartWalletValidateService(IUserRepository userRepository,
-		ICashVaultRepository cashVaultRepository,
-		ISpendingAreaRepository spendingAreaRepository)
+		ITransactionEndpointRepository transactionEndpointRepository)
 	{
-		validators = new Dictionary<Type, IValidator>();
+		_validators = new Dictionary<Type, IValidator>();
 		#region Регистрация валидаторов
-		validators.Add(typeof(CreateUserModel), new CreateUserModelValidator(userRepository));
-		validators.Add(typeof(LogInModel), new LogInModelValidator());
-		validators.Add(typeof(UserModel), new UserModelValidator());
-		validators.Add(typeof(UpdateUserModel), new UpdateUserModelValidator());
-		validators.Add(typeof(CreateCashVaultModel), new CreateCashVaultModelValidator(cashVaultRepository));
-		validators.Add(typeof(CreateSpendingAreaModel), new CreateSpendingAreaModelValidator(spendingAreaRepository));
-		validators.Add(typeof(CreateTransactionModel), new CreateTransactionModelValidator());
-		validators.Add(typeof(DeleteCashVaultModel), new DeleteCashVaultModelValidator());
-		validators.Add(typeof(DeleteSpendingAreaModel), new DeleteSpendingAreaModelValidator());
-		validators.Add(typeof(DeleteTransactionModel), new DeleteTransactionModelValidator());
-		validators.Add(typeof(DeleteUserModel), new DeleteUserModelValidator());
-		validators.Add(typeof(UpdateCashVaultModel), new UpdateCashVaultModelValidator(cashVaultRepository));
-		validators.Add(typeof(UpdateSpendingAreaModel), new UpdateSpendingAreaModelValidator(spendingAreaRepository));
+		_validators.Add(typeof(CreateUserModel), new CreateUserModelValidator(userRepository));
+		_validators.Add(typeof(LogInModel), new LogInModelValidator());
+		_validators.Add(typeof(UserModel), new UserModelValidator());
+		_validators.Add(typeof(UpdateUserModel), new UpdateUserModelValidator());
+		_validators.Add(typeof(CreateTransactionEndpointModel), new CreateTransactionEndpointValidator(transactionEndpointRepository));
+		_validators.Add(typeof(CreateTransactionModel), new CreateTransactionModelValidator());
+		_validators.Add(typeof(DeleteTransactionEndpointModel), new DeleteTransactionEndpointModelValidator());
+		_validators.Add(typeof(DeleteTransactionModel), new DeleteTransactionModelValidator());
+		_validators.Add(typeof(DeleteUserModel), new DeleteUserModelValidator());
+		_validators.Add(typeof(UpdateTransactionEndpointModel), new UpdateTransactionEndpointModelValidator(transactionEndpointRepository));
 		#endregion
 
 	}
 
 	async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
 	{
-		validators.TryGetValue(typeof(TModel), out var validator);
+		_validators.TryGetValue(typeof(TModel), out var validator);
 
 		if (validator == null)
 		{

@@ -13,13 +13,10 @@ public class CreateTransactionModelValidator : AbstractValidator<CreateTransacti
 	/// </summary>
 	public CreateTransactionModelValidator()
 	{
-		RuleFor(x => x.ToSpendingAreaId)
-			.NotEmpty()
-			.WithMessage("Назначение не должно быть пустым");
-		RuleFor(x => x.FromCashVaultId)
-			.NotEmpty()
-			.WithMessage("источник не должен быть пустым");
-		RuleFor(x => x.Value)
+		RuleFor(x => x)
+			.Must(x => x.SourceAccountId.HasValue || x.DestinationAccountId.HasValue)
+			.WithMessage($"По крайней мере одно из свойств ({nameof(CreateTransactionModel.SourceAccountId)} или {nameof(CreateTransactionModel.DestinationAccountId)}) должно иметь значение.");
+		RuleFor(x => x.Amount)
 			.GreaterThan(0.0)
 			.WithMessage("Значение должно быть больше нуля");
 	}

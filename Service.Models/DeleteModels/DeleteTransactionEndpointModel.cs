@@ -1,9 +1,9 @@
 ﻿namespace Nasurino.SmartWallet.Service.Models.DeleteModels;
 
 /// <summary>
-/// Модель удаления транзакции
+/// Модель удаления конечной точки транзакции
 /// </summary>
-public class DeleteTransactionModel
+public class DeleteTransactionEndpointModel
 {
 	/// <summary>
 	/// Идентификатор

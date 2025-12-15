@@ -5,19 +5,19 @@ using Nasurino.SmartWallet.Entities;
 namespace Nasurino.SmartWallet.Entity.Configuration;
 
 /// <summary>
-/// Конфигурация <see cref="SpendingArea"/>
+/// Конфигурация <see cref="TransactionEndpoint"/>
 /// </summary>
-public class SpendingAreaConfiguration : IEntityTypeConfiguration<SpendingArea>
+public class TransactionEndpointConfiguration : IEntityTypeConfiguration<TransactionEndpoint>
 {
 	/// <inheritdoc/>
-	public void Configure(EntityTypeBuilder<SpendingArea> builder)
+	public void Configure(EntityTypeBuilder<TransactionEndpoint> builder)
 	{
-		builder.ToTable(nameof(SpendingArea));
+		builder.ToTable(nameof(TransactionEndpoint));
 
 		builder.HasKey(x => x.Id);
 
 		builder.HasOne(x => x.User)
-			.WithMany(x => x.SpendingAreas)
+			.WithMany(x => x.CashVaults)
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
 	}

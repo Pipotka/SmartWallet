@@ -12,12 +12,10 @@ public class UnitOfWork : IUnitOfWork
 
 	public IUserRepository UserRepository { get; init; }
 
-	public ICashVaultRepository CashVaultRepository { get; init; }
+	public ITransactionEndpointRepository TransactionEndpointRepository { get; init; }
 
 	public ITransactionRepository TransactionRepository { get; init; }
 
-	public ISpendingAreaRepository SpendingAreaRepository { get; init; }
-	
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="UnitOfWork"/>
 	/// </summary>
@@ -26,9 +24,8 @@ public class UnitOfWork : IUnitOfWork
 		this.storage =  storage;
 
 		UserRepository = new UserRepository(storage);
-		CashVaultRepository	= new CashVaultRepository(storage);
+		TransactionEndpointRepository = new TransactionEndpointRepository(storage);
 		TransactionRepository = new TransactionRepository(storage);
-		SpendingAreaRepository = new SpendingAreaRepository(storage);
 	}
 
 	Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)

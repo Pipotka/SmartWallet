@@ -15,25 +15,19 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис для работы с пользователем
 /// </summary>
-public class UserService(IUnitOfWork unitOfWork,
+public sealed class UserService(IUnitOfWork unitOfWork,
 	ISmartWalletValidateService validateService,
 	IPasswordHasher passwordHasher,
 	IJwtProvider jwtProvider,
 	IMapper mapper) : IUserService
 {
-	private readonly IUnitOfWork unitOfWork = unitOfWork;
-	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
-	private readonly ICashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
-	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
-	private readonly ISpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
-	private readonly ISmartWalletValidateService validateService = validateService;
-	private readonly IJwtProvider jwtProvider = jwtProvider;
-	private readonly IPasswordHasher passwordHasher = passwordHasher;
-	private readonly IMapper mapper = mapper;
+	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
+	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
+	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 
 	async Task<UserModel> IUserService.GetUserByIdAsync(Guid userId, CancellationToken token)
 	{
-		var user = await userRepository.GetUserByIdAsync(userId, token)
+		var user = await _userRepository.GetUserByIdAsync(userId, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
 
 		return mapper.Map<UserModel>(user);
@@ -45,7 +39,7 @@ public class UserService(IUnitOfWork unitOfWork,
 		var user = mapper.Map<User>(model);
 		user.Id = Guid.NewGuid();
 		user.HashedPassword = passwordHasher.Generate(model.Password);
-		userRepository.Add(user);
+		_userRepository.Add(user);
 
 		//Создание базовых областей трат для пользователя
 		foreach (var spendingAreaName in new[] {
@@ -54,24 +48,25 @@ public class UserService(IUnitOfWork unitOfWork,
 			"Развлечения", "Путешествия", "Образование",
 			"Подарки"})
 		{
-			spendingAreaRepository.Add(new()
-			{
-				Id = Guid.NewGuid(),
-				UserId = user.Id,
-				Name = spendingAreaName,
-				Value = 0.0
-			});
+			_transactionEndpointRepository.Add(
+				new()
+				{
+					UserId = user.Id,
+					Name = spendingAreaName,
+					Value = 0.0,
+					IsStorage = false
+				});
 		}
 
 		//Создание базовых денежных хранилищ для пользователя
 		foreach (var cashVaultName in new[] { "Кошелёк", "Карта" })
 		{
-			cashVaultRepository.Add(new()
+			_transactionEndpointRepository.Add(new()
 			{
-				Id = Guid.NewGuid(),
 				UserId = user.Id,
 				Name = cashVaultName,
-				Value = 0.0
+				Value = 0.0,
+				IsStorage = true
 			});
 		}
 		await unitOfWork.SaveChangesAsync(token);
@@ -82,7 +77,7 @@ public class UserService(IUnitOfWork unitOfWork,
 	async Task<string> IUserService.LogInAsync(LogInModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		var user = await userRepository.GetUserByEmailAsync(model.Email, token)
+		var user = await _userRepository.GetUserByEmailAsync(model.Email, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с адрессом электронной почты = {model.Email} не найден.");
 		if (!passwordHasher.Verify(model.Password, user.HashedPassword))
 		{
@@ -95,10 +90,10 @@ public class UserService(IUnitOfWork unitOfWork,
 	{
 		await validateService.ValidateAsync(model, token);
 
-		var user = await userRepository.GetUserByIdAsync(model.Id, token)
+		var user = await _userRepository.GetUserByIdAsync(model.Id, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
 		mapper.Map(model, user);
-		userRepository.Update(user);
+		_userRepository.Update(user);
 		await unitOfWork.SaveChangesAsync(token);
 
 		return mapper.Map<UserModel>(user);
@@ -108,17 +103,16 @@ public class UserService(IUnitOfWork unitOfWork,
 	{
 		await validateService.ValidateAsync(model, token);
 
-		var user = await userRepository.GetUserByIdAsync(model.Id, token)
+		var user = await _userRepository.GetUserByIdAsync(model.Id, token)
 			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
 
 		if (!passwordHasher.Verify(model.Password, user.HashedPassword))
 		{
 			throw new AuthorizationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
 		}
-		userRepository.Delete(user);
-		cashVaultRepository.DeleteCashVaultsByUserId(user.Id);
-		spendingAreaRepository.DeleteSpendingAreasByUserId(user.Id);
-		transactionRepository.DeleteTransactionsByUserId(user.Id);
+		_userRepository.Delete(user);
+		_transactionEndpointRepository.DeleteTransactionEndpointsByUserId(user.Id);
+		_transactionRepository.DeleteTransactionsByUserId(user.Id);
 
 		await unitOfWork.SaveChangesAsync(token);
 	}

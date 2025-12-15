@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель Api запроса категоризации трат
 /// </summary>
-/// <param name="Month">Месяц</param>
-/// <param name="Year">Год</param>
+/// <param name="StartDate">Начальная дата диапазона</param>
+/// <param name="EndDate">Конечная дата диапазона</param>
 /// <param name="AsPercentage">Флаг, указывающий, что результаты должны быть в процентах</param>
-public record CategorizingSpendingApiRequest(int Month, int Year, bool AsPercentage);
+public record CategorizingSpendingApiRequest(DateOnly StartDate, DateOnly EndDate, bool AsPercentage);

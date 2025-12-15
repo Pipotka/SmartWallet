@@ -8,26 +8,26 @@ namespace Services.Contracts
 	/// <summary>
 	/// Интерфейс сервиса для работы с денежными хранилищами
 	/// </summary>
-	public interface ICashVaultService
+	public interface ITransactionEndpointService
 	{
 		/// <summary>
 		/// Создание нового денежного храшнилища
 		/// </summary>
-		Task<CashVaultModel> CreateAsync(CreateCashVaultModel model, CancellationToken token);
+		Task<TransactionEndpointModel> CreateAsync(CreateTransactionEndpointModel model, CancellationToken token);
 
 		/// <summary>
 		/// Удаление денежного храшнилища
 		/// </summary>
-		Task DeleteAsync(Guid userId, DeleteCashVaultModel model, CancellationToken token);
+		Task DeleteAsync(DeleteTransactionEndpointModel model, CancellationToken token);
 
 		/// <summary>
 		/// Возвращет список денежных хранилищ по идентификатору пользователя
 		/// </summary>
-		Task<List<CashVaultModel>> GetListByUserIdAsync(Guid userId, CancellationToken token);
+		Task<List<TransactionEndpointModel>> GetListByUserIdAsync(Guid userId, CancellationToken token);
 
 		/// <summary>
 		/// Обновление денежного храшнилища
 		/// </summary>
-		Task<CashVaultModel> UpdateAsync(UpdateCashVaultModel model, CancellationToken token);
+		Task<TransactionEndpointModel> UpdateAsync(UpdateTransactionEndpointModel model, CancellationToken token);
 	}
 }

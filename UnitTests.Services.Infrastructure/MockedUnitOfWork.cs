@@ -6,33 +6,28 @@ namespace Nasurino.SmartWallet.UnitTests.Services.Infrastructure;
 /// <summary>
 /// Замоканый unit of work
 /// </summary>
-public class MockedUnitOfWork : IUnitOfWork
+public sealed class MockedUnitOfWork : IUnitOfWork
 {
-    private readonly Mock<ICashVaultRepository> mockedCashVaultRepository;
-    private readonly Mock<ISpendingAreaRepository> mockedSpendingAreaRepository;
-    private readonly Mock<ITransactionRepository> mockedTransactionRepository;
-    private readonly Mock<IUserRepository> mockedUserRepository;
+    private readonly Mock<ITransactionEndpointRepository> _mockedCashVaultRepository;
+    private readonly Mock<ITransactionRepository> _mockedTransactionRepository;
+    private readonly Mock<IUserRepository> _mockedUserRepository;
 
-    ICashVaultRepository IUnitOfWork.CashVaultRepository => mockedCashVaultRepository.Object;
+    ITransactionEndpointRepository IUnitOfWork.TransactionEndpointRepository => _mockedCashVaultRepository.Object;
 
-    ISpendingAreaRepository IUnitOfWork.SpendingAreaRepository => mockedSpendingAreaRepository.Object;
+    ITransactionRepository IUnitOfWork.TransactionRepository => _mockedTransactionRepository.Object;
 
-    ITransactionRepository IUnitOfWork.TransactionRepository => mockedTransactionRepository.Object;
-
-    IUserRepository IUnitOfWork.UserRepository => mockedUserRepository.Object;
+    IUserRepository IUnitOfWork.UserRepository => _mockedUserRepository.Object;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MockedUnitOfWork"/>
     /// </summary>
-    public MockedUnitOfWork(Mock<ICashVaultRepository>? mockedCashVaultRepository = null,
-        Mock<ISpendingAreaRepository>? mockedSpendingAreaRepository = null,
+    public MockedUnitOfWork(Mock<ITransactionEndpointRepository>? mockedCashVaultRepository = null,
         Mock<ITransactionRepository>? mockedTransactionRepository = null,
         Mock<IUserRepository>? mockedUserRepository = null)
     {
-        this.mockedCashVaultRepository = mockedCashVaultRepository ?? new Mock<ICashVaultRepository>();
-        this.mockedSpendingAreaRepository = mockedSpendingAreaRepository ?? new Mock<ISpendingAreaRepository>();
-        this.mockedTransactionRepository =  mockedTransactionRepository ?? new Mock<ITransactionRepository>();
-        this.mockedUserRepository = mockedUserRepository ?? new Mock<IUserRepository>();
+        _mockedCashVaultRepository = mockedCashVaultRepository ?? new Mock<ITransactionEndpointRepository>();
+        _mockedTransactionRepository =  mockedTransactionRepository ?? new Mock<ITransactionRepository>();
+        _mockedUserRepository = mockedUserRepository ?? new Mock<IUserRepository>();
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
