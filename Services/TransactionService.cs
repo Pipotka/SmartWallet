@@ -39,30 +39,48 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 		}
 		var transaction = mapper.Map<Transaction>(model);
+		TransactionEndpoint? sourceAccount = null;
+		TransactionEndpoint? destinationAccount = null;
 
 		if (model.SourceAccountId.HasValue)
 		{
-			var sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
-				                    model.UserId,
-				                    token)
-			                    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
+			sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
+				                model.UserId,
+				                token)
+			                ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
+		}
+		if (model.DestinationAccountId.HasValue)
+		{
+			destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.DestinationAccountId!.Value,
+				                     model.UserId,
+				                     token)
+			                     ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
+		}
+
+		if (sourceAccount != null)
+		{
 			if (!sourceAccount.IsStorage)
 			{
 				throw new SmartWalletValidationException(new PropertyValidationError(
 					nameof(CreateTransactionModel.SourceAccountId),
 					"Область трат не может быть указана как SourceAccount"));
 			}
+
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(sourceAccount.Id, token) - transaction.Amount;
 			
-			sourceAccount.Value -= transaction.Amount;
+			if (sourceAccount.Limitation != null
+			    && sourceAccount.Limitation > balanceResult
+			    && destinationAccount is { IsStorage: false })
+			{
+				throw new AccountBalanceLimitViolationException(sourceAccount.Id);
+			}
+			
+			sourceAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(sourceAccount);
 		}
 
-		if (model.DestinationAccountId.HasValue)
+		if (destinationAccount != null)
 		{
-			var destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.DestinationAccountId!.Value,
-				                         model.UserId,
-				                         token)
-			                         ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
 			if (!model.SourceAccountId.HasValue && !destinationAccount.IsStorage)
 			{
 				throw new SmartWalletValidationException(new PropertyValidationError(
@@ -70,7 +88,15 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 					"Нельзя скорректировать баланс области трат"));
 			}
 			
-			destinationAccount.Value += transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(destinationAccount.Id, token) + transaction.Amount;
+			if (destinationAccount.Limitation != null
+			    && destinationAccount.Limitation < balanceResult
+			    && destinationAccount is { IsStorage: false })
+			{
+				throw new AccountBalanceLimitViolationException(destinationAccount.Id);
+			}
+			
+			destinationAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(destinationAccount);
 			
 		}
@@ -96,7 +122,9 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			var sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
 				                    model.UserId,
 				                    token);
-			sourceAccount!.Value += transaction.Amount;
+			
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(sourceAccount!.Id, token) + transaction.Amount;
+			sourceAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(sourceAccount);
 		}
 
@@ -106,7 +134,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 									transaction.DestinationAccountId!.Value,
 									model.UserId,
 									token);
-			destinationAccount!.Value -= transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(destinationAccount!.Id, token) - transaction.Amount;
+			destinationAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(destinationAccount);
 			
 		}

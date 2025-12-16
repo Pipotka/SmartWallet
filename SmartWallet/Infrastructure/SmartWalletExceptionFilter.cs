@@ -7,7 +7,7 @@ namespace Nasurino.SmartWallet.Infrastructure;
 /// <summary>
 /// Фильтр обработки исключительных событий
 /// </summary>
-public class SmartWalletExceptionFilter : IExceptionFilter
+public sealed class SmartWalletExceptionFilter : IExceptionFilter
 {
 	/// <summary>
 	/// <inheritdoc cref="IExceptionFilter.OnException(ExceptionContext)" path="/summary"/>
@@ -23,7 +23,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 		switch (exception)
 		{
 			case AuthorizationServiceException ex:
-				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails
 				{
 					Message = ex.Message,
 					StatusCode = 401
@@ -34,7 +34,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 			
 			case EntityNotFoundServiceException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
 				{
 					Message = ex.Message,
 					StatusCode = 404
@@ -45,7 +45,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 
 			case SmartWalletValidationException ex:
-				SetExceptionContext(new UnprocessableEntityObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new UnprocessableEntityObjectResult(new ApiExceptionDetails
 				{
 					Message = ex.Message,
 					StatusCode = 422
@@ -56,13 +56,24 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 				break;
 			
 			case EntityAccessServiceException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
 				{
 					Message = ex.Message,
 					StatusCode = 403
 				})
 				{
 					StatusCode = StatusCodes.Status403Forbidden
+				}, context);
+				break;
+			
+			case AccountBalanceLimitViolationException ex:
+				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
+				{
+					Message = ex.Message,
+					StatusCode = 409
+				})
+				{
+					StatusCode = StatusCodes.Status409Conflict
 				}, context);
 				break;
 		}

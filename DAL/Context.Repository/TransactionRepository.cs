@@ -52,6 +52,13 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 				&& x.DestinationAccount != null && !x.DestinationAccount.IsStorage)
 			.ToListAsync(cancellationToken);
 
+	// TODO Добавить временной диапазон транзакций
+	async Task<double> ITransactionRepository.GetBalanceByAccountIdAsync(Guid accountId, CancellationToken cancellationToken)
+		=> await storage.Read<Transaction>().NotDeleted()
+			.Where(x => (x.SourceAccountId != null && x.SourceAccountId == accountId) 
+			            || (x.DestinationAccountId != null && x.DestinationAccountId == accountId))
+			.SumAsync(x => x.SourceAccountId == accountId ? -x.Amount : x.Amount, cancellationToken);
+
 	private bool InDateRange(Transaction transaction,
 		DateTime startTimeRange,
 		DateTime endTimeRange)
