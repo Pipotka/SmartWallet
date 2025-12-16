@@ -10,13 +10,14 @@ using Nasurino.SmartWallet.Services.Validators.DeleteModelValidators;
 using Nasurino.SmartWallet.Services.Validators.ModelValidators;
 using Nasurino.SmartWallet.Services.Validators.UpdateModelValidators;
 using Services.Contracts;
+using Services.Contracts.Models.Exceptions;
 
 namespace Nasurino.SmartWallet.Services.Validators;
 
 /// <summary>
-/// Сервис валиадции
+/// Сервис валидации
 /// </summary>
-public class SmartWalletValidateService : ISmartWalletValidateService
+public sealed class SmartWalletValidateService : ISmartWalletValidateService
 {
 	private readonly IDictionary<Type, IValidator> _validators;
 
@@ -54,7 +55,7 @@ public class SmartWalletValidateService : ISmartWalletValidateService
 		var validationResult = await validator.ValidateAsync(new ValidationContext<TModel>(model), token);
 		if (!validationResult.IsValid)
 		{
-			throw new SmartWalletValidationException(string.Join(';', validationResult.Errors.Select(x => $"{x.PropertyName} - {x.ErrorMessage}")));
+			throw new SmartWalletValidationException(validationResult.Errors.Select(x => new PropertyValidationError(x.PropertyName, x.ErrorMessage)).ToList());
 		}
 	}
 }

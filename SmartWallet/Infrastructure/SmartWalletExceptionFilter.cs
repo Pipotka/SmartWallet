@@ -32,7 +32,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 					StatusCode = StatusCodes.Status401Unauthorized
 				}, context);
 				break;
-
+			
 			case EntityNotFoundServiceException ex:
 				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
 				{
@@ -54,6 +54,7 @@ public class SmartWalletExceptionFilter : IExceptionFilter
 					StatusCode = StatusCodes.Status422UnprocessableEntity
 				}, context);
 				break;
+			
 			case EntityAccessServiceException ex:
 				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails()
 				{

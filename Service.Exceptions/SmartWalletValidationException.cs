@@ -1,12 +1,28 @@
-﻿namespace Nasurino.SmartWallet.Service.Exceptions;
+﻿using Services.Contracts.Models.Exceptions;
+
+namespace Nasurino.SmartWallet.Service.Exceptions;
 
 /// <summary>
 /// Ошибка валидации
 /// </summary>
 public class SmartWalletValidationException : EntityServiceException
 {
-	public SmartWalletValidationException(string message)
-		: base(message)
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="SmartWalletValidationException"/>
+	/// </summary>
+	/// <param name="validationResults">Результаты валидации</param>
+	public SmartWalletValidationException(ICollection<PropertyValidationError> validationResults)
+		: base(string.Join(';', validationResults.Select(x => $"{x.PropertyName} - {x.ErrorMessage}")))
+	{
+
+	}
+	
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="SmartWalletValidationException"/>
+	/// </summary>
+	/// <param name="validationResult">Результат валидации</param>
+	public SmartWalletValidationException(PropertyValidationError validationResult)
+		: base($"{validationResult.PropertyName} - {validationResult.ErrorMessage}")
 	{
 
 	}

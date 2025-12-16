@@ -6,6 +6,7 @@ using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Services.Contracts;
+using Services.Contracts.Models.Exceptions;
 
 namespace Nasurino.SmartWallet.Services;
 
@@ -22,8 +23,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 
 	async Task<List<TransactionModel>> ITransactionService.GetListByUserIdAsync(Guid userId, CancellationToken token)
 	{
-		var user = await _userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		_ = await _userRepository.GetUserByIdAsync(userId, token)
+		    ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
 		var transactionList = await _transactionRepository.GetListByUserIdAsync(userId, token);
 
@@ -35,17 +36,23 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		await validateService.ValidateAsync(model, token);
 		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
+			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 		}
 		var transaction = mapper.Map<Transaction>(model);
-		transaction.Id = Guid.NewGuid();
 
 		if (model.SourceAccountId.HasValue)
 		{
 			var sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
 				                    model.UserId,
 				                    token)
-			                    ?? throw new EntityNotFoundServiceException($"Аккаунт источник с Id = {transaction.SourceAccountId} не найдена.");
+			                    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
+			if (!sourceAccount.IsStorage)
+			{
+				throw new SmartWalletValidationException(new PropertyValidationError(
+					nameof(CreateTransactionModel.SourceAccountId),
+					"Область трат не может быть указана как SourceAccount"));
+			}
+			
 			sourceAccount.Value -= transaction.Amount;
 			_transactionEndpointRepository.Update(sourceAccount);
 		}
@@ -55,7 +62,14 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			var destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.DestinationAccountId!.Value,
 				                         model.UserId,
 				                         token)
-			                         ?? throw new EntityNotFoundServiceException($"Аккаунт назначения с Id = {transaction.DestinationAccountId} не найдена.");
+			                         ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
+			if (!model.SourceAccountId.HasValue && !destinationAccount.IsStorage)
+			{
+				throw new SmartWalletValidationException(new PropertyValidationError(
+					nameof(CreateTransactionModel.DestinationAccountId),
+					"Нельзя скорректировать баланс области трат"));
+			}
+			
 			destinationAccount.Value += transaction.Amount;
 			_transactionEndpointRepository.Update(destinationAccount);
 			
@@ -72,10 +86,10 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		await validateService.ValidateAsync(model, token);
 		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
+			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 		}
 		var transaction = await _transactionRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
-			?? throw new EntityNotFoundServiceException($"Транзакция с Id = {model.Id} не найдена.");
+			?? throw new EntityNotFoundByIdServiceException<Transaction>(model.Id);
 
 		if (transaction.SourceAccountId.HasValue)
 		{
