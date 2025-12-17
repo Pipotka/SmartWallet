@@ -1,12 +1,11 @@
 ﻿using Ahatornn.TestGenerator;
 using FluentAssertions;
-using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Tests;
 using Nasurino.SmartWallet.Entities;
 using Xunit;
 
-namespace Context.Repository.Tests;
+namespace Nasurino.SmartWallet.Context.Repository.Tests;
 
 /// <summary>
 /// Тесты на <see cref="Nasurino.SmartWallet.Context.Repository.TransactionEndpointRepository"/>

@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Nasurino.SmartWallet.Context.Repository.Tests</RootNamespace>
+        <AssemblyName>SmartWallet.Context.Repository.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
