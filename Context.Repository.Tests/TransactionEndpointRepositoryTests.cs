@@ -1,5 +1,6 @@
 ﻿using Ahatornn.TestGenerator;
 using FluentAssertions;
+using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Tests;
 using Nasurino.SmartWallet.Entities;
@@ -21,7 +22,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     public TransactionEndpointRepositoryTests()
     {
         _entityProvider = TestEntityProvider.Shared;
-        _transactionEndpointRepository = new Nasurino.SmartWallet.Context.Repository.TransactionEndpointRepository(StorageContext);
+        _transactionEndpointRepository = new TransactionEndpointRepository(StorageContext);
     }
     
     /// <summary>
