@@ -20,7 +20,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// </summary>
     public TransactionEndpointRepositoryTests()
     {
-        _entityProvider = TestEntityProvider.Shared;
+        _entityProvider = new TestEntityProviderBuilder().Build();
         _transactionEndpointRepository = new TransactionEndpointRepository(StorageContext);
     }
     
