@@ -6,35 +6,28 @@ SmartWallet - Web API для отслеживания и анализа трат
 ## Диаграмма базы данных
 ```mermaid
 erDiagram
-    CashVault }|--|| User : is
-    CashVault {
+    TransactionEndpoint }|--|| User : is
+    TransactionEndpoint {
         guid id PK
         guid userId FK
         string name
+        double limitation "nullable"
         double value
-        Date deletedAt
-    }
-
-    SpendingArea }|--|| User : is
-    SpendingArea{
-        guid id PK
-        guid userId FK
-        string name
-        double value
-        Date deletedAt
+        bool isStorage
+        date deletedAt
     }
 
     Transaction }o--|| User : is
-    Transaction }o--|| CashVault : is
-    Transaction }o--|| SpendingArea : is
+    Transaction }o--o| TransactionEndpoint : sourceAccountId
+    Transaction }o--o| TransactionEndpoint : destinationAccountId
     Transaction {
         guid id PK
         guid userId FK
-        guid fromCashVaultId FK
-        guid toSpendingAreaId FK
-        double value
-        DateTime madeAt
-        Date deletedAt
+        guid sourceAccountId FK "nullable"
+        guid destinationAccountId FK "nullable"
+        double amount
+        dateTime madeAt
+        date deletedAt
     }
 
     User {
