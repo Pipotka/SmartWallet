@@ -9,7 +9,7 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// <summary>
 /// Репозиторий для <see cref="Transaction"/>
 /// </summary>
-public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepository<Transaction>(storage), ITransactionRepository
+public sealed class TransactionRepository(IDataStorageContext storage) : BaseWriteRepository<Transaction>(storage), ITransactionRepository
 {
 	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
 		=> storage.Read<Transaction>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
@@ -36,8 +36,14 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 		base.Add(entity);
 	}
 
-	void ITransactionRepository.DeleteTransactionsBySpendingAreaId(Guid spendingAreaId)
-		=> DeleteEverythingBy(e => e.DestinationAccountId == spendingAreaId);
+	void ITransactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(Guid transactionEndpointId,
+		DateTime startDate = default,
+		DateTime endDate = default)
+	{
+		endDate = endDate == default ? DateTime.MaxValue : endDate;
+		DeleteEverythingBy(e => (e.DestinationAccountId == transactionEndpointId || e.SourceAccountId == transactionEndpointId) 
+		                        && InDateRange(e,  startDate, endDate));
+	}
 
 	void ITransactionRepository.DeleteTransactionsByUserId(Guid userId)
 		=> DeleteEverythingBy(e => e.UserId == userId);
@@ -52,12 +58,19 @@ public class TransactionRepository(IDataStorageContext storage) : BaseWriteRepos
 				&& x.DestinationAccount != null && !x.DestinationAccount.IsStorage)
 			.ToListAsync(cancellationToken);
 
-	// TODO Добавить временной диапазон транзакций
-	async Task<double> ITransactionRepository.GetBalanceByAccountIdAsync(Guid accountId, CancellationToken cancellationToken)
-		=> await storage.Read<Transaction>().NotDeleted()
-			.Where(x => (x.SourceAccountId != null && x.SourceAccountId == accountId) 
+	async Task<double> ITransactionRepository.GetBalanceByAccountIdAndDateRangeAsync(Guid accountId,
+		CancellationToken cancellationToken,
+		DateTime startDate = default,
+		DateTime endDate = default)
+	{
+		endDate = endDate == default ? DateTime.MaxValue : endDate;
+		
+		return await storage.Read<Transaction>().NotDeleted()
+			.Where(x => InDateRange(x, startDate, endDate))
+			.Where(x => (x.SourceAccountId != null && x.SourceAccountId == accountId)
 			            || (x.DestinationAccountId != null && x.DestinationAccountId == accountId))
 			.SumAsync(x => x.SourceAccountId == accountId ? -x.Amount : x.Amount, cancellationToken);
+	}
 
 	private bool InDateRange(Transaction transaction,
 		DateTime startTimeRange,

@@ -8,9 +8,13 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts;
 public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 {
 	/// <summary>
-	/// Удаляет все транзакций по идентификатору области трат
+	/// Удаляет транзакций по идентификатору области трат, которые входят во временной диапазон
 	/// </summary>
-	void DeleteTransactionsBySpendingAreaId(Guid spendingAreaId);
+	/// <param name="startDate">Начало временного диапазона</param>
+	/// <param name="endDate">Конец временного диапазона</param>
+	void DeleteTransactionsByTransactionEndpointIdAndDateRange(Guid transactionEndpointId,
+		DateTime startDate = default,
+		DateTime endDate = default);
 
 	/// <summary>
 	/// Удаляет все транзакций по идентификатору пользователя
@@ -59,5 +63,9 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// Получение баланса по идентификатору аккаунта
 	/// </summary>
 	/// <param name="accountId">Идентификатор аккаунта</param>
-	Task<double> GetBalanceByAccountIdAsync(Guid accountId, CancellationToken cancellationToken);
+	/// <param name="startDate">Начало временного диапазона</param>
+	/// <param name="endDate">Конец временного диапазона</param>
+	Task<double> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
+		DateTime startDate = default,
+		DateTime endDate = default);
 }

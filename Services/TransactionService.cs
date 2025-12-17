@@ -66,7 +66,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 					"Область трат не может быть указана как SourceAccount"));
 			}
 
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(sourceAccount.Id, token) - transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(sourceAccount.Id, token) - transaction.Amount;
 			
 			if (sourceAccount.Limitation != null
 			    && sourceAccount.Limitation > balanceResult
@@ -88,7 +88,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 					"Нельзя скорректировать баланс области трат"));
 			}
 			
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(destinationAccount.Id, token) + transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token) + transaction.Amount;
 			if (destinationAccount.Limitation != null
 			    && destinationAccount.Limitation < balanceResult
 			    && destinationAccount is { IsStorage: false })
@@ -123,7 +123,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 				                    model.UserId,
 				                    token);
 			
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(sourceAccount!.Id, token) + transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(sourceAccount!.Id, token) + transaction.Amount;
 			sourceAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(sourceAccount);
 		}
@@ -134,7 +134,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 									transaction.DestinationAccountId!.Value,
 									model.UserId,
 									token);
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAsync(destinationAccount!.Id, token) - transaction.Amount;
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount!.Id, token) - transaction.Amount;
 			destinationAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(destinationAccount);
 			
