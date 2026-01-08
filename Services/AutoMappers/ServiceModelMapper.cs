@@ -19,25 +19,27 @@ public class ServiceModelMapper : Profile
 		CreateMap<User, UserModel>(MemberList.Destination);
 		CreateMap<CreateUserModel, User>(MemberList.Destination)
 			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.CashVaults, opt => opt.Ignore())
+			.ForMember(dest => dest.TransactionEndpoints, opt => opt.Ignore())
 			.ForMember(dest => dest.HashedPassword, opt => opt.Ignore())
 			.ForMember(dest => dest.Id, opt => opt.Ignore());
 		CreateMap<UpdateUserModel, User>(MemberList.Destination)
 			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.CashVaults, opt => opt.Ignore())
+			.ForMember(dest => dest.TransactionEndpoints, opt => opt.Ignore())
 			.ForMember(dest => dest.HashedPassword, opt => opt.Ignore())
 			.ForMember(dest => dest.Email, opt => opt.Ignore());
 
 		CreateMap<TransactionEndpoint, TransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.Value, opt => opt.Ignore());
 		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
+			.ForMember(dest => dest.IncomingTransactions, opt => opt.Ignore())
+			.ForMember(dest => dest.OutgoingTransactions, opt => opt.Ignore())
 			.ForMember(dest => dest.User, opt => opt.Ignore())
 			.ForMember(dest => dest.IsStorage, opt => opt.Ignore())
 			.ForMember(dest => dest.Value, opt => opt.Ignore())
 			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 		CreateMap<CreateTransactionEndpointModel, TransactionEndpoint>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
+			.ForMember(dest => dest.IncomingTransactions, opt => opt.Ignore())
+			.ForMember(dest => dest.OutgoingTransactions, opt => opt.Ignore())
 			.ForMember(dest => dest.User, opt => opt.Ignore())
 			.ForMember(dest => dest.Value, opt => opt.Ignore())
 			.ForMember(dest => dest.Id, opt => opt.Ignore())

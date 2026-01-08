@@ -36,15 +36,12 @@ public class TransactionEndpoint : SmartDeletedEntity
 	public double Value { get; set; } = 0.0;
 
 	/// <summary>
-	/// Навигационное свойство
+	/// Транзакции, где текущая точка выступает как источник средств
 	/// </summary>
-	public ICollection<Transaction> Transactions { get; set; }
+	public ICollection<Transaction> OutgoingTransactions { get; set; } = new List<Transaction>();
 
 	/// <summary>
-	/// Инициализирует новый экземпляр <see cref="TransactionEndpoint"/> 
+	/// Транзакции, где текущая точка выступает как получатель средств
 	/// </summary>
-	public TransactionEndpoint()
-	{
-		Transactions = new List<Transaction>();
-	}
+	public ICollection<Transaction> IncomingTransactions { get; set; } = new List<Transaction>();
 }

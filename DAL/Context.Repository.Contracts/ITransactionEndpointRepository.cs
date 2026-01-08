@@ -8,27 +8,27 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 	public interface ITransactionEndpointRepository : IBaseWriteRepository<TransactionEndpoint>
 	{
 		/// <summary>
-		/// Удаляет все денежные хранилища по идентификатору пользователя
+		/// Удаляет все конечные точки транзакций по идентификатору пользователя
 		/// </summary>
 		void DeleteTransactionEndpointsByUserId(Guid userId);
 
 		/// <summary>
-		/// Возвращает денежное хранилище пользователя по идентификатору
+		/// Возвращает конечную точку транзакций пользователя по идентификатору
 		/// </summary>
 		Task<TransactionEndpoint?> GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает денежное хранилище по идентификатору
+		/// Возвращает конечную точку транзакций по идентификатору
 		/// </summary>
 		Task<TransactionEndpoint?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает денежное хранилище по названию и идентификатору пользователя
+		/// Возвращает конечную точку транзакций по названию и идентификатору пользователя
 		/// </summary>
 		Task<TransactionEndpoint?> GetByNameAndUserIdAsync(Guid userId, string name, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает список конечных точек по идентификатору пользователя
+		/// Возвращает список конечных точек транзакций по идентификатору пользователя
 		/// </summary>
 		/// <remarks>Сначала идут конечные точки являющиеся хранилищами, а уже потом области трат</remarks>
 		Task<List<TransactionEndpoint>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
