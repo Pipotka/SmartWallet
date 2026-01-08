@@ -17,7 +17,7 @@ public class TransactionEndpointConfiguration : IEntityTypeConfiguration<Transac
 		builder.HasKey(x => x.Id);
 
 		builder.HasOne(x => x.User)
-			.WithMany(x => x.CashVaults)
+			.WithMany(x => x.TransactionEndpoints)
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
 	}

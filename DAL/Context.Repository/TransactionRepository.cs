@@ -9,22 +9,28 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// <summary>
 /// Репозиторий для <see cref="Transaction"/>
 /// </summary>
-public sealed class TransactionRepository(IDataStorageContext storage) : BaseWriteRepository<Transaction>(storage), ITransactionRepository
+public sealed class TransactionRepository : BaseWriteRepository<Transaction>, ITransactionRepository
 {
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="TransactionRepository"/>
+	/// </summary>
+	public TransactionRepository(IDataStorageContext storage) : base(storage)
+	{ }
+
 	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+		=> Storage.Read<Transaction>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
-		=> storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
 	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
 		DateTime startTimeRange,
 		DateTime endTimeRange,
 		CancellationToken cancellationToken)
-		=> await storage.Read<Transaction>().NotDeleted()
+		=> await Storage.Read<Transaction>().NotDeleted()
 		.Where(x => InDateRange(x,  startTimeRange, endTimeRange)
 			&& x.UserId == userId)
 		.ToListAsync(cancellationToken);
@@ -52,7 +58,7 @@ public sealed class TransactionRepository(IDataStorageContext storage) : BaseWri
 		DateTime startDate,
 		DateTime endDate,
 		CancellationToken cancellationToken)
-		=> await storage.Read<Transaction>().NotDeleted()
+		=> await Storage.Read<Transaction>().NotDeleted()
 			.Where(x => InDateRange(x,  startDate, endDate)
 				&& x.UserId == userId
 				&& x.DestinationAccount != null && !x.DestinationAccount.IsStorage)
@@ -65,7 +71,7 @@ public sealed class TransactionRepository(IDataStorageContext storage) : BaseWri
 	{
 		endDate = endDate == default ? DateTime.MaxValue : endDate;
 		
-		return await storage.Read<Transaction>().NotDeleted()
+		return await Storage.Read<Transaction>().NotDeleted()
 			.Where(x => InDateRange(x, startDate, endDate))
 			.Where(x => (x.SourceAccountId != null && x.SourceAccountId == accountId)
 			            || (x.DestinationAccountId != null && x.DestinationAccountId == accountId))

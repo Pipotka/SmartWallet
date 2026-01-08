@@ -11,27 +11,27 @@ namespace Nasurino.SmartWallet.Context.Repository;
 /// </summary>
 public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntity> where TEntity : class
 {
-	private readonly IDataStorageContext storage;
+	protected readonly IDataStorageContext Storage;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="BaseWriteRepository{TEntity}"/>
 	/// </summary>
 	protected BaseWriteRepository(IDataStorageContext storage)
 	{
-		this.storage = storage;
+		Storage = storage;
 	}
 
 	/// <summary>
 	/// Добавить новую сущность
 	/// </summary>
 	public virtual void Add(TEntity entity)
-		=> storage.Create(entity);
+		=> Storage.Create(entity);
 
 	/// <summary>
 	/// Изменить сущность
 	/// </summary>
 	public virtual void Update(TEntity entity)
-		=> storage.Update(entity);
+		=> Storage.Update(entity);
 
 	/// <summary>
 	/// Удалить сущность
@@ -41,10 +41,10 @@ public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntit
 		if (entity is ISmartDeletedEntity smartDeletedEntity)
 		{
 			smartDeletedEntity.DeletedAt = DateTime.UtcNow;
-			storage.Update(smartDeletedEntity);
+			Storage.Update(smartDeletedEntity);
 			return;
 		}
-		storage.Delete(entity);
+		Storage.Delete(entity);
 	}
 
 	/// <summary>
@@ -52,7 +52,7 @@ public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntit
 	/// </summary>
 	protected virtual void DeleteEverythingBy(Expression<Func<TEntity, bool>> predicate)
 	{
-		var query = storage.Read<TEntity>().Where(predicate);
+		var query = Storage.Read<TEntity>().Where(predicate);
 		if (typeof(ISmartDeletedEntity).IsAssignableFrom(typeof(TEntity)))
 		{
 			query.ExecuteUpdate(x => x

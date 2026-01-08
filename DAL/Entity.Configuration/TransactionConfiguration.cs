@@ -21,11 +21,11 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
 		builder.HasOne(x => x.SourceAccount)
-			.WithMany(x => x.Transactions)
+			.WithMany(x => x.OutgoingTransactions)
 			.HasForeignKey(x => x.SourceAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
 		builder.HasOne(x => x.DestinationAccount)
-			.WithMany(x => x.Transactions)
+			.WithMany(x => x.IncomingTransactions)
 			.HasForeignKey(x => x.DestinationAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
 	}
