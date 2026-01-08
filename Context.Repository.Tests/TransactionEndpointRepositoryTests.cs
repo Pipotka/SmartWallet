@@ -161,36 +161,8 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
         var result = await _transactionEndpointRepository.GetListByUserIdAsync(userId, CancellationToken.None);
 
         // Assert
-        result.Should().HaveCount(4);
-        
-        // Проверяем, что сначала идут элементы с IsStorage = true
-        for(int i = 0; i < result.Count - 1; i++)
-        {
-            if(result[i].IsStorage) 
-            {
-                // Если текущий элемент имеет IsStorage = true, то следующий может быть любым
-                continue;
-            }
-            else
-            {
-                // Если текущий элемент имеет IsStorage = false, 
-                // то все предыдущие должны были быть IsStorage = true
-                for(int j = 0; j < i; j++)
-                {
-                    result[j].IsStorage.Should().BeTrue();
-                }
-            }
-        }
-        
-        // Более точная проверка: все элементы с IsStorage=true должны идти перед элементами с IsStorage=false
-        var firstFalseIndex = result.FindIndex(x => !x.IsStorage);
-        if(firstFalseIndex != -1)
-        {
-            for(int i = 0; i < firstFalseIndex; i++)
-            {
-                result[i].IsStorage.Should().BeTrue("все элементы до первого с IsStorage=false должны иметь IsStorage=true");
-            }
-        }
+        result.Should().HaveCount(4)
+            .And.BeInDescendingOrder(x => x.IsStorage);
     }
 
     /// <summary>
