@@ -71,7 +71,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
                 x.UserId = userId;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
-                x.UserId = userId;
+                x.UserId = anotherUserId;
                 x.DeletedAt = DateTime.Now;
             })
         };
