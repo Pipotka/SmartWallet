@@ -45,16 +45,16 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		if (model.SourceAccountId.HasValue)
 		{
 			sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
-				                model.UserId,
-				                token)
-			                ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
+									model.UserId,
+									token)
+							?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
 		}
 		if (model.DestinationAccountId.HasValue)
 		{
 			destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.DestinationAccountId!.Value,
-				                     model.UserId,
-				                     token)
-			                     ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
+				                    model.UserId,
+				                    token)
+			                    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
 		}
 
 		if (sourceAccount != null)
@@ -69,8 +69,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(sourceAccount.Id, token) - transaction.Amount;
 			
 			if (sourceAccount.Limitation != null
-			    && sourceAccount.Limitation > balanceResult
-			    && destinationAccount is { IsStorage: false })
+				&& sourceAccount.Limitation > balanceResult
+				&& destinationAccount is { IsStorage: false })
 			{
 				throw new AccountBalanceLimitViolationException(sourceAccount.Id);
 			}
@@ -90,8 +90,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			
 			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token) + transaction.Amount;
 			if (destinationAccount.Limitation != null
-			    && destinationAccount.Limitation < balanceResult
-			    && destinationAccount is { IsStorage: false })
+				&& destinationAccount.Limitation < balanceResult
+				&& destinationAccount is { IsStorage: false })
 			{
 				throw new AccountBalanceLimitViolationException(destinationAccount.Id);
 			}
