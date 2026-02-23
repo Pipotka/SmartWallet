@@ -11,7 +11,6 @@
     <ItemGroup>
       <PackageReference Include="Ahatornn.TestGenerator" Version="1.1.29" />
       <PackageReference Include="FluentAssertions" Version="8.5.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
       <PackageReference Include="Microsoft.Testing.Platform" Version="1.8.1" />
       <PackageReference Include="Moq" Version="4.20.72" />
