@@ -27,6 +27,7 @@ erDiagram
         guid sourceAccountId FK "nullable"
         guid destinationAccountId FK "nullable"
         double amount
+        enum Type
         dateTime madeAt
         date deletedAt
     }
@@ -38,6 +39,7 @@ erDiagram
         string lastName
         string patronymic
         string hashedPassword
+        date deletedAt
     }
 ```
 ## Возможные улучшения
