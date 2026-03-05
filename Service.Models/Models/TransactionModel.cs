@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.Models;
+﻿using Nasurino.SmartWallet.Entities;
+
+namespace Nasurino.SmartWallet.Service.Models.Models;
 
 /// <summary>
 /// Модель транзакции
@@ -19,6 +21,11 @@ public class TransactionModel
 	/// Идентификатор аккаунта назначения
 	/// </summary>
 	public Guid? DestinationAccountId { get; set; }
+	
+	/// <summary>
+	/// Тип транзакции
+	/// </summary>
+	public TransactionType Type { get; set; }
 
 	/// <summary>
 	/// Значение

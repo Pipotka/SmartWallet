@@ -48,13 +48,14 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Возвращает список транзакций пользователя у которых конечная точка - область трат
-	/// и которые созданы в указанный временной диапазон
+	/// Возвращает список транзакций пользователя по типу транзакции, созданных в указанный временной диапазон
 	/// </summary>
+	/// <param name="transactionType">Тип транзакции</param>
 	/// <param name="startDate">Начало временного диапазона</param>
 	/// <param name="endDate">Конец временного диапазона</param>
 	/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
-	Task<IReadOnlyCollection<Transaction>> GetListExpenseByDateRangeAndUserIdAsync(Guid userId,
+	Task<IReadOnlyCollection<Transaction>> GetListByDateRangeAndUserIdAsync(Guid userId,
+		TransactionType transactionType,
 		DateTime startDate,
 		DateTime endDate,
 		CancellationToken cancellationToken);

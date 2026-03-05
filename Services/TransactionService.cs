@@ -34,10 +34,9 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 	async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
-		{
-			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
-		}
+		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+						?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+		
 		var transaction = mapper.Map<Transaction>(model);
 		TransactionEndpoint? sourceAccount = null;
 		TransactionEndpoint? destinationAccount = null;
@@ -100,6 +99,26 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			_transactionEndpointRepository.Update(destinationAccount);
 			
 		}
+		
+		if (sourceAccount is { IsStorage: true })
+		{
+			transaction.Type = TransactionType.Expense;
+			
+			if (destinationAccount == null)
+			{
+				transaction.Type = TransactionType.AdjustmentDecrease;
+			}
+
+			if (destinationAccount is { IsStorage: true })
+			{
+				transaction.Type = TransactionType.Transfer;
+			}
+		}
+		else if (destinationAccount is { IsStorage: true })
+		{
+			transaction.Type = TransactionType.AdjustmentIncrease;
+		}
+		
 		_transactionRepository.Add(transaction);
 		
 		await unitOfWork.SaveChangesAsync(token);

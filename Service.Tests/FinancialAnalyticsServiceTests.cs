@@ -67,7 +67,7 @@ public sealed class FinancialAnalyticsServiceTests
         ]);
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetListExpenseByTimeRangeReturnValue(transactions, userId);
+        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, userId, TransactionType.Expense);
 
         // Act
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
@@ -103,7 +103,7 @@ public sealed class FinancialAnalyticsServiceTests
         ]);
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetListExpenseByTimeRangeReturnValue(transactions, userId);
+        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, userId, TransactionType.Expense);
 
         // Act
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
@@ -145,7 +145,7 @@ public sealed class FinancialAnalyticsServiceTests
         ]);
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetListExpenseByTimeRangeReturnValue(transactions, userId);
+        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, userId, TransactionType.Expense);
 
         // Act
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
@@ -173,7 +173,7 @@ public sealed class FinancialAnalyticsServiceTests
         var transactions = ImmutableArray.Create<Transaction>();
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetListExpenseByTimeRangeReturnValue(transactions, userId);
+        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, userId, TransactionType.Expense);
 
         // Act
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
@@ -198,7 +198,7 @@ public sealed class FinancialAnalyticsServiceTests
         var transactions = ImmutableArray.Create<Transaction>();
         
         _mockedUserRepository.GetUserByIdReturnNotNull(Guid.NewGuid());
-        _mockedTransactionRepository.GetListExpenseByTimeRangeReturnValue(transactions);
+        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, transactionType: TransactionType.Expense);
 
         // Act
         var act = () => _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,

@@ -16,7 +16,7 @@ public class UpdateTransactionEndpointApiModel
 	public string Name { get; set; } = string.Empty;
 
 	/// <summary>
-	/// Значение
+	/// Ограничение трат
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public double? Limitation { get; set; }
 }

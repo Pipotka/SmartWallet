@@ -3,7 +3,7 @@
 /// <summary>
 /// Транзакция
 /// </summary>
-public class Transaction : SmartDeletedEntity
+public sealed class Transaction : SmartDeletedEntity
 {
 	/// <summary>
 	/// Идентификатор пользователя
@@ -34,6 +34,11 @@ public class Transaction : SmartDeletedEntity
 	/// Навигационное свойство
 	/// </summary>
 	public TransactionEndpoint? DestinationAccount { get; set; }
+	
+	/// <summary>
+	/// Тип транзакции
+	/// </summary>
+	public TransactionType Type { get; set; }
 
 	/// <summary>
 	/// Значение

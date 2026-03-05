@@ -1,6 +1,6 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
-using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Service.Infrastructure.Contracts;
 using Services.Contracts;
@@ -21,10 +21,11 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancial
 		bool asPercentage,
 		CancellationToken token)
 	{
-		if (await _userRepository.GetUserByIdAsync(userId, token) is null) 
-			throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		_ = await _userRepository.GetUserByIdAsync(userId, token) 
+			?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		var source = await _transactionRepository.GetListExpenseByDateRangeAndUserIdAsync(userId,
+		var source = await _transactionRepository.GetListByDateRangeAndUserIdAsync(userId,
+			TransactionType.Expense,
 			startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
 			endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
 			token);

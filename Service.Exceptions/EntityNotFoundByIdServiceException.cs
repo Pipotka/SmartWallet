@@ -9,7 +9,7 @@ public sealed class EntityNotFoundByIdServiceException<TEntity> : EntityNotFound
     /// Инициализирует новый экземпляр <see cref="EntityNotFoundByIdServiceException{TEntity}"/>
     /// </summary>
     public EntityNotFoundByIdServiceException(Guid id) 
-        : base($"Сущность {nameof(TEntity)} с id = {id} не найдена")
+        : base($"Сущность {typeof(TEntity).Name} с id = {id} не найдена")
     {
     }
 }

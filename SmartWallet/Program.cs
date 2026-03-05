@@ -94,6 +94,7 @@ builder.Services.AddAuthentication(x =>
 });
 
 builder.Services.AddScoped<IIdentityProvider, ApiIdentityProvider>();
+builder.Services.AddScoped<IFinancialCalculator, FinancialCalculator>();
 
 builder.Services.AddScoped<IDataStorageContext, SmartWalletContext>();
 

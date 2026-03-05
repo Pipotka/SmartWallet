@@ -19,4 +19,14 @@ public class TransactionEndpointApiModel
 	/// Значение
 	/// </summary>
 	public double Value { get; set; } = 0.0;
+
+	/// <summary>
+	/// Ограничение трат
+	/// </summary>
+	public double? Limitation { get; set; }
+	
+	/// <summary>
+	/// Флаг указывающий, что конечная точка является денежным хранилищем
+	/// </summary>
+	public bool IsStorage { get; set; }	
 }

@@ -28,8 +28,7 @@ public class ServiceModelMapper : Profile
 			.ForMember(dest => dest.HashedPassword, opt => opt.Ignore())
 			.ForMember(dest => dest.Email, opt => opt.Ignore());
 
-		CreateMap<TransactionEndpoint, TransactionEndpointModel>(MemberList.Destination)
-			.ForMember(x => x.Value, opt => opt.Ignore());
+		CreateMap<TransactionEndpoint, TransactionEndpointModel>(MemberList.Destination);
 		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Destination)
 			.ForMember(dest => dest.IncomingTransactions, opt => opt.Ignore())
 			.ForMember(dest => dest.OutgoingTransactions, opt => opt.Ignore())
@@ -47,8 +46,8 @@ public class ServiceModelMapper : Profile
 
 		CreateMap<Transaction, TransactionModel>(MemberList.Destination);
 		CreateMap<CreateTransactionModel, Transaction>(MemberList.Destination)
-			.ForMember(dest => dest.UserId, opt => opt.Ignore())
 			.ForMember(dest => dest.Id, opt => opt.Ignore())
+			.ForMember(dest => dest.Type, opt => opt.Ignore())
 			.ForMember(dest => dest.User, opt => opt.Ignore())
 			.ForMember(dest => dest.SourceAccount, opt => opt.Ignore())
 			.ForMember(dest => dest.DestinationAccount, opt => opt.Ignore())

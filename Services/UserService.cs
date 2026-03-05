@@ -28,7 +28,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 	async Task<UserModel> IUserService.GetUserByIdAsync(Guid userId, CancellationToken token)
 	{
 		var user = await _userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+			?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
 		return mapper.Map<UserModel>(user);
 	}
@@ -78,10 +78,10 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 	{
 		await validateService.ValidateAsync(model, token);
 		var user = await _userRepository.GetUserByEmailAsync(model.Email, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с адрессом электронной почты = {model.Email} не найден.");
+			?? throw new EntityNotFoundServiceException($"Пользователь с адресом электронной почты = {model.Email} не найден.");
 		if (!passwordHasher.Verify(model.Password, user.HashedPassword))
 		{
-			throw new AuthorizationServiceException("Авторизация провалилась. Неверный логин или пароль.");
+			throw new AuthenticationServiceException();
 		}
 		return jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
 	}
@@ -91,7 +91,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		await validateService.ValidateAsync(model, token);
 
 		var user = await _userRepository.GetUserByIdAsync(model.Id, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
+			?? throw new EntityNotFoundByIdServiceException<User>(model.Id);
 		mapper.Map(model, user);
 		_userRepository.Update(user);
 		await unitOfWork.SaveChangesAsync(token);
@@ -104,11 +104,11 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		await validateService.ValidateAsync(model, token);
 
 		var user = await _userRepository.GetUserByIdAsync(model.Id, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с Id = {model.Id} не найден.");
+			?? throw new EntityNotFoundByIdServiceException<User>(model.Id);
 
 		if (!passwordHasher.Verify(model.Password, user.HashedPassword))
 		{
-			throw new AuthorizationServiceException("Аутентификация провалилась. Неверный логин или пароль.");
+			throw new AuthenticationServiceException();
 		}
 		_userRepository.Delete(user);
 		_transactionEndpointRepository.DeleteTransactionEndpointsByUserId(user.Id);

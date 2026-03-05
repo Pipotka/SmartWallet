@@ -22,8 +22,8 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 
 	async Task<List<TransactionEndpointModel>> ITransactionEndpointService.GetListByUserIdAsync(Guid userId, CancellationToken token)
 	{
-		var user = await _userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		_ = await _userRepository.GetUserByIdAsync(userId, token)
+			?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
 		var transactionEndpointList = await _transactionEndpointRepository.GetListByUserIdAsync(userId, token);
 
@@ -33,10 +33,9 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 	async Task<TransactionEndpointModel> ITransactionEndpointService.CreateAsync(CreateTransactionEndpointModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
-		}
+		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+		    ?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+		
 		var transactionEndpoint = mapper.Map<TransactionEndpoint>(model);
 		transactionEndpoint.Id = Guid.NewGuid();
 		transactionEndpoint.UserId = model.UserId;
@@ -50,12 +49,11 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 	async Task<TransactionEndpointModel> ITransactionEndpointService.UpdateAsync(UpdateTransactionEndpointModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
-		}
+		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+				?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
-		    ?? throw new EntityNotFoundServiceException($"Конечная точка транзакции с Id = {model.Id} не найдено.");
+		    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
 
 		mapper.Map(model, transactionEndpoint);
 		_transactionEndpointRepository.Update(transactionEndpoint);
@@ -67,12 +65,11 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 	async Task ITransactionEndpointService.DeleteAsync(DeleteTransactionEndpointModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {model.UserId} не найден.");
-		}
+		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+		    ?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+		
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
-			?? throw new EntityNotFoundServiceException($"Конечная точка транзакции с Id = {model.Id} не найдено.");
+			?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
 
 		_transactionEndpointRepository.Delete(transactionEndpoint);
 

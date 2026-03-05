@@ -44,8 +44,8 @@ public sealed class TransactionEndpointController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList(CancellationToken token)
 	{
-		var responce = await _transactionEndpointService.GetListByUserIdAsync(_identityProvider.Id, token);
-		return Ok(_mapper.Map<List<TransactionEndpointApiModel>>(responce));
+		var response = await _transactionEndpointService.GetListByUserIdAsync(_identityProvider.Id, token);
+		return Ok(_mapper.Map<List<TransactionEndpointApiModel>>(response));
 	}
 
 	/// <summary>

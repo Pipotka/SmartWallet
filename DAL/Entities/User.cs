@@ -3,7 +3,7 @@
 /// <summary>
 /// Пользователь
 /// </summary>
-public class User : BaseEntity
+public class User : SmartDeletedEntity
 {
 	/// <summary>
 	/// Электронная почта
