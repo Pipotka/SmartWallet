@@ -33,4 +33,25 @@ public interface IFinancialCalculator
     /// </code>
     /// </example>
     double PercentageOfSum(double sum, double percentage);
+
+    /// <summary>
+    /// Вычисляет процент изменения (динамику) между текущим и предыдущим значением.
+    /// </summary>
+    /// <param name="currentValue">Текущее значение</param>
+    /// <param name="previousValue">Предыдущее значение</param>
+    /// <param name="decimals">Количество знаков после запятой в результате (по умолчанию 2)</param>
+    /// <returns>
+    /// Процент изменения, округленный до указанного количества знаков после запятой.
+    /// Возвращает 0, если previousValue равно 0.
+    /// </returns>
+    /// <exception cref="ArgumentException">Выбрасывается, если currentValue или previousValue отрицательны</exception>
+    /// <example>
+    /// <code>
+    /// var result = CalculateTrendPercentage(150, 100); // Возвращает 50.00 (рост на 50%)
+    /// var result2 = CalculateTrendPercentage(50, 100); // Возвращает -50.00 (снижение на 50%)
+    /// var result3 = CalculateTrendPercentage(100, 100); // Возвращает 0.00 (без изменений)
+    /// var result4 = CalculateTrendPercentage(200, 0); // Возвращает 0 (база равна нулю)
+    /// </code>
+    /// </example>
+    double CalculateTrendPercentage(double currentValue, double previousValue, int decimals = 2);
 }

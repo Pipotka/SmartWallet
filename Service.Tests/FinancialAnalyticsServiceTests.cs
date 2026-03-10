@@ -210,4 +210,144 @@ public sealed class FinancialAnalyticsServiceTests
         // Assert
         await act.ShouldThrowEntityNotFoundException($"*{userId}*");
     }
+    
+    /// <summary>
+    /// Должен корректно вычислять процент роста (положительная динамика)
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldCalculatePositiveTrend()
+    {
+        // Arrange
+        var currentValue = 150.0;
+        var previousValue = 100.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        result.Should().Be(50.0);
+    }
+    
+    /// <summary>
+    /// Должен корректно вычислять процент снижения (отрицательная динамика)
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldCalculateNegativeTrend()
+    {
+        // Arrange
+        var currentValue = 50.0;
+        var previousValue = 100.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        result.Should().Be(-50.0);
+    }
+    
+    /// <summary>
+    /// Должен возвращать 0 при отсутствии изменений
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldReturnZeroWhenNoChange()
+    {
+        // Arrange
+        var currentValue = 100.0;
+        var previousValue = 100.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        result.Should().Be(0.0);
+    }
+    
+    /// <summary>
+    /// Должен возвращать 0 когда previousValue равно 0
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldReturnZeroWhenPreviousValueIsZero()
+    {
+        // Arrange
+        var currentValue = 200.0;
+        var previousValue = 0.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        result.Should().Be(0.0);
+    }
+    
+    /// <summary>
+    /// Должен выбрасывать исключение при отрицательном currentValue
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldThrowExceptionWhenCurrentValueIsNegative()
+    {
+        // Arrange
+        var currentValue = -50.0;
+        var previousValue = 100.0;
+        
+        // Act
+        var act = () => _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("currentValue")
+            .WithMessage("Текущее значение не может быть отрицательным*");
+    }
+    
+    /// <summary>
+    /// Должен выбрасывать исключение при отрицательном previousValue
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldThrowExceptionWhenPreviousValueIsNegative()
+    {
+        // Arrange
+        var currentValue = 150.0;
+        var previousValue = -100.0;
+        
+        // Act
+        var act = () => _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("previousValue")
+            .WithMessage("Предыдущее значение не может быть отрицательным*");
+    }
+    
+    /// <summary>
+    /// Должен корректно округлять результат до указанного количества знаков после запятой
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldRoundResultToSpecifiedDecimals()
+    {
+        // Arrange
+        var currentValue = 123.456;
+        var previousValue = 100.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue, decimals: 3);
+        
+        // Assert
+        result.Should().Be(23.456);
+    }
+    
+    /// <summary>
+    /// Должен возвращать 0 по умолчанию (2 знака после запятой)
+    /// </summary>
+    [Fact]
+    public void CalculateTrendPercentageShouldReturnZeroWithDefaultDecimals()
+    {
+        // Arrange
+        var currentValue = 200.0;
+        var previousValue = 0.0;
+        
+        // Act
+        var result = _calculator.CalculateTrendPercentage(currentValue, previousValue);
+        
+        // Assert
+        result.Should().Be(0.0);
+    }
 }
