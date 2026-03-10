@@ -9,16 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj" />
     <ProjectReference Include="..\Service.Exceptions\Service.Exceptions.csproj" />
     <ProjectReference Include="..\Service.Infrastructure.Contracts\Service.Infrastructure.Contracts.csproj" />
     <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
     <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="14.0.0" />
-    <PackageReference Include="FluentValidation" Version="11.11.0" />
   </ItemGroup>
 
 </Project>

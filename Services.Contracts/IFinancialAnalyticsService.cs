@@ -1,5 +1,4 @@
-﻿using Nasurino.SmartWallet.Service.Models.Models;
-using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+﻿using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 
 namespace Services.Contracts
 {
@@ -9,7 +8,7 @@ namespace Services.Contracts
 	public interface IFinancialAnalyticsService
 	{
 		/// <summary>
-		/// Возвращает категоризированные траты пользователя в процентах по временному диапазону
+		/// Возвращает категоризированные траты пользователя по временному диапазону
 		/// </summary>
 		/// <param name="startDate">Начало временного диапазона</param>
 		/// <param name="endDate">Конец временного диапазона</param>
