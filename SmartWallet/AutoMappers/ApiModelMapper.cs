@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Models.CashVault;
+using Nasurino.SmartWallet.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Models.Transaction;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.AutoMappers;
@@ -40,5 +42,7 @@ public class ApiModelMapper : Profile
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 		CreateMap<DeleteTransactionEndpointApiModel, DeleteTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
+
+		CreateMap<CategorySpendingItemModel, CategorySpendingItemApiModel>(MemberList.Destination);
 	}
 }

@@ -1,11 +1,13 @@
 ﻿using System.Collections.Immutable;
 using Ahatornn.TestGenerator;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Services;
+using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.UnitTests.Services.FluentAssertions.Shortcuts.Extensions;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
@@ -37,6 +39,7 @@ public sealed class FinancialAnalyticsServiceTests
                 x.DestinationAccountId = Guid.NewGuid();
                 x.SourceAccountId = Guid.NewGuid();
             }).Build();
+        var mapper = new MapperConfiguration(conf => conf.AddProfile<ServiceModelMapper>()).CreateMapper();
         
         _calculator = new FinancialCalculator();
         
@@ -45,43 +48,7 @@ public sealed class FinancialAnalyticsServiceTests
         var unitOfWork = new MockedUnitOfWork(mockedUserRepository : _mockedUserRepository,
             mockedTransactionRepository : _mockedTransactionRepository);
         
-        _financialAnalyticsService = new FinancialAnalyticsService(unitOfWork, _calculator);
-    }
-
-    /// <summary>
-    /// Должен вернуть значение в процентах 
-    /// </summary>
-    [Fact]
-    public async Task GetCategorizingSpendingByTimeRangeAndUserIdShouldReturnValueInPercentage()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var targetSum = 10_000d;
-        var firstAreaPercentage = 25d;
-        var secondAreaPercentage = 75d;
-        var transactions = ImmutableArray.CreateRange<Transaction>([
-            _entityProvider.Create<Transaction>(x => 
-                x.Amount = _calculator.PercentageOfSum(targetSum, firstAreaPercentage)),
-            _entityProvider.Create<Transaction>(x => 
-                x.Amount = _calculator.PercentageOfSum(targetSum, secondAreaPercentage))
-        ]);
-        
-        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetTypedListByTimeRangeReturnValue(transactions, userId, TransactionType.Expense);
-
-        // Act
-        var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
-            DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today),
-            true,
-            CancellationToken.None);
-
-        // Assert
-        result.SpendingAmount.Should().Be(targetSum);
-        result.CategorizedSpending[transactions.First().DestinationAccountId!.Value]
-            .Should().Be(firstAreaPercentage);
-        result.CategorizedSpending[transactions[1].DestinationAccountId!.Value]
-            .Should().Be(secondAreaPercentage);
+        _financialAnalyticsService = new FinancialAnalyticsService(unitOfWork, _calculator, mapper);
     }
     
     /// <summary>
@@ -109,15 +76,16 @@ public sealed class FinancialAnalyticsServiceTests
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
             DateOnly.FromDateTime(DateTime.Today),
-            false,
             CancellationToken.None);
 
         // Assert
         result.SpendingAmount.Should().Be(targetSum);
-        result.CategorizedSpending[firstTransaction.DestinationAccountId!.Value]
-            .Should().Be(firstTransaction.Amount);
-        result.CategorizedSpending[secondTransaction.DestinationAccountId!.Value]
-            .Should().Be(secondTransaction.Amount);
+        var item1 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        item1.Should().NotBeNull();
+        item1.TotalAmount.Should().Be(firstTransaction.Amount);
+        var item2 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        item2.Should().NotBeNull();
+        item2.TotalAmount.Should().Be(secondTransaction.Amount);
     }
     
     /// <summary>
@@ -151,15 +119,16 @@ public sealed class FinancialAnalyticsServiceTests
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
             DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-            false,
             CancellationToken.None);
 
         // Assert
         result.SpendingAmount.Should().Be(targetSum);
-        result.CategorizedSpending[firstTransaction.DestinationAccountId!.Value]
-            .Should().Be(firstTransaction.Amount);
-        result.CategorizedSpending[secondTransaction.DestinationAccountId!.Value]
-            .Should().Be(secondTransaction.Amount);
+        var item1 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        item1.Should().NotBeNull();
+        item1.TotalAmount.Should().Be(firstTransaction.Amount);
+        var item2 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        item2.Should().NotBeNull();
+        item2.TotalAmount.Should().Be(secondTransaction.Amount);
     }
     
     /// <summary>
@@ -179,7 +148,6 @@ public sealed class FinancialAnalyticsServiceTests
         var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
             DateOnly.FromDateTime(DateTime.Today),
-            false,
             CancellationToken.None);
 
         // Assert
@@ -204,7 +172,6 @@ public sealed class FinancialAnalyticsServiceTests
         var act = () => _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
             DateOnly.FromDateTime(DateTime.Today),
-            false,
             CancellationToken.None);
 
         // Assert

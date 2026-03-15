@@ -1,4 +1,5 @@
-﻿using Nasurino.SmartWallet.Entities;
+﻿using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
+using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context.Repository.Contracts;
 
@@ -69,4 +70,21 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	Task<double> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
 		DateTime startDate = default,
 		DateTime endDate = default);
+	
+	/// <summary>
+	/// Возвращает категоризированные расходы пользователя за указанный период
+	/// </summary>
+	/// <param name="userId">Идентификатор пользователя</param>
+	/// <param name="startDate">Начало периода (включительно)</param>
+	/// <param name="endDate">Конец периода (исключительно)</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	/// <returns>
+	/// Коллекция категорий с суммами расходов, отсортированная по убыванию суммы.
+	/// Категории без трат за период не возвращаются.
+	/// </returns>
+	Task<IReadOnlyCollection<CategorySpendingItem>> GetCategorizedSpendingByUserIdAndDateRangeAsync(
+		Guid userId, 
+		DateTime startDate, 
+		DateTime endDate, 
+		CancellationToken cancellationToken);
 }

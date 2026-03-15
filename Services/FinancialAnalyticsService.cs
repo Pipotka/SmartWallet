@@ -1,4 +1,5 @@
-﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
+﻿using AutoMapper;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
@@ -10,7 +11,7 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис финансовой аналитики
 /// </summary>
-public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator) : IFinancialAnalyticsService
+public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator, IMapper mapper) : IFinancialAnalyticsService
 {
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
@@ -18,39 +19,17 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancial
 	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(Guid userId,
 		DateOnly startDate,
 		DateOnly endDate,
-		bool asPercentage,
 		CancellationToken token)
 	{
 		_ = await _userRepository.GetUserByIdAsync(userId, token) 
 			?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		var source = await _transactionRepository.GetListByDateRangeAndUserIdAsync(userId,
-			TransactionType.Expense,
-			startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-			endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-			token);
-
-		var categorizedTransactions = source.GroupBy(x => x.DestinationAccountId).ToList();
-		var spendingAmount = 0.0;
-		var categorizedSpending = new Dictionary<Guid, double>();
-		foreach (var category in categorizedTransactions)
-		{
-			categorizedSpending.Add(category.Key!.Value, 0.0);
-			foreach (var transaction in category)
-			{
-				spendingAmount += transaction.Amount;
-				categorizedSpending[category.Key!.Value] += transaction.Amount;
-			}
-		}
-
-		if (asPercentage)
-		{
-			foreach (var category in categorizedSpending.Keys)
-			{
-				categorizedSpending[category] = calculator.GetPercentage(spendingAmount, categorizedSpending[category]);
-			}
-		}
-
-		return new SpendingCategoryModel(spendingAmount, categorizedSpending);
+		var spendingCategory = await _transactionRepository
+			.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
+				startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+				endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), token);
+		
+		return new SpendingCategoryModel(spendingCategory.Sum(x => x.TotalAmount),
+			mapper.Map<IReadOnlyCollection<CategorySpendingItemModel>>(spendingCategory));
 	}
 }

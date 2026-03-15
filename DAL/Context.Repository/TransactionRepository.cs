@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Specification;
 using Nasurino.SmartWallet.Entities;
 
@@ -78,6 +79,22 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			            || (x.DestinationAccountId != null && x.DestinationAccountId == accountId))
 			.SumAsync(x => x.SourceAccountId == accountId ? -x.Amount : x.Amount, cancellationToken);
 	}
+	
+	async Task<IReadOnlyCollection<CategorySpendingItem>> ITransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeAsync(
+		Guid userId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken) 
+			=> await Storage.Read<Transaction>()
+								.NotDeleted()
+								.Where(InDateRange(startDate, endDate))
+								.Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
+								.GroupBy(t => new { t.DestinationAccountId, t.DestinationAccount!.Name })
+								.Select(g => new CategorySpendingItem
+								{
+									CategoryId = g.Key.DestinationAccountId!.Value,
+									CategoryName = g.Key.Name,
+									TotalAmount = g.Sum(t => t.Amount)
+								})
+								.OrderByDescending(cs => cs.TotalAmount)
+								.ToListAsync(cancellationToken);
 
 	private static Expression<Func<Transaction, bool>> InDateRange(DateTime startTimeRange, DateTime endTimeRange)
 		=> transaction => startTimeRange <= transaction.MadeAt && transaction.MadeAt < endTimeRange;

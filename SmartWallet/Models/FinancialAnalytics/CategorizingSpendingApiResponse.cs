@@ -7,4 +7,4 @@
 /// <param name="CategorizedSpending">Категоризированные траты</param>
 public record CategorizingSpendingApiResponse(
     double SpendingAmount,
-    Dictionary<Guid, double> CategorizedSpending);
+    IReadOnlyCollection<CategorySpendingItemApiModel> CategorizedSpending);

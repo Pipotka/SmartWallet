@@ -5,4 +5,4 @@
 /// </summary>
 /// <param name="SpendingAmount">Общая сумма расходов</param>
 /// <param name="CategorizedSpending">Категоризированные расходы</param>
-public record SpendingCategoryModel(double SpendingAmount, Dictionary<Guid, double> CategorizedSpending);
+public record SpendingCategoryModel(double SpendingAmount, IReadOnlyCollection<CategorySpendingItemModel> CategorizedSpending);

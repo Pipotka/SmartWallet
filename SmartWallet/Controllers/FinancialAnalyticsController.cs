@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
@@ -17,15 +18,18 @@ public sealed class FinancialAnalyticsController : Controller
 {
 	private readonly IFinancialAnalyticsService _financialAnalyticsService;
 	private readonly IIdentityProvider _identityProvider;
+	private readonly IMapper _mapper;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="FinancialAnalyticsController"/>
 	/// </summary>
 	public FinancialAnalyticsController(IFinancialAnalyticsService financialAnalyticsService,
-		IIdentityProvider identityProvider)
+		IIdentityProvider identityProvider,
+		IMapper mapper)
 	{
 		_financialAnalyticsService = financialAnalyticsService;
 		_identityProvider = identityProvider;
+		_mapper = mapper;
 	}
 
 	/// <summary>
@@ -40,9 +44,9 @@ public sealed class FinancialAnalyticsController : Controller
 		var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(_identityProvider.Id,
 			request.StartDate,
 			request.EndDate,
-			request.AsPercentage,
 			token);
-		var response = new CategorizingSpendingApiResponse(result.SpendingAmount, result.CategorizedSpending);
+		var response = new CategorizingSpendingApiResponse(result.SpendingAmount,
+			_mapper.Map<IReadOnlyCollection<CategorySpendingItemApiModel>>(result.CategorizedSpending));
 		return Ok(response);
 	}
 }
