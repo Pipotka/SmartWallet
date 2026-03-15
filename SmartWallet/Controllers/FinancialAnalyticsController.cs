@@ -33,7 +33,7 @@ public sealed class FinancialAnalyticsController : Controller
 	}
 
 	/// <summary>
-	/// Получает категоризированные траты пользователя по месяцу года
+	/// Получает категоризированные траты пользователя по временному диапазону
 	/// </summary>
 	[HttpPut("categorized-spending")]
 	[ProducesResponseType(typeof(CategorizingSpendingApiResponse), StatusCodes.Status200OK)]
