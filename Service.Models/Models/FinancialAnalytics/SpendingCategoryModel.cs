@@ -3,6 +3,6 @@
 /// <summary>
 /// Расходы по категориям
 /// </summary>
-/// <param name="SpendingAmount">Общая сумма расходов</param>
-/// <param name="CategorizedSpending">Категоризированные расходы</param>
-public record SpendingCategoryModel(double SpendingAmount, IReadOnlyCollection<CategorySpendingItemModel> CategorizedSpending);
+/// <param name="TotalSpending">Общая сумма расходов</param>
+/// <param name="Categories">Категории с суммами трат</param>
+public sealed record SpendingCategoryModel(double TotalSpending, IReadOnlyCollection<CategorySpendingItemModel> Categories);

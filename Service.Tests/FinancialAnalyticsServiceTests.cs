@@ -66,7 +66,7 @@ public sealed class FinancialAnalyticsServiceTests
         var secondTransaction = _entityProvider.Create<Transaction>(x => 
             x.Amount = _calculator.PercentageOfSum(targetSum, 75d));
         
-        var spendingItems = ImmutableArray.CreateRange<CategorySpendingItem>([
+        var spendingItems = ImmutableArray.Create<CategorySpendingItem>([
             new CategorySpendingItem
             {
                 CategoryId = firstTransaction.DestinationAccountId!.Value,
@@ -81,22 +81,28 @@ public sealed class FinancialAnalyticsServiceTests
             }
         ]);
         
+        var categorizedResult = new CategorizedSpendingResult
+        {
+            TotalSpending = targetSum,
+            Categories = spendingItems
+        };
+        
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(spendingItems, userId,
-            startDate: DateTime.Today, endDate: DateTime.Today);
+        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
+            startDate: DateTime.Today, endDate: DateTime.Today.AddDays(1));
 
         // Act
-        var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today),
+            DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
             CancellationToken.None);
 
         // Assert
-        result.SpendingAmount.Should().Be(targetSum);
-        var item1 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        actual.TotalSpending.Should().Be(targetSum);
+        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
         item1.Should().NotBeNull();
         item1.TotalAmount.Should().Be(firstTransaction.Amount);
-        var item2 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
         item2.Should().NotBeNull();
         item2.TotalAmount.Should().Be(secondTransaction.Amount);
     }
@@ -121,7 +127,7 @@ public sealed class FinancialAnalyticsServiceTests
                 x.MadeAt = DateTime.Today;
             });
         
-        var spendingItems = ImmutableArray.CreateRange<CategorySpendingItem>([
+        var spendingItems = ImmutableArray.Create<CategorySpendingItem>([
             new CategorySpendingItem
             {
                 CategoryId = firstTransaction.DestinationAccountId!.Value,
@@ -136,22 +142,28 @@ public sealed class FinancialAnalyticsServiceTests
             }
         ]);
         
+        var categorizedResult = new CategorizedSpendingResult
+        {
+            TotalSpending = targetSum,
+            Categories = spendingItems
+        };
+        
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(spendingItems, userId,
-            startDate: DateTime.Today, endDate: DateTime.Today.AddDays(1));
+        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
+            startDate: DateTime.Today, endDate: DateTime.Today);
 
         // Act
-        var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            DateOnly.FromDateTime(DateTime.Today),
             CancellationToken.None);
 
         // Assert
-        result.SpendingAmount.Should().Be(targetSum);
-        var item1 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        actual.TotalSpending.Should().Be(targetSum);
+        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
         item1.Should().NotBeNull();
         item1.TotalAmount.Should().Be(firstTransaction.Amount);
-        var item2 = result.CategorizedSpending.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
         item2.Should().NotBeNull();
         item2.TotalAmount.Should().Be(secondTransaction.Amount);
     }
@@ -166,19 +178,25 @@ public sealed class FinancialAnalyticsServiceTests
         var userId = Guid.NewGuid();
         var spendingItems = ImmutableArray.Create<CategorySpendingItem>();
         
+        var categorizedResult = new CategorizedSpendingResult
+        {
+            TotalSpending = 0,
+            Categories = spendingItems
+        };
+        
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(spendingItems, userId,
+        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: DateTime.Today, endDate: DateTime.Today);
 
         // Act
-        var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
             DateOnly.FromDateTime(DateTime.Today),
             DateOnly.FromDateTime(DateTime.Today),
             CancellationToken.None);
 
         // Assert
-        result.SpendingAmount.Should().Be(0d);
-        result.CategorizedSpending.Should().BeEmpty();
+        actual.TotalSpending.Should().Be(0d);
+        actual.Categories.Should().BeEmpty();
     }
     
     /// <summary>
@@ -191,8 +209,14 @@ public sealed class FinancialAnalyticsServiceTests
         var userId = Guid.NewGuid();
         var spendingItems = ImmutableArray.Create<CategorySpendingItem>();
         
+        var categorizedResult = new CategorizedSpendingResult
+        {
+            TotalSpending = 0,
+            Categories = spendingItems
+        };
+        
         _mockedUserRepository.GetUserByIdReturnNotNull(Guid.NewGuid());
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(spendingItems,
+        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult,
             startDate: DateTime.Today, endDate: DateTime.Today);
 
         // Act

@@ -37,5 +37,6 @@ public class ServiceModelMapper : Profile
 			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
 		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
+		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
 	}
 }

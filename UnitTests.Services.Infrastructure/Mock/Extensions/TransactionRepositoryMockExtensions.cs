@@ -92,7 +92,7 @@ public static class TransactionRepositoryMockExtensions
     /// <inheritdoc cref="ITransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeAsync" path="/summary"/>
     /// </summary>
     /// <param name="mockedTransactionRepository">Мок репозитория транзакций</param>
-    /// <param name="spendingItems">Коллекция категоризированных трат для возврата</param>
+    /// <param name="result">Коллекция категоризированных трат для возврата</param>
     /// <param name="userId">Идентификатор пользователя</param>
     /// <param name="startDate">Начало периода</param>
     /// <param name="endDate">Конец периода</param>
@@ -102,15 +102,15 @@ public static class TransactionRepositoryMockExtensions
     /// </remarks>
     public static void GetCategorizedSpendingByUserIdAndDateRangeReturnValue(
         this Mock<ITransactionRepository> mockedTransactionRepository,
-        IReadOnlyCollection<CategorySpendingItem> spendingItems,
+        CategorizedSpendingResult result,
         Guid userId = default,
         DateTime startDate = default,
         DateTime endDate = default,
         CancellationToken token = default)
         => mockedTransactionRepository.SetupGetCategorizedSpendingByUserIdAndDateRange(userId, startDate, endDate, token)
-            .ReturnsAsync(spendingItems);
+            .ReturnsAsync(result);
 
-    private static ISetup<ITransactionRepository, Task<IReadOnlyCollection<CategorySpendingItem>>> SetupGetCategorizedSpendingByUserIdAndDateRange(
+    private static ISetup<ITransactionRepository, Task<CategorizedSpendingResult>> SetupGetCategorizedSpendingByUserIdAndDateRange(
         this Mock<ITransactionRepository> mockedTransactionRepository,
         Guid userId = default,
         DateTime startDate = default,

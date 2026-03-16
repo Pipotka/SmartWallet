@@ -24,12 +24,11 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancial
 		_ = await _userRepository.GetUserByIdAsync(userId, token) 
 			?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		var spendingCategory = await _transactionRepository
+		var result = await _transactionRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
 				startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
 				endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), token);
-		
-		return new SpendingCategoryModel(spendingCategory.Sum(x => x.TotalAmount),
-			mapper.Map<IReadOnlyCollection<CategorySpendingItemModel>>(spendingCategory));
+
+		return mapper.Map<SpendingCategoryModel>(result);
 	}
 }

@@ -79,10 +79,10 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="endDate">Конец периода (исключительно)</param>
 	/// <param name="cancellationToken">Токен отмены</param>
 	/// <returns>
-	/// Коллекция категорий с суммами расходов, отсортированная по убыванию суммы.
-	/// Категории без трат за период не возвращаются.
+	/// Результат категоризации трат, содержащий общую сумму и коллекцию категорий с суммами расходов,
+	/// отсортированную по убыванию суммы. Категории без трат за период не возвращаются.
 	/// </returns>
-	Task<IReadOnlyCollection<CategorySpendingItem>> GetCategorizedSpendingByUserIdAndDateRangeAsync(
+	Task<CategorizedSpendingResult> GetCategorizedSpendingByUserIdAndDateRangeAsync(
 		Guid userId, 
 		DateTime startDate, 
 		DateTime endDate, 

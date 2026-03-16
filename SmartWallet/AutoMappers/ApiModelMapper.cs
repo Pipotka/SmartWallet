@@ -44,5 +44,6 @@ public class ApiModelMapper : Profile
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 
 		CreateMap<CategorySpendingItemModel, CategorySpendingItemApiModel>(MemberList.Destination);
+		CreateMap<SpendingCategoryModel, CategorizingSpendingApiResponse>(MemberList.Destination);
 	}
 }

@@ -45,8 +45,6 @@ public sealed class FinancialAnalyticsController : Controller
 			request.StartDate,
 			request.EndDate,
 			token);
-		var response = new CategorizingSpendingApiResponse(result.SpendingAmount,
-			_mapper.Map<IReadOnlyCollection<CategorySpendingItemApiModel>>(result.CategorizedSpending));
-		return Ok(response);
+		return Ok(_mapper.Map<CategorizingSpendingApiResponse>(result));
 	}
 }
