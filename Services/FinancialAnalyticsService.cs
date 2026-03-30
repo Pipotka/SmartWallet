@@ -42,6 +42,9 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 	{
 		await validateService.ValidateAsync(request, token);
 		
+		_ = await _userRepository.GetUserByIdAsync(request.UserId, token) 
+		    ?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
+		
 		var previousPeriodDateRange = request.GetFirstDateRange();
 		var previousPeriod = await _transactionRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
@@ -70,6 +73,8 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		var categoryTrends = new LinkedList<CategoryTrendModel>();
 		foreach (var previousCategory in previousPeriod.Categories) 
 		{
+			token.ThrowIfCancellationRequested();
+			
 			if (currentPeriodCategories.TryGetValue(previousCategory.CategoryName, out var currentCategory)) 
 			{
 				categoryTrends.AddFirst(new CategoryTrendModel
@@ -96,6 +101,8 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 
 		foreach (var newCategory in currentPeriod.Categories.Except(previousPeriod.Categories))
 		{
+			token.ThrowIfCancellationRequested();
+			
 			categoryTrends.AddLast(new CategoryTrendModel
 			{
 				CategoryId = newCategory.CategoryId,

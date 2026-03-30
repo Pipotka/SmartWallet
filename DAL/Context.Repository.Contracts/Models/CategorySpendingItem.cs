@@ -19,4 +19,22 @@ public sealed class CategorySpendingItem
     /// Сумма трат по категории
     /// </summary>
     public double TotalAmount { get; set; }
+    
+    /// <summary> <inheritdoc /> </summary>
+    public override bool Equals(object? obj)
+    {
+        if (obj is not CategorySpendingItem spendingModel)
+        {
+            return false;
+        }
+        return spendingModel.CategoryId == CategoryId
+               && spendingModel.CategoryName == CategoryName;
+    }
+
+    /// <summary> <inheritdoc /> </summary>
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(CategoryId.GetHashCode(),
+            CategoryName.GetHashCode());
+    }
 }
