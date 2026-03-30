@@ -18,6 +18,7 @@ using Services.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Service.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Context.Contracts;
+using Nasurino.SmartWallet.Services.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 

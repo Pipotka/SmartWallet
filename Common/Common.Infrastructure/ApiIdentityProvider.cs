@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using System.Security.Claims;
 

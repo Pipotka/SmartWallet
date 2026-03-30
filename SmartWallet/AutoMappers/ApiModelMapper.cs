@@ -45,5 +45,10 @@ public class ApiModelMapper : Profile
 
 		CreateMap<CategorySpendingItemModel, CategorySpendingItemApiModel>(MemberList.Destination);
 		CreateMap<SpendingCategoryModel, CategorizingSpendingApiResponse>(MemberList.Destination);
+		
+		CreateMap<CategoryTrendModel, CategoryTrendApiModel>(MemberList.Destination);
+		CreateMap<SpendingTrendAnalysisResult, SpendingTrendAnalysisResponse>(MemberList.Destination);
+		CreateMap<SpendingTrendAnalysisApiRequest, SpendingTrendAnalysisRequest>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
 	}
 }

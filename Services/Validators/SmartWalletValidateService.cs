@@ -4,6 +4,7 @@ using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 using Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
 using Nasurino.SmartWallet.Services.Validators.DeleteModelValidators;
@@ -39,6 +40,7 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(DeleteTransactionModel), new DeleteTransactionModelValidator());
 		_validators.Add(typeof(DeleteUserModel), new DeleteUserModelValidator());
 		_validators.Add(typeof(UpdateTransactionEndpointModel), new UpdateTransactionEndpointModelValidator(transactionEndpointRepository));
+		_validators.Add(typeof(SpendingTrendAnalysisRequest), new SpendingTrendAnalysisRequestValidator());
 		#endregion
 
 	}

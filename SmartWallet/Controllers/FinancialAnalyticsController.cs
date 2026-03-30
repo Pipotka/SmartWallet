@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models.FinancialAnalytics;
-using Services.Contracts;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Services.Contracts;
 
 namespace Nasurino.SmartWallet.Controllers;
 
@@ -46,5 +47,21 @@ public sealed class FinancialAnalyticsController : Controller
 			request.EndDate,
 			token);
 		return Ok(_mapper.Map<CategorizingSpendingApiResponse>(result));
+	}
+
+	/// <summary>
+	/// Выполняет анализ трендов трат по категориям за два периода
+	/// </summary>
+	[HttpPut("spending-trend-analysis")]
+	[ProducesResponseType(typeof(SpendingTrendAnalysisResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> GetSpendingTrendAnalysis([FromBody] SpendingTrendAnalysisApiRequest request, CancellationToken token)
+	{
+		var model = _mapper.Map<SpendingTrendAnalysisRequest>(request);
+		model.UserId = _identityProvider.Id;
+		var result = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(model, token);
+		return Ok(_mapper.Map<SpendingTrendAnalysisResponse>(result));
 	}
 }

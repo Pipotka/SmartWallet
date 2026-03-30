@@ -38,5 +38,11 @@ public class ServiceModelMapper : Profile
 
 		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
 		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
+		
+		CreateMap<CategorySpendingItem, CategoryTrendModel>()
+			.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+			.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryName))
+			.ForMember(dest => dest.CurrentPeriodAmount, opt => opt.MapFrom(src => src.TotalAmount))
+			.ForMember(dest => dest.TrendPercentage, opt => opt.Ignore());
 	}
 }

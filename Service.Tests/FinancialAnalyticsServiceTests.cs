@@ -9,6 +9,7 @@ using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Services;
 using Nasurino.SmartWallet.Services.AutoMappers;
+using Nasurino.SmartWallet.Services.Contracts;
 using Nasurino.SmartWallet.UnitTests.Services.FluentAssertions.Shortcuts.Extensions;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
@@ -25,6 +26,7 @@ public sealed class FinancialAnalyticsServiceTests
 {
     private readonly TestEntityProvider _entityProvider;
     private readonly IFinancialCalculator _calculator;
+    private readonly Mock<ISmartWalletValidateService> _validateServiceMock;
     private readonly Mock<IUserRepository> _mockedUserRepository;
     private readonly Mock<ITransactionRepository> _mockedTransactionRepository;
     private readonly IFinancialAnalyticsService _financialAnalyticsService;
@@ -43,13 +45,18 @@ public sealed class FinancialAnalyticsServiceTests
         var mapper = new MapperConfiguration(conf => conf.AddProfile<ServiceModelMapper>()).CreateMapper();
         
         _calculator = new FinancialCalculator();
+        // TODO Написать тесты на проверку валидатора
+        _validateServiceMock = new Mock<ISmartWalletValidateService>();
         
         _mockedUserRepository = new Mock<IUserRepository>();
         _mockedTransactionRepository = new Mock<ITransactionRepository>();
         var unitOfWork = new MockedUnitOfWork(mockedUserRepository : _mockedUserRepository,
             mockedTransactionRepository : _mockedTransactionRepository);
         
-        _financialAnalyticsService = new FinancialAnalyticsService(unitOfWork, _calculator, mapper);
+        _financialAnalyticsService = new FinancialAnalyticsService(unitOfWork,
+            _calculator,
+            _validateServiceMock.Object,
+            mapper);
     }
     
     /// <summary>

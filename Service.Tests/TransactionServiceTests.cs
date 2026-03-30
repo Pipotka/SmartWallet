@@ -5,7 +5,6 @@ using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
-using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
 using Services.Contracts;
