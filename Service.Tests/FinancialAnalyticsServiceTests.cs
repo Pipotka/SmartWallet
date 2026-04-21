@@ -1409,8 +1409,8 @@ public sealed class FinancialAnalyticsServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var firstDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-10));
-        var secondDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5));
+        var firstDate = new DateOnly(2020, 1, 10);
+        var secondDate = new DateOnly(2020, 1, 15);
         
         var request = new SpendingTrendAnalysisRequest
         {
@@ -1433,14 +1433,14 @@ public sealed class FinancialAnalyticsServiceTests
         // Настраиваем моки с проверкой дат
         _mockedTransactionRepository
             .Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
-                firstDate.AddDays(-5).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                firstDate.AddDays(-4).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 firstDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(emptyResult);
             
         _mockedTransactionRepository
             .Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
-                secondDate.AddDays(-5).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                secondDate.AddDays(-4).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 secondDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(emptyResult);

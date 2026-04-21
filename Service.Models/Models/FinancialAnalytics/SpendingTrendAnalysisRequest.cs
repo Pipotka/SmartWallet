@@ -51,15 +51,18 @@ public sealed class SpendingTrendAnalysisRequest
 	}
 	
 	private DateOnly GetStartDate(DateOnly endDate)
-		=> TimeUnit switch
+	{
+		var actualTimeUnitCount = TimeUnitCount - 1;
+		return TimeUnit switch
 		{
-			TimeUnit.Day => endDate.AddDays(-TimeUnitCount),
-			TimeUnit.Month => new DateOnly(endDate.AddMonths(-TimeUnitCount).Year,
-				endDate.AddMonths(-TimeUnitCount).Month,
+			TimeUnit.Day => endDate.AddDays(-actualTimeUnitCount),
+			TimeUnit.Month => new DateOnly(endDate.AddMonths(-actualTimeUnitCount).Year,
+				endDate.AddMonths(-actualTimeUnitCount).Month,
 				1),
-			TimeUnit.Year => new DateOnly(endDate.AddYears(-TimeUnitCount).Year, 1, 1),
+			TimeUnit.Year => new DateOnly(endDate.AddYears(-actualTimeUnitCount).Year, 1, 1),
 			_ => throw new InvalidOperationException()
 		};
+	}
 
 	private DateOnly GetEndDate(DateOnly endDate) 
 		=> TimeUnit switch

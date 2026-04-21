@@ -11,19 +11,20 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingT
     private const int MaxDays = 36500;
     private const int MaxMonths = 1200;
     private const int MaxYears = 100;
+    private const int WeekDays = 7;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SpendingTrendAnalysisRequestValidator"/>
     /// </summary>
     public SpendingTrendAnalysisRequestValidator()
     {
+        RuleFor(x => x.UserId)
+            .NotEmpty()
+            .WithMessage("Идентификатор пользователя не может быть пустым");
+        
         RuleFor(x => x.TimeUnitCount)
             .GreaterThan(0)
             .WithMessage("Количество временных единиц должно быть больше 0");
-
-        RuleFor(x => x.FirstDate)
-            .LessThanOrEqualTo(x => x.SecondDate)
-            .WithMessage("Дата окончания первого периода должна быть меньше или равна дате окончания второго периода");
 
         RuleFor(x => x.SecondDate)
             .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
@@ -36,6 +37,10 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingT
         RuleFor(x => x)
             .Must(ValidateTimeUnitCountLimit)
             .WithMessage($"Превышен максимальный лимит: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
+        
+        RuleFor(x => x)
+            .Must(x => x.TimeUnit != TimeUnit.Day || x.TimeUnitCount >= WeekDays)
+            .WithMessage("Неделя — минимальный диапазон для трендового анализа.");
     }
 
     private bool ValidatePeriodsDoNotOverlap(SpendingTrendAnalysisRequest request)
