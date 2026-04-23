@@ -66,6 +66,13 @@ public class SpendingTrendAnalysisRequestValidatorTests
         },
     };
 
+    public static TheoryData<TimeUnit, int> MaxLimitCases => new()
+    {
+        { TimeUnit.Day, 36501 },
+        { TimeUnit.Month, 1201 },
+        { TimeUnit.Year, 101 }
+    };
+
     /// <summary>
     /// Валидатор должен успешно провалидировать модель
     /// </summary>
@@ -135,5 +142,59 @@ public class SpendingTrendAnalysisRequestValidatorTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(1);
         result.Errors.Should().ContainSingle(x => x.ErrorMessage.Contains("пересекать", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Валидатор должен вернуть ошибку при превышении максимального лимита
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(MaxLimitCases))]
+    public async Task ValidatorShouldReturnsErrorWhenTimeUnitCountExceedsMaxLimit(
+        TimeUnit timeUnit, int timeUnitCount)
+    {
+        // Arrange
+        var model = new SpendingTrendAnalysisRequest
+        {
+            UserId = Guid.NewGuid(),
+            FirstDate = new(1000, 1, 1),
+            SecondDate = new(2000, 1, 2),
+            TimeUnit = timeUnit,
+            TimeUnitCount = timeUnitCount
+        };
+        
+        // Act
+        var result = await _validator.ValidateAsync(model);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Should().ContainSingle(x => 
+            x.ErrorMessage.Contains("лимит", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Валидатор должен вернуть ошибку при диапазоне менее недели для дней
+    /// </summary>
+    [Fact]
+    public async Task ValidatorShouldReturnsErrorWhenTimeUnitCountLessThanWeekForDay()
+    {
+        // Arrange
+        var model = new SpendingTrendAnalysisRequest
+        {
+            UserId = Guid.NewGuid(),
+            FirstDate = new(2020, 1, 1),
+            SecondDate = new(2020, 2, 5),
+            TimeUnit = TimeUnit.Day,
+            TimeUnitCount = 6
+        };
+        
+        // Act
+        var result = await _validator.ValidateAsync(model);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Should().ContainSingle(x => 
+            x.ErrorMessage.Contains("Неделя", StringComparison.OrdinalIgnoreCase));
     }
 }

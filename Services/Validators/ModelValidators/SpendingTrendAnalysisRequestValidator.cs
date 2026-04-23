@@ -36,7 +36,7 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingT
 
         RuleFor(x => x)
             .Must(ValidateTimeUnitCountLimit)
-            .WithMessage($"Превышен максимальный лимит: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
+            .WithMessage($"Превышен максимальный лимит временных единиц: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
         
         RuleFor(x => x)
             .Must(x => x.TimeUnit != TimeUnit.Day || x.TimeUnitCount >= WeekDays)
