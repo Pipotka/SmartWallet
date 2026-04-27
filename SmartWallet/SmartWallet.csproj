@@ -18,6 +18,10 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
+	  <PackageReference Include="Hangfire.Core" />
+	  <PackageReference Include="Hangfire.AspNetCore" />
+	  <PackageReference Include="Hangfire.PostgreSql" />
+	  <PackageReference Include="Npgsql" />
   </ItemGroup>
 
   <ItemGroup>

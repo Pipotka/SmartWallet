@@ -19,6 +19,8 @@ using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Service.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Services.Contracts;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<SmartWalletContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("SmartWalletConnectionString")));
+
+builder.Services.AddHangfire(conf => conf
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(c =>
+        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("HangfireConnection"))));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddControllers(x =>
 {
@@ -125,6 +135,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseCors("SmartWalletCorsPolicy");
+    app.UseHangfireDashboard();
 }
 
 app.UseHttpsRedirection();
