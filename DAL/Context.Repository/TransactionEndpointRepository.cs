@@ -30,4 +30,9 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 
 	void ITransactionEndpointRepository.DeleteTransactionEndpointsByUserId(Guid userId)
 		=> DeleteEverythingBy(e => e.UserId == userId);
+
+	Task ITransactionEndpointRepository.ClearCategoryValueCacheAsync(CancellationToken cancellationToken)
+		=> Storage.Read<TransactionEndpoint>()
+			.Where(x => x.IsStorage == false && x.Value > 0)
+			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, 0));
 }

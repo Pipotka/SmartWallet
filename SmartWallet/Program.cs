@@ -21,6 +21,8 @@ using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Services.Contracts;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
+using Nasurino.SmartWallet.Services.BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,6 +125,7 @@ builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddScoped<ISmartWalletValidateService, SmartWalletValidateService>();
+builder.Services.AddScoped<IClearCategoryCacheService, ClearCategoryCacheService>();
 #endregion
 
 builder.Services.AddHttpContextAccessor();
@@ -144,5 +147,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+#region Запуск cron задач
+RecurringJob.AddOrUpdate<IClearCategoryCacheService>("clear-category-cache",
+    service => service.ClearCategoryCacheAsync(),
+    Cron.Monthly);
+#endregion
 
 app.Run();

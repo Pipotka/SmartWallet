@@ -32,5 +32,10 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		/// </summary>
 		/// <remarks>Сначала идут конечные точки являющиеся хранилищами, а уже потом области трат</remarks>
 		Task<List<TransactionEndpoint>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
-	}
+
+		/// <summary>
+		/// Очищает кэш значения категории
+		/// </summary>
+		Task ClearCategoryValueCacheAsync(CancellationToken cancellationToken);
+    }
 }
