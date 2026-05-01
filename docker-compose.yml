@@ -1,0 +1,73 @@
+services:
+    smartwallet-db:
+        ports: ["5435:5432"]
+        image: postgres:16-alpine
+        container_name: smartwallet-db
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: SmartWalletDb
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: mysecretpassword
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s      
+            timeout: 10s      
+            retries: 10        
+            start_period: 40s
+        networks: [app-net]
+
+    smartwallet-hangfire-db:
+        ports: ["5440:5432"]
+        image: postgres:16-alpine
+        container_name: smartwallet-hangfire-db
+        volumes:
+            - hangfire-db-data:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: SmartWalletHangfireDb
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: mysecretpassword
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s      
+            timeout: 10s      
+            retries: 10        
+            start_period: 40s
+        networks: [app-net]
+
+    smartwallet-migrations:
+        image: nasurino/smart-wallet:latest
+        command: 
+            - "-m"
+            - "Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=postgres;Password=mysecretpassword"
+        depends_on:
+            smartwallet-db: { condition: service_healthy }
+        networks: [app-net]
+        restart: "no"
+
+    smartwallet-api:
+        ports:
+            - "8080:80"
+            - "8443:443"
+        image: nasurino/smart-wallet:latest
+        container_name: smartwallet-api
+        depends_on:
+            smartwallet-migrations: { condition: service_completed_successfully }
+            smartwallet-hangfire-db: { condition: service_healthy }
+        environment:
+            ASPNETCORE_ENVIRONMENT: Production
+            ConnectionStrings__SmartWalletConnectionString: Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=postgres;Password=mysecretpassword
+            ConnectionStrings__HangfireConnection: Host=smartwallet-hangfire-db;Port=5432;Database=SmartWalletHangfireDb;Username=postgres;Password=mysecretpassword
+        volumes:
+            - ./certs:/certs:ro
+        networks: [app-net]
+        restart: unless-stopped
+
+
+volumes:
+    db-data:
+    hangfire-db-data:
+
+networks:
+    app-net:
+        driver: bridge

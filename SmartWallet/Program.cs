@@ -26,6 +26,27 @@ using Nasurino.SmartWallet.Services.BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (args.Length > 0)
+{
+    var migrationIndex = Array.IndexOf(args, "-m");
+    if (migrationIndex != -1)
+    {
+        var connectionIndex = migrationIndex + 1;
+        if (connectionIndex < args.Length && !string.IsNullOrEmpty(args[connectionIndex]))
+        {
+            var options = new DbContextOptionsBuilder<SmartWalletContext>()
+                .UseNpgsql(args[connectionIndex])
+                .Options;
+            await SmartWalletMigrator.MigrateAsync(options);
+            return;
+        }
+        else
+        {
+            throw new ArgumentException("Ожидалась строка подключения после ключа -m, но ничего не найдено");
+        }
+    }
+}
+
 // Add services to the container.
 
 builder.Services.AddDbContext<SmartWalletContext>(options => options
@@ -140,6 +161,11 @@ if (app.Environment.IsDevelopment())
     app.UseCors("SmartWalletCorsPolicy");
     app.UseHangfireDashboard();
 }
+else
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 app.UseHttpsRedirection();
 
@@ -148,10 +174,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-#region Запуск cron задач
-RecurringJob.AddOrUpdate<IClearCategoryCacheService>("clear-category-cache",
-    service => service.ClearCategoryCacheAsync(),
-    Cron.Monthly);
+#region Регистрация cron задач
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider
+        .GetRequiredService<IRecurringJobManager>();
+
+    recurringJobManager.AddOrUpdate<IClearCategoryCacheService>(
+        "clear-category-cache",
+        service => service.ClearCategoryCacheAsync(),
+        Cron.Monthly);
+}
 #endregion
 
 app.Run();

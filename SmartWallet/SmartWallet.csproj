@@ -34,9 +34,4 @@
     <ProjectReference Include="..\Services\Services.csproj" />
     <ProjectReference Include="..\SmartWallet.Options\SmartWallet.Options.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DI\" />
-  </ItemGroup>
-
 </Project>
