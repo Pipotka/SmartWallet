@@ -7,16 +7,11 @@ namespace Nasurino.SmartWallet.Services.Contracts
 	/// </summary>
 	public interface IFinancialAnalyticsService
 	{
-		/// <summary>
-		/// Возвращает категоризированные траты пользователя по временному диапазону
-		/// </summary>
-		/// <param name="startDate">Начало временного диапазона</param>
-		/// <param name="endDate">Конец временного диапазона</param>
-		/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
-		Task<SpendingCategoryModel> GetCategorizingSpendingByDateRangeAndUserIdAsync(Guid userId,
-			DateOnly startDate,
-			DateOnly endDate,
-			CancellationToken token);
+        /// <summary>
+        /// Возвращает категоризированные траты пользователя по временному диапазону
+        /// </summary>
+        /// <param name="request">Запрос на получение категоризированных трат</param>
+        Task<SpendingCategoryModel> GetCategorizingSpendingAsync(CategorizingSpendingRequest request, CancellationToken token);
 
 		/// <summary>
 		/// Выполняет анализ трендов трат по категориям за два периода

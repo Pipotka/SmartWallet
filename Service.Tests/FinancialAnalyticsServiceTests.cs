@@ -99,11 +99,15 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: DateTime.Today, endDate: DateTime.Today.AddDays(1));
 
+        var request = new CategorizingSpendingRequest 
+        { 
+            UserId = userId,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
+        };
+
         // Act
-        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
-            DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-            CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingAsync(request, CancellationToken.None);
 
         // Assert
         actual.TotalSpending.Should().Be(targetSum);
@@ -160,11 +164,15 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: DateTime.Today, endDate: DateTime.Today);
 
+        var request = new CategorizingSpendingRequest
+        {
+            UserId = userId,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            EndDate = DateOnly.FromDateTime(DateTime.Today)
+        };
+
         // Act
-        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
-            DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today),
-            CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingAsync(request, CancellationToken.None);
 
         // Assert
         actual.TotalSpending.Should().Be(targetSum);
@@ -196,11 +204,15 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: DateTime.Today, endDate: DateTime.Today);
 
+        var request = new CategorizingSpendingRequest
+        {
+            UserId = userId,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            EndDate = DateOnly.FromDateTime(DateTime.Today)
+        };
+
         // Act
-        var actual = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
-            DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today),
-            CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategorizingSpendingAsync(request, CancellationToken.None);
 
         // Assert
         actual.TotalSpending.Should().Be(0d);
@@ -227,11 +239,15 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult,
             startDate: DateTime.Today, endDate: DateTime.Today);
 
+        var request = new CategorizingSpendingRequest
+        {
+            UserId = userId,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
+        };
+
         // Act
-        var act = () => _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(userId,
-            DateOnly.FromDateTime(DateTime.Today),
-            DateOnly.FromDateTime(DateTime.Today),
-            CancellationToken.None);
+        var act = () => _financialAnalyticsService.GetCategorizingSpendingAsync(request, CancellationToken.None);
 
         // Assert
         await act.ShouldThrowEntityNotFoundException($"*{userId}*");

@@ -42,10 +42,9 @@ public sealed class FinancialAnalyticsController : Controller
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetCategorizingSpendingByDateRange([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
-		var result = await _financialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(_identityProvider.Id,
-			request.StartDate,
-			request.EndDate,
-			token);
+		var model = _mapper.Map<CategorizingSpendingRequest>(request);
+		model.UserId = _identityProvider.Id;
+        var result = await _financialAnalyticsService.GetCategorizingSpendingAsync(model, token);
 		return Ok(_mapper.Map<CategorizingSpendingApiResponse>(result));
 	}
 

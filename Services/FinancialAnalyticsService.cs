@@ -20,18 +20,17 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 
-	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByDateRangeAndUserIdAsync(Guid userId,
-		DateOnly startDate,
-		DateOnly endDate,
-		CancellationToken token)
+	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingAsync(CategorizingSpendingRequest request, CancellationToken token)
 	{
-		_ = await _userRepository.GetUserByIdAsync(userId, token) 
-			?? throw new EntityNotFoundByIdServiceException<User>(userId);
+        await validateService.ValidateAsync(request, token);
+
+        _ = await _userRepository.GetUserByIdAsync(request.UserId, token) 
+			?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
 
 		var result = await _transactionRepository
-			.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
-				startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-				endDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), token);
+			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
+                request.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                request.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), token);
 
 		return mapper.Map<SpendingCategoryModel>(result);
 	}

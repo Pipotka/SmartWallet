@@ -41,9 +41,10 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(DeleteUserModel), new DeleteUserModelValidator());
 		_validators.Add(typeof(UpdateTransactionEndpointModel), new UpdateTransactionEndpointModelValidator(transactionEndpointRepository));
 		_validators.Add(typeof(SpendingTrendAnalysisRequest), new SpendingTrendAnalysisRequestValidator());
-		#endregion
+		_validators.Add(typeof(CategorizingSpendingRequest), new CategorizingSpendingRequestValidator());
+        #endregion
 
-	}
+    }
 
 	async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
 	{
