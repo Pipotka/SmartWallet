@@ -42,11 +42,12 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(UpdateTransactionEndpointModel), new UpdateTransactionEndpointModelValidator(transactionEndpointRepository));
 		_validators.Add(typeof(SpendingTrendAnalysisRequest), new SpendingTrendAnalysisRequestValidator());
 		_validators.Add(typeof(CategorizingSpendingRequest), new CategorizingSpendingRequestValidator());
+        _validators.Add(typeof(ChangePasswordModel), new ChangePasswordModelValidator());
         #endregion
 
     }
 
-	async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
+    async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
 	{
 		_validators.TryGetValue(typeof(TModel), out var validator);
 
