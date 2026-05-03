@@ -106,7 +106,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			
 			if (destinationAccount == null)
 			{
-				transaction.Type = TransactionType.AdjustmentDecrease;
+				transaction.Type = TransactionType.StorageDecreaseAdjustment;
 			}
 
 			if (destinationAccount is { IsStorage: true })
@@ -116,7 +116,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		}
 		else if (destinationAccount is { IsStorage: true })
 		{
-			transaction.Type = TransactionType.AdjustmentIncrease;
+			transaction.Type = TransactionType.StorageIncreaseAdjustment;
 		}
 		
 		_transactionRepository.Add(transaction);
