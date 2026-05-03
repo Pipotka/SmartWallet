@@ -19,6 +19,7 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 {
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
+	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 
 	async Task<List<TransactionEndpointModel>> ITransactionEndpointService.GetListByUserIdAsync(Guid userId, CancellationToken token)
 	{
@@ -70,6 +71,11 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 		
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
 			?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+
+		if (!transactionEndpoint.IsStorage)
+		{
+			_transactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(transactionEndpoint.Id);
+		}
 
 		_transactionEndpointRepository.Delete(transactionEndpoint);
 
