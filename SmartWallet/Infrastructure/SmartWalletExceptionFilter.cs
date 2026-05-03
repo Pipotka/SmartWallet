@@ -22,6 +22,17 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 
 		switch (exception)
 		{
+			case AuthenticationServiceException ex:
+				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails
+				{
+					Message = ex.Message,
+					StatusCode = 401
+				})
+				{
+					StatusCode = StatusCodes.Status401Unauthorized
+				}, context);
+				break;
+
 			case AuthorizationServiceException ex:
 				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails
 				{
