@@ -29,6 +29,8 @@ public class ApiModelMapper : Profile
 		CreateMap<DeleteUserApiModel, DeleteUserModel>(MemberList.Destination)
 			.ForMember(x => x.Id, opt => opt.Ignore());
 
+		CreateMap<ChangePasswordApiModel, ChangePasswordModel>(MemberList.Source);
+
 		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
 		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());

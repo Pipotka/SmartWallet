@@ -116,4 +116,21 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 
 		await unitOfWork.SaveChangesAsync(token);
 	}
+
+	async Task IUserService.ChangePasswordAsync(ChangePasswordModel model, CancellationToken token)
+	{
+		await validateService.ValidateAsync(model, token);
+
+		var user = await _userRepository.GetUserByIdAsync(model.UserId, token)
+			?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+
+		if (!passwordHasher.Verify(model.OldPassword, user.HashedPassword))
+		{
+			throw new AuthenticationServiceException();
+		}
+
+		user.HashedPassword = passwordHasher.Generate(model.NewPassword);
+		_userRepository.Update(user);
+		await unitOfWork.SaveChangesAsync(token);
+	}
 }

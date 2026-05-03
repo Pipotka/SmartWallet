@@ -34,5 +34,10 @@ namespace Services.Contracts
 		/// Обновление пользователя
 		/// </summary>
 		Task<UserModel> UpdateAsync(UpdateUserModel model, CancellationToken token);
+
+		/// <summary>
+		/// Смена пароля пользователя
+		/// </summary>
+		Task ChangePasswordAsync(ChangePasswordModel model, CancellationToken token);
 	}
 }

@@ -110,4 +110,20 @@ public sealed class UserController : Controller
 		await _userService.DeleteAsync(updateModel, token);
 		return Ok();
 	}
+
+	/// <summary>
+	/// Смена пароля пользователя
+	/// </summary>
+	[HttpPut("password")]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordApiModel request, CancellationToken token)
+	{
+		var model = _mapper.Map<ChangePasswordModel>(request);
+		model.UserId = _identityProvider.Id;
+		await _userService.ChangePasswordAsync(model, token);
+		return Ok();
+	}
 }
