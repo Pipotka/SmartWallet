@@ -9,37 +9,37 @@ SmartWallet - Web API для отслеживания и анализа трат
 erDiagram
     TransactionEndpoint }|--|| User : is
     TransactionEndpoint {
-        guid id PK
-        guid userId FK
+        Guid id PK
+        Guid userId FK
         string name
         double limitation "nullable"
-        double value
         bool isStorage
-        date deletedAt
+        double value
+        DateTime deletedAt "nullable"
     }
 
     Transaction }o--|| User : is
     Transaction }o--o| TransactionEndpoint : sourceAccountId
     Transaction }o--o| TransactionEndpoint : destinationAccountId
     Transaction {
-        guid id PK
-        guid userId FK
-        guid sourceAccountId FK "nullable"
-        guid destinationAccountId FK "nullable"
+        Guid id PK
+        Guid userId FK
+        Guid sourceAccountId FK "nullable"
+        Guid destinationAccountId FK "nullable"
         double amount
-        enum Type
-        dateTime madeAt
-        date deletedAt
+        TransactionType Type
+        DateTime madeAt
+        DateTime deletedAt "nullable"
     }
 
     User {
-        guid id PK
-        string email PK
+        Guid id PK
+        string email
         string firstName
         string lastName
         string patronymic
         string hashedPassword
-        date deletedAt
+        DateTime deletedAt "nullable"
     }
 ```
 ## Возможные улучшения
