@@ -20,7 +20,11 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	{ }
 
 	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> Storage.Read<Transaction>().NotDeleted().Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+		=> Storage.Read<Transaction>()
+			.NotDeleted()
+			.Where(x => x.UserId == userId)
+			.OrderByDescending(x => x.MadeAt)
+			.ToListAsync(cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
 		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
