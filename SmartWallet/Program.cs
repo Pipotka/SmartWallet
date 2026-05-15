@@ -104,6 +104,8 @@ builder.Services.AddSwaggerGen(options =>
 #region Регистрация классов конфигурации
 builder.Services.Configure<JwtOptions>(builder.Configuration
     .GetSection("ApiSettings:JwtSettings"));
+builder.Services.Configure<BCryptOptions>(builder.Configuration
+    .GetSection("ApiSettings:BCryptSettings"));
 #endregion
 
 #region Регистрация сервисов
