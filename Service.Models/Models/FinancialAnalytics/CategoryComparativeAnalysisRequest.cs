@@ -1,9 +1,9 @@
 ﻿namespace Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 
 /// <summary>
-/// Запрос на анализ трендов трат
+/// Запрос на сравнительный анализ  трат по категориям
 /// </summary>
-public sealed class SpendingTrendAnalysisRequest
+public sealed class CategoryComparativeAnalysisRequest
 {
 	/// <summary>
 	/// Идентификатор пользователя
@@ -11,14 +11,14 @@ public sealed class SpendingTrendAnalysisRequest
 	public Guid UserId { get; set; }
 	
 	/// <summary>
-	///	Дата окончания первого (прошлого) периода
+	///	Дата окончания первого периода
 	/// </summary>
-	public DateOnly FirstDate { get; set; }
+	public DateOnly FirstPeriod { get; set; }
 	
 	/// <summary>
-	/// Дата окончания второго (текущего) периода 
+	/// Дата окончания второго периода 
 	/// </summary>
-	public DateOnly SecondDate { get; set; }
+	public DateOnly SecondPeriod { get; set; }
 	
 	/// <summary>
 	/// Единица измерения временного периода 
@@ -35,8 +35,8 @@ public sealed class SpendingTrendAnalysisRequest
 	/// </summary>
 	public (DateOnly Start, DateOnly End) GetFirstDateRange()
 	{
-		var startDate = GetStartDate(FirstDate);
-		var endDate = GetEndDate(FirstDate);
+		var startDate = GetStartDate(FirstPeriod);
+		var endDate = GetEndDate(FirstPeriod);
 		return (startDate, endDate);
 	}
 	
@@ -45,8 +45,8 @@ public sealed class SpendingTrendAnalysisRequest
 	/// </summary>
 	public (DateOnly Start, DateOnly End) GetSecondDateRange()
 	{
-		var startDate = GetStartDate(SecondDate);
-		var endDate = GetEndDate(SecondDate);
+		var startDate = GetStartDate(SecondPeriod);
+		var endDate = GetEndDate(SecondPeriod);
 		return (startDate, endDate);
 	}
 	

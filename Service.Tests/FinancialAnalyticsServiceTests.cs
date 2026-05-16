@@ -74,7 +74,7 @@ public sealed class FinancialAnalyticsServiceTests
         var secondTransaction = _entityProvider.Create<Transaction>(x => 
             x.Amount = _calculator.PercentageOfSum(targetSum, 75d));
         
-        var spendingItems = ImmutableArray.Create<CategorySpendingItem>([
+        var spendingItems = ImmutableArray.Create([
             new CategorySpendingItem
             {
                 CategoryId = firstTransaction.DestinationAccountId!.Value,
@@ -139,7 +139,7 @@ public sealed class FinancialAnalyticsServiceTests
                 x.MadeAt = DateTime.Today;
             });
         
-        var spendingItems = ImmutableArray.Create<CategorySpendingItem>([
+        var spendingItems = ImmutableArray.Create([
             new CategorySpendingItem
             {
                 CategoryId = firstTransaction.DestinationAccountId!.Value,
@@ -393,21 +393,21 @@ public sealed class FinancialAnalyticsServiceTests
         result.Should().Be(0.0);
     }
     
-    #region GetSpendingTrendAnalysisAsync Tests
+    #region CategoryComparativeAnalysisAsync Tests
     
     /// <summary>
     /// TC-ERR-01: Должен выбросить исключение когда пользователь не найден
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisShouldThrowEntityNotFoundException()
+    public async Task CategoryComparativeAnalysisShouldThrowEntityNotFoundException()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -416,7 +416,7 @@ public sealed class FinancialAnalyticsServiceTests
             .Returns(Task.CompletedTask);
         
         // Act
-        var act = () => _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var act = () => _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
         await act.ShouldThrowEntityNotFoundException($"*{userId}*");
@@ -426,15 +426,15 @@ public sealed class FinancialAnalyticsServiceTests
     /// TC-BAS-01: Оба периода пустые (0 трат)
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenBothPeriodsEmptyShouldReturnZeroValues()
+    public async Task CategoryComparativeAnalysisWhenBothPeriodsEmptyShouldReturnZeroValues()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -451,28 +451,27 @@ public sealed class FinancialAnalyticsServiceTests
             startDate: It.IsAny<DateTime>(), endDate: It.IsAny<DateTime>());
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(0);
-        actual.TotalPreviousSpending.Should().Be(0);
-        actual.TotalSpendingTrendPercentage.Should().Be(0);
-        actual.CategoryTrends.Should().BeEmpty();
+        actual.TotalSecondPeriodSpending.Should().Be(0);
+        actual.TotalFirstPeriodSpending.Should().Be(0);
+        actual.CategoryComparativeAnalyses.Should().BeEmpty();
     }
     
     /// <summary>
     /// TC-BAS-02: Только текущий период имеет траты, предыдущий пуст
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenOnlyCurrentPeriodHasSpendingShouldReturnZeroTrend()
+    public async Task CategoryComparativeAnalysisWhenOnlyCurrentPeriodHasSpendingShouldReturnZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -483,13 +482,13 @@ public sealed class FinancialAnalyticsServiceTests
         var previousEmpty = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
         
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId1, CategoryName = "Food", TotalAmount = 600 },
                 new CategorySpendingItem { CategoryId = categoryId2, CategoryName = "Transport", TotalAmount = 400 }
             ])
@@ -509,36 +508,35 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(1000);
-        actual.TotalPreviousSpending.Should().Be(0);
-        actual.TotalSpendingTrendPercentage.Should().Be(0);
-        actual.CategoryTrends.Should().HaveCount(2);
+        actual.TotalSecondPeriodSpending.Should().Be(1000);
+        actual.TotalFirstPeriodSpending.Should().Be(0);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(2);
         
-        var foodTrend = actual.CategoryTrends.First(x => x.CategoryName == "Food");
-        foodTrend.CurrentPeriodAmount.Should().Be(600);
-        foodTrend.TrendPercentage.Should().Be(0);
+        var foodTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        foodTrend.SecondPeriodAmount.Should().Be(600);
+        foodTrend.FirstPeriodAmount.Should().Be(0);
         
-        var transportTrend = actual.CategoryTrends.First(x => x.CategoryName == "Transport");
-        transportTrend.CurrentPeriodAmount.Should().Be(400);
-        transportTrend.TrendPercentage.Should().Be(0);
+        var transportTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        transportTrend.SecondPeriodAmount.Should().Be(400);
+        transportTrend.FirstPeriodAmount.Should().Be(0);
     }
     
     /// <summary>
     /// TC-BAS-03: Только предыдущий период имеет траты, текущий пуст
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenOnlyPreviousPeriodHasSpendingShouldReturnNegativeHundredTrend()
+    public async Task CategoryComparativeAnalysisWhenOnlyPreviousPeriodHasSpendingShouldReturnNegativeHundredTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -549,7 +547,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId1, CategoryName = "Food", TotalAmount = 600 },
                 new CategorySpendingItem { CategoryId = categoryId2, CategoryName = "Transport", TotalAmount = 400 }
             ])
@@ -558,7 +556,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentEmpty = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
 
         var previousPeriod = request.GetFirstDateRange();
@@ -575,36 +573,35 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(0);
-        actual.TotalPreviousSpending.Should().Be(1000);
-        actual.TotalSpendingTrendPercentage.Should().Be(-100);
-        actual.CategoryTrends.Should().HaveCount(2);
+        actual.TotalSecondPeriodSpending.Should().Be(0);
+        actual.TotalFirstPeriodSpending.Should().Be(1000);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(2);
         
-        var foodTrend = actual.CategoryTrends.First(x => x.CategoryName == "Food");
-        foodTrend.CurrentPeriodAmount.Should().Be(0);
-        foodTrend.TrendPercentage.Should().Be(-100);
+        var foodTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        foodTrend.SecondPeriodAmount.Should().Be(0);
+        foodTrend.FirstPeriodAmount.Should().Be(600);
         
-        var transportTrend = actual.CategoryTrends.First(x => x.CategoryName == "Transport");
-        transportTrend.CurrentPeriodAmount.Should().Be(0);
-        transportTrend.TrendPercentage.Should().Be(-100);
+        var transportTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        transportTrend.SecondPeriodAmount.Should().Be(0);
+        transportTrend.FirstPeriodAmount.Should().Be(400);
     }
     
     /// <summary>
     /// TC-BAS-04: Оба периода имеют одинаковые траты
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenBothPeriodsHaveEqualSpendingShouldReturnZeroTrend()
+    public async Task CategoryComparativeAnalysisWhenBothPeriodsHaveEqualSpendingShouldReturnZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -614,7 +611,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 1000 }
             ])
         };
@@ -622,7 +619,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 1000 }
             ])
         };
@@ -641,32 +638,31 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(1000);
-        actual.TotalPreviousSpending.Should().Be(1000);
-        actual.TotalSpendingTrendPercentage.Should().Be(0);
-        actual.CategoryTrends.Should().HaveCount(1);
+        actual.TotalSecondPeriodSpending.Should().Be(1000);
+        actual.TotalFirstPeriodSpending.Should().Be(1000);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(1);
         
-        var foodTrend = actual.CategoryTrends.First();
-        foodTrend.CurrentPeriodAmount.Should().Be(1000);
-        foodTrend.TrendPercentage.Should().Be(0);
+        var foodTrend = actual.CategoryComparativeAnalyses.First();
+        foodTrend.SecondPeriodAmount.Should().Be(1000);
+        foodTrend.FirstPeriodAmount.Should().Be(1000);
     }
     
     /// <summary>
     /// TC-CAT-01: Одна категория в обоих периодах с разными суммами
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithOneCategoryInBothPeriodsShouldCalculateCorrectTrend()
+    public async Task CategoryComparativeAnalysisWithOneCategoryInBothPeriodsShouldCalculateCorrectTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -676,7 +672,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -684,7 +680,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 750,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 750 }
             ])
         };
@@ -702,34 +698,33 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(750);
-        actual.TotalPreviousSpending.Should().Be(500);
-        actual.TotalSpendingTrendPercentage.Should().Be(50); // (750-500)/500 * 100 = 50%
-        actual.CategoryTrends.Should().HaveCount(1);
+        actual.TotalSecondPeriodSpending.Should().Be(750);
+        actual.TotalFirstPeriodSpending.Should().Be(500);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(1);
         
-        var foodTrend = actual.CategoryTrends.First();
+        var foodTrend = actual.CategoryComparativeAnalyses.First();
         foodTrend.CategoryId.Should().Be(categoryId);
         foodTrend.CategoryName.Should().Be("Food");
-        foodTrend.CurrentPeriodAmount.Should().Be(750);
-        foodTrend.TrendPercentage.Should().Be(50);
+        foodTrend.SecondPeriodAmount.Should().Be(750);
+        foodTrend.FirstPeriodAmount.Should().Be(500);
     }
     
     /// <summary>
     /// TC-CAT-02: Несколько категорий в обоих периодах
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithMultipleCategoriesInBothPeriodsShouldCalculateAllTrends()
+    public async Task CategoryComparativeAnalysisWithMultipleCategoriesInBothPeriodsShouldCalculateAllTrends()
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
@@ -741,7 +736,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = foodId, CategoryName = "Food", TotalAmount = 500 },
                 new CategorySpendingItem { CategoryId = transportId, CategoryName = "Transport", TotalAmount = 300 },
                 new CategorySpendingItem { CategoryId = entertainmentId, CategoryName = "Entertainment", TotalAmount = 200 }
@@ -751,7 +746,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1200,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = foodId, CategoryName = "Food", TotalAmount = 600 },
                 new CategorySpendingItem { CategoryId = transportId, CategoryName = "Transport", TotalAmount = 250 },
                 new CategorySpendingItem { CategoryId = entertainmentId, CategoryName = "Entertainment", TotalAmount = 350 }
@@ -772,32 +767,31 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalCurrentSpending.Should().Be(1200);
-        actual.TotalPreviousSpending.Should().Be(1000);
-        actual.TotalSpendingTrendPercentage.Should().Be(20);
-        actual.CategoryTrends.Should().HaveCount(3);
+        actual.TotalSecondPeriodSpending.Should().Be(1200);
+        actual.TotalFirstPeriodSpending.Should().Be(1000);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(3);
         
-        var foodTrend = actual.CategoryTrends.First(x => x.CategoryName == "Food");
-        foodTrend.CurrentPeriodAmount.Should().Be(600);
-        foodTrend.TrendPercentage.Should().Be(20); // (600-500)/500 * 100 = 20%
+        var foodTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        foodTrend.SecondPeriodAmount.Should().Be(600);
+        foodTrend.FirstPeriodAmount.Should().Be(500);
         
-        var transportTrend = actual.CategoryTrends.First(x => x.CategoryName == "Transport");
-        transportTrend.CurrentPeriodAmount.Should().Be(250);
-        transportTrend.TrendPercentage.Should().Be(-16.67); // (250-300)/300 * 100 ≈ -16.67%
+        var transportTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        transportTrend.SecondPeriodAmount.Should().Be(250);
+        transportTrend.FirstPeriodAmount.Should().Be(300);
         
-        var entertainmentTrend = actual.CategoryTrends.First(x => x.CategoryName == "Entertainment");
-        entertainmentTrend.CurrentPeriodAmount.Should().Be(350);
-        entertainmentTrend.TrendPercentage.Should().Be(75); // (350-200)/200 * 100 = 75%
+        var entertainmentTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Entertainment");
+        entertainmentTrend.SecondPeriodAmount.Should().Be(350);
+        entertainmentTrend.FirstPeriodAmount.Should().Be(200);
     }
     
     /// <summary>
     /// TC-CAT-03: Категория с ростом (current > previous) - положительный процент
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithCategoryGrowthShouldReturnPositiveTrend()
+    public async Task CategoryComparativeAnalysisWithCategoryGrowthShouldReturnPositiveTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -808,7 +802,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 300,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 300 }
             ])
         };
@@ -816,7 +810,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 450,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 450 }
             ])
         };
@@ -834,19 +828,19 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        var trend = actual.CategoryTrends.First();
-        trend.TrendPercentage.Should().BePositive();
-        trend.TrendPercentage.Should().Be(50); // (450-300)/300 * 100 = 50%
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.FirstPeriodAmount.Should().Be(300);
+        trend.SecondPeriodAmount.Should().Be(450);
     }
     
     /// <summary>
     /// TC-CAT-04: Категория с падением (current < previous) - отрицательный процент
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithCategoryDeclineShouldReturnNegativeTrend()
+    public async Task CategoryComparativeAnalysisWithCategoryDeclineShouldReturnNegativeTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -857,7 +851,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -865,7 +859,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 300,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 300 }
             ])
         };
@@ -883,19 +877,19 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        var trend = actual.CategoryTrends.First();
-        trend.TrendPercentage.Should().BeNegative();
-        trend.TrendPercentage.Should().Be(-40); // (300-500)/500 * 100 = -40%
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.FirstPeriodAmount.Should().Be(500);
+        trend.SecondPeriodAmount.Should().Be(300);
     }
     
     /// <summary>
     /// TC-CAT-05: Категория без изменений (current == previous) - 0%
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithCategoryNoChangeShouldReturnZeroTrend()
+    public async Task CategoryComparativeAnalysisWithCategoryNoChangeShouldReturnZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -907,7 +901,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = amount,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = amount }
             ])
         };
@@ -915,7 +909,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = amount,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = amount }
             ])
         };
@@ -933,19 +927,19 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        var trend = actual.CategoryTrends.First();
-        trend.TrendPercentage.Should().Be(0);
-        trend.CurrentPeriodAmount.Should().Be(amount);
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.FirstPeriodAmount.Should().Be(amount);
+        trend.SecondPeriodAmount.Should().Be(amount);
     }
     
     /// <summary>
     /// TC-CAT-06: Previous = 0, Current > 0 - тренд 0% (защита от деления на ноль)
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenPreviousCategoryAmountIsZeroShouldReturnZeroTrend()
+    public async Task CategoryComparativeAnalysisWhenPreviousCategoryAmountIsZeroShouldReturnZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -956,7 +950,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 0 }
             ])
         };
@@ -964,7 +958,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -982,19 +976,19 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        var trend = actual.CategoryTrends.First();
-        trend.CurrentPeriodAmount.Should().Be(500);
-        trend.TrendPercentage.Should().Be(0); // Защита от деления на ноль
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.SecondPeriodAmount.Should().Be(500);
+        trend.FirstPeriodAmount.Should().Be(0);
     }
     
     /// <summary>
     /// TC-CAT-07: Previous > 0, Current = 0 - отрицательный тренд (например, -100%)
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWhenCurrentCategoryAmountIsZeroShouldReturnNegativeTrend()
+    public async Task CategoryComparativeAnalysisWhenCurrentCategoryAmountIsZeroShouldReturnNegativeTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1005,7 +999,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -1013,7 +1007,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
 
         var previousPeriod = request.GetFirstDateRange();
@@ -1029,19 +1023,19 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        var trend = actual.CategoryTrends.First();
-        trend.CurrentPeriodAmount.Should().Be(0);
-        trend.TrendPercentage.Should().Be(-100); // (0-500)/500 * 100 = -100%
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.SecondPeriodAmount.Should().Be(0);
+        trend.FirstPeriodAmount.Should().Be(500);
     }
     
     /// <summary>
     /// TC-NEW-01: Одна новая категория в текущем периоде
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithNewCategoryInCurrentPeriodShouldReturnZeroTrend()
+    public async Task CategoryComparativeAnalysisWithNewCategoryInCurrentPeriodShouldReturnZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1052,7 +1046,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = Guid.NewGuid(), CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -1060,7 +1054,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 800,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Entertainment", TotalAmount = 300 }
             ])
         };
@@ -1078,22 +1072,22 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(2);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(2);
         
-        var newCategoryTrend = actual.CategoryTrends.First(x => x.CategoryName == "Entertainment");
+        var newCategoryTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Entertainment");
         newCategoryTrend.CategoryId.Should().Be(categoryId);
-        newCategoryTrend.CurrentPeriodAmount.Should().Be(300);
-        newCategoryTrend.TrendPercentage.Should().Be(0); // Новая категория - тренд 0%
+        newCategoryTrend.SecondPeriodAmount.Should().Be(300);
+        newCategoryTrend.FirstPeriodAmount.Should().Be(0);
     }
     
     /// <summary>
     /// TC-NEW-02: Несколько новых категорий в текущем периоде
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithMultipleNewCategoriesShouldAllHaveZeroTrend()
+    public async Task CategoryComparativeAnalysisWithMultipleNewCategoriesShouldAllHaveZeroTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1102,7 +1096,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 500,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = Guid.NewGuid(), CategoryName = "Food", TotalAmount = 500 }
             ])
         };
@@ -1113,7 +1107,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1200,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = newCategory1Id, CategoryName = "Entertainment", TotalAmount = 400 },
                 new CategorySpendingItem { CategoryId = newCategory2Id, CategoryName = "Shopping", TotalAmount = 300 }
             ])
@@ -1132,25 +1126,25 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(3);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(3);
         
-        var entertainmentTrend = actual.CategoryTrends.First(x => x.CategoryName == "Entertainment");
-        entertainmentTrend.TrendPercentage.Should().Be(0);
-        entertainmentTrend.CurrentPeriodAmount.Should().Be(400);
+        var entertainmentTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Entertainment");
+        entertainmentTrend.FirstPeriodAmount.Should().Be(0);
+        entertainmentTrend.SecondPeriodAmount.Should().Be(400);
         
-        var shoppingTrend = actual.CategoryTrends.First(x => x.CategoryName == "Shopping");
-        shoppingTrend.TrendPercentage.Should().Be(0);
-        shoppingTrend.CurrentPeriodAmount.Should().Be(300);
+        var shoppingTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Shopping");
+        shoppingTrend.FirstPeriodAmount.Should().Be(0);
+        shoppingTrend.SecondPeriodAmount.Should().Be(300);
     }
     
     /// <summary>
     /// TC-NEW-03: Комбинация - есть в обоих периодах + новые категории
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithMixedCategoriesIncludingNewShouldHandleCorrectly()
+    public async Task CategoryComparativeAnalysisWithMixedCategoriesIncludingNewShouldHandleCorrectly()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1162,7 +1156,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 800,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = commonCategoryId, CategoryName = "Food", TotalAmount = 500 },
                 new CategorySpendingItem { CategoryId = Guid.NewGuid(), CategoryName = "Transport", TotalAmount = 300 }
             ])
@@ -1171,7 +1165,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1100,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = commonCategoryId, CategoryName = "Food", TotalAmount = 600 },
                 new CategorySpendingItem { CategoryId = newCategoryId, CategoryName = "Entertainment", TotalAmount = 500 }
             ])
@@ -1190,29 +1184,29 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(3);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(3);
         
-        var commonTrend = actual.CategoryTrends.First(x => x.CategoryName == "Food");
-        commonTrend.TrendPercentage.Should().Be(20); // (600-500)/500 * 100 = 20%
-        commonTrend.CurrentPeriodAmount.Should().Be(600);
+        var commonTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        commonTrend.FirstPeriodAmount.Should().Be(500);
+        commonTrend.SecondPeriodAmount.Should().Be(600);
         
-        var newTrend = actual.CategoryTrends.First(x => x.CategoryName == "Entertainment");
-        newTrend.TrendPercentage.Should().Be(0);
-        newTrend.CurrentPeriodAmount.Should().Be(500);
+        var newTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Entertainment");
+        newTrend.FirstPeriodAmount.Should().Be(0);
+        newTrend.SecondPeriodAmount.Should().Be(500);
         
-        var transportTrend = actual.CategoryTrends.First(x => x.CategoryName == "Transport");
-        transportTrend.TrendPercentage.Should().Be(-100);
-        transportTrend.CurrentPeriodAmount.Should().Be(0);
+        var transportTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        transportTrend.FirstPeriodAmount.Should().Be(300);
+        transportTrend.SecondPeriodAmount.Should().Be(0);
     }
     
     /// <summary>
     /// TC-LOST-01: Одна исчезнувшая категория (есть только в предыдущем периоде)
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithLostCategoryShouldReturnNegativeHundredTrend()
+    public async Task CategoryComparativeAnalysisWithLostCategoryShouldReturnNegativeHundredTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1223,7 +1217,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 800,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = lostCategoryId, CategoryName = "Food", TotalAmount = 800 }
             ])
         };
@@ -1231,7 +1225,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
 
         var previousPeriod = request.GetFirstDateRange();
@@ -1247,23 +1241,23 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(1);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(1);
         
-        var lostTrend = actual.CategoryTrends.First();
+        var lostTrend = actual.CategoryComparativeAnalyses.First();
         lostTrend.CategoryId.Should().Be(lostCategoryId);
         lostTrend.CategoryName.Should().Be("Food");
-        lostTrend.CurrentPeriodAmount.Should().Be(0);
-        lostTrend.TrendPercentage.Should().Be(-100);
+        lostTrend.SecondPeriodAmount.Should().Be(0);
+        lostTrend.FirstPeriodAmount.Should().Be(800);
     }
     
     /// <summary>
     /// TC-LOST-02: Несколько исчезнувших категорий
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithMultipleLostCategoriesShouldAllHaveNegativeHundredTrend()
+    public async Task CategoryComparativeAnalysisWithMultipleLostCategoriesShouldAllHaveNegativeHundredTrend()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1272,7 +1266,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1000,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = Guid.NewGuid(), CategoryName = "Food", TotalAmount = 600 },
                 new CategorySpendingItem { CategoryId = Guid.NewGuid(), CategoryName = "Transport", TotalAmount = 400 }
             ])
@@ -1281,7 +1275,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
 
         var previousPeriod = request.GetFirstDateRange();
@@ -1297,23 +1291,25 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(2);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(2);
         
-        foreach (var trend in actual.CategoryTrends)
-        {
-            trend.CurrentPeriodAmount.Should().Be(0);
-            trend.TrendPercentage.Should().Be(-100);
-        }
+        var foodTrendLost = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        foodTrendLost.SecondPeriodAmount.Should().Be(0);
+        foodTrendLost.FirstPeriodAmount.Should().Be(600);
+        
+        var transportTrendLost = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        transportTrendLost.SecondPeriodAmount.Should().Be(0);
+        transportTrendLost.FirstPeriodAmount.Should().Be(400);
     }
     
     /// <summary>
     /// TC-LOST-03: Комбинация - есть в обоих + исчезнувшие категории
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithMixedCategoriesIncludingLostShouldHandleCorrectly()
+    public async Task CategoryComparativeAnalysisWithMixedCategoriesIncludingLostShouldHandleCorrectly()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1325,7 +1321,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 1200,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = commonCategoryId, CategoryName = "Food", TotalAmount = 500 },
                 new CategorySpendingItem { CategoryId = lostCategoryId, CategoryName = "Transport", TotalAmount = 700 }
             ])
@@ -1334,7 +1330,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 600,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = commonCategoryId, CategoryName = "Food", TotalAmount = 600 }
             ])
         };
@@ -1352,25 +1348,25 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.CategoryTrends.Should().HaveCount(2);
+        actual.CategoryComparativeAnalyses.Should().HaveCount(2);
         
-        var commonTrend = actual.CategoryTrends.First(x => x.CategoryName == "Food");
-        commonTrend.TrendPercentage.Should().Be(20); // (600-500)/500 * 100 = 20%
-        commonTrend.CurrentPeriodAmount.Should().Be(600);
+        var commonTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Food");
+        commonTrend.FirstPeriodAmount.Should().Be(500);
+        commonTrend.SecondPeriodAmount.Should().Be(600);
         
-        var lostTrend = actual.CategoryTrends.First(x => x.CategoryName == "Transport");
-        lostTrend.TrendPercentage.Should().Be(-100);
-        lostTrend.CurrentPeriodAmount.Should().Be(0);
+        var lostTrend = actual.CategoryComparativeAnalyses.First(x => x.CategoryName == "Transport");
+        lostTrend.FirstPeriodAmount.Should().Be(700);
+        lostTrend.SecondPeriodAmount.Should().Be(0);
     }
     
     /// <summary>
     /// TC-COM-04: Категории с дробными суммами - проверка округления
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithFractionalAmountsShouldRoundCorrectly()
+    public async Task CategoryComparativeAnalysisWithFractionalAmountsShouldRoundCorrectly()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -1381,7 +1377,7 @@ public sealed class FinancialAnalyticsServiceTests
         var previousSpending = new CategorizedSpendingResult
         {
             TotalSpending = 123.456,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 123.456 }
             ])
         };
@@ -1389,7 +1385,7 @@ public sealed class FinancialAnalyticsServiceTests
         var currentSpending = new CategorizedSpendingResult
         {
             TotalSpending = 234.567,
-            Categories = ImmutableArray.Create<CategorySpendingItem>([
+            Categories = ImmutableArray.Create([
                 new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 234.567 }
             ])
         };
@@ -1407,32 +1403,30 @@ public sealed class FinancialAnalyticsServiceTests
             endDate: currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
-        actual.TotalSpendingTrendPercentage.Should().Be(90.00); 
-        
-        var trend = actual.CategoryTrends.First();
-        trend.CurrentPeriodAmount.Should().Be(234.567);
-        trend.TrendPercentage.Should().Be(90.00);
+        var trend = actual.CategoryComparativeAnalyses.First();
+        trend.SecondPeriodAmount.Should().Be(234.567);
+        trend.FirstPeriodAmount.Should().Be(123.456);
     }
     
     /// <summary>
     /// TC-TIME-01: TimeUnit = Day - корректное вычисление диапазонов
     /// </summary>
     [Fact]
-    public async Task GetSpendingTrendAnalysisWithTimeUnitDayShouldCalculateCorrectDateRanges()
+    public async Task CategoryComparativeAnalysisWithTimeUnitDayShouldCalculateCorrectDateRanges()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var firstDate = new DateOnly(2020, 1, 10);
         var secondDate = new DateOnly(2020, 1, 15);
         
-        var request = new SpendingTrendAnalysisRequest
+        var request = new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = firstDate,
-            SecondDate = secondDate,
+            FirstPeriod = firstDate,
+            SecondPeriod = secondDate,
             TimeUnit = TimeUnit.Day,
             TimeUnitCount = 5
         };
@@ -1440,7 +1434,7 @@ public sealed class FinancialAnalyticsServiceTests
         var emptyResult = new CategorizedSpendingResult
         {
             TotalSpending = 0,
-            Categories = ImmutableArray.Create<CategorySpendingItem>()
+            Categories = []
         };
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
@@ -1462,7 +1456,7 @@ public sealed class FinancialAnalyticsServiceTests
             .ReturnsAsync(emptyResult);
         
         // Act
-        var actual = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(request, CancellationToken.None);
+        var actual = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(request, CancellationToken.None);
         
         // Assert
         actual.Should().NotBeNull();
@@ -1471,13 +1465,13 @@ public sealed class FinancialAnalyticsServiceTests
     
     #region Helper Methods
     
-    private static SpendingTrendAnalysisRequest CreateDefaultRequest(Guid userId)
+    private static CategoryComparativeAnalysisRequest CreateDefaultRequest(Guid userId)
     {
-        return new SpendingTrendAnalysisRequest
+        return new CategoryComparativeAnalysisRequest
         {
             UserId = userId,
-            FirstDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
-            SecondDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
+            FirstPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-2)),
+            SecondPeriod = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1)),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };

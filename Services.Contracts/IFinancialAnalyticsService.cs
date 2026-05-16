@@ -23,8 +23,8 @@ namespace Nasurino.SmartWallet.Services.Contracts
 		/// Если категория присутствует только в предыдущем периоде, возвращается тренд -100% и сумма 0.
 		/// Если категория присутствует только в текущем периоде, возвращается тренд 0% и сумма из текущего периода.
 		/// </returns>
-		Task<SpendingTrendAnalysisResult> GetSpendingTrendAnalysisAsync(
-			SpendingTrendAnalysisRequest request,
+		Task<CategoryComparativeAnalysisResult> GetCategoryComparativeAnalysisAsync(
+			CategoryComparativeAnalysisRequest request,
 			CancellationToken token);
 	}
 }

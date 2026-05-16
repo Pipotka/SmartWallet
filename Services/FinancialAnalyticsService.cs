@@ -35,8 +35,8 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		return mapper.Map<SpendingCategoryModel>(result);
 	}
 	
-	async Task<SpendingTrendAnalysisResult> IFinancialAnalyticsService.GetSpendingTrendAnalysisAsync(
-		SpendingTrendAnalysisRequest request,
+	async Task<CategoryComparativeAnalysisResult> IFinancialAnalyticsService.GetCategoryComparativeAnalysisAsync(
+		CategoryComparativeAnalysisRequest request,
 		CancellationToken token)
 	{
 		await validateService.ValidateAsync(request, token);
@@ -60,40 +60,35 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		var currentPeriodCategories = currentPeriod.Categories
 			.ToDictionary(x => x.CategoryName); 
 
-		var result = new SpendingTrendAnalysisResult
+		var result = new CategoryComparativeAnalysisResult
 		{
-			TotalCurrentSpending = currentPeriod.TotalSpending,
-			TotalPreviousSpending = previousPeriod.TotalSpending,
-			TotalSpendingTrendPercentage = calculator
-				.CalculateTrendPercentage(currentPeriod.TotalSpending,
-					previousPeriod.TotalSpending)
+			TotalSecondPeriodSpending = currentPeriod.TotalSpending,
+			TotalFirstPeriodSpending = previousPeriod.TotalSpending,
 		};
 
-		var categoryTrends = new LinkedList<CategoryTrendModel>();
+		var categoryComparativeAnalyses = new LinkedList<CategoryComparativeAnalysisModel>();
 		foreach (var previousCategory in previousPeriod.Categories) 
 		{
 			token.ThrowIfCancellationRequested();
 			
 			if (currentPeriodCategories.TryGetValue(previousCategory.CategoryName, out var currentCategory)) 
 			{
-				categoryTrends.AddFirst(new CategoryTrendModel
+				categoryComparativeAnalyses.AddFirst(new CategoryComparativeAnalysisModel
 				{
 					CategoryId = previousCategory.CategoryId,
 					CategoryName = previousCategory.CategoryName,
-					CurrentPeriodAmount = currentCategory.TotalAmount,
-					TrendPercentage =calculator
-						.CalculateTrendPercentage(currentCategory.TotalAmount,
-							previousCategory.TotalAmount) 
+					SecondPeriodAmount = currentCategory.TotalAmount,
+					FirstPeriodAmount = previousCategory.TotalAmount
 				});	
 			}
 			else
 			{
-				categoryTrends.AddLast(new CategoryTrendModel
+				categoryComparativeAnalyses.AddLast(new CategoryComparativeAnalysisModel
 				{
 					CategoryId = previousCategory.CategoryId,
 					CategoryName = previousCategory.CategoryName,
-					CurrentPeriodAmount = 0,
-					TrendPercentage = -100
+					SecondPeriodAmount = 0,
+					FirstPeriodAmount = previousCategory.TotalAmount
 				}); 
 			}
 		}
@@ -101,17 +96,17 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		foreach (var newCategory in currentPeriod.Categories.Except(previousPeriod.Categories))
 		{
 			token.ThrowIfCancellationRequested();
-			
-			categoryTrends.AddLast(new CategoryTrendModel
+
+			categoryComparativeAnalyses.AddLast(new CategoryComparativeAnalysisModel
 			{
 				CategoryId = newCategory.CategoryId,
 				CategoryName = newCategory.CategoryName,
-				CurrentPeriodAmount = newCategory.TotalAmount,
-				TrendPercentage = 0
+				SecondPeriodAmount = newCategory.TotalAmount,
+				FirstPeriodAmount = 0
 			});
 		}
 
-		result.CategoryTrends = categoryTrends;
+        result.CategoryComparativeAnalyses = [.. categoryComparativeAnalyses.OrderByDescending(x => x.SecondPeriodAmount)];
 		return result;
 	}
 }

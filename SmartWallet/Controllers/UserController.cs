@@ -58,8 +58,8 @@ public sealed class UserController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> SignIn([FromBody] CreateUserApiModel request, CancellationToken token)
 	{
-		var responce = await _userService.RegistrationAsync(_mapper.Map<CreateUserModel>(request), token);
-		return Ok(_mapper.Map<UserApiModel>(responce));
+		var response = await _userService.RegistrationAsync(_mapper.Map<CreateUserModel>(request), token);
+		return Ok(_mapper.Map<UserApiModel>(response));
 	}
 
 	/// <summary>

@@ -4,9 +4,9 @@ using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 namespace Nasurino.SmartWallet.Services.Validators.ModelValidators;
 
 /// <summary>
-/// Валидатор <see cref="SpendingTrendAnalysisResult"/>
+/// Валидатор <see cref="CategoryComparativeAnalysisResult"/>
 /// </summary>
-public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingTrendAnalysisRequest>
+public class SpendingTrendAnalysisRequestValidator : AbstractValidator<CategoryComparativeAnalysisRequest>
 {
     private const int MaxDays = 36500;
     private const int MaxMonths = 1200;
@@ -26,7 +26,7 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingT
             .GreaterThan(0)
             .WithMessage("Количество временных единиц должно быть больше 0");
 
-        RuleFor(x => x.SecondDate)
+        RuleFor(x => x.SecondPeriod)
             .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
             .WithMessage("Дата окончания второго периода не может быть в будущем");
 
@@ -43,14 +43,14 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<SpendingT
             .WithMessage("Неделя — минимальный диапазон для трендового анализа.");
     }
 
-    private bool ValidatePeriodsDoNotOverlap(SpendingTrendAnalysisRequest request)
+    private bool ValidatePeriodsDoNotOverlap(CategoryComparativeAnalysisRequest request)
     {
         var firstPeriod = request.GetFirstDateRange();
         var secondPeriod = request.GetSecondDateRange();
         return firstPeriod.End < secondPeriod.Start;
     }
 
-    private bool ValidateTimeUnitCountLimit(SpendingTrendAnalysisRequest request)
+    private bool ValidateTimeUnitCountLimit(CategoryComparativeAnalysisRequest request)
     {
         return request.TimeUnit switch
         {

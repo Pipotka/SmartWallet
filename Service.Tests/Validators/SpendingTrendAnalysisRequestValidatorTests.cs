@@ -20,47 +20,47 @@ public class SpendingTrendAnalysisRequestValidatorTests
         _validator = new SpendingTrendAnalysisRequestValidator();
     }
 
-    public static TheoryData<SpendingTrendAnalysisRequest> GoodRequests => new()
+    public static TheoryData<CategoryComparativeAnalysisRequest> GoodRequests => new()
     {
         new()
         {
-            FirstDate = new DateOnly(2025, 1, 7),
-            SecondDate = new DateOnly(2025, 1, 14),
+            FirstPeriod = new DateOnly(2025, 1, 7),
+            SecondPeriod = new DateOnly(2025, 1, 14),
             TimeUnit = TimeUnit.Day,
             TimeUnitCount = 7
         },
         new()
         {
-            FirstDate = new DateOnly(2025, 1, 16),
-            SecondDate = new DateOnly(2025, 2, 14),
+            FirstPeriod = new DateOnly(2025, 1, 16),
+            SecondPeriod = new DateOnly(2025, 2, 14),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         }, 
         new()
         {
-            FirstDate = new DateOnly(2025, 3, 16),
-            SecondDate = new DateOnly(2025, 6, 14),
+            FirstPeriod = new DateOnly(2025, 3, 16),
+            SecondPeriod = new DateOnly(2025, 6, 14),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 3
         }, 
         new()
         {
-            FirstDate = new DateOnly(2024, 1, 16),
-            SecondDate = new DateOnly(2025, 2, 14),
+            FirstPeriod = new DateOnly(2024, 1, 16),
+            SecondPeriod = new DateOnly(2025, 2, 14),
             TimeUnit = TimeUnit.Year,
             TimeUnitCount = 1
         },
         new()
         {
-            FirstDate = new DateOnly(2020, 1, 16),
-            SecondDate = new DateOnly(2025, 2, 14),
+            FirstPeriod = new DateOnly(2020, 1, 16),
+            SecondPeriod = new DateOnly(2025, 2, 14),
             TimeUnit = TimeUnit.Year,
             TimeUnitCount = 5
         },
         new()
         {
-            FirstDate = new DateOnly(2015, 1, 16),
-            SecondDate = new DateOnly(2025, 2, 14),
+            FirstPeriod = new DateOnly(2015, 1, 16),
+            SecondPeriod = new DateOnly(2025, 2, 14),
             TimeUnit = TimeUnit.Year,
             TimeUnitCount = 5
         },
@@ -78,7 +78,7 @@ public class SpendingTrendAnalysisRequestValidatorTests
     /// </summary>
     [Theory]
     [MemberData(nameof(GoodRequests))]
-    public async Task ValidatorShouldSuccessfullyValidateModel(SpendingTrendAnalysisRequest model)
+    public async Task ValidatorShouldSuccessfullyValidateModel(CategoryComparativeAnalysisRequest model)
     {
        // Arrange
        model.UserId = Guid.NewGuid();
@@ -99,11 +99,11 @@ public class SpendingTrendAnalysisRequestValidatorTests
     {
         // Arrange
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var model = new SpendingTrendAnalysisRequest
+        var model = new CategoryComparativeAnalysisRequest
         {
             UserId = Guid.Empty,
-            FirstDate = today,
-            SecondDate = today.AddMonths(1),
+            FirstPeriod = today,
+            SecondPeriod = today.AddMonths(1),
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 0
         };
@@ -114,9 +114,9 @@ public class SpendingTrendAnalysisRequestValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(3);
-        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(SpendingTrendAnalysisRequest.UserId));
-        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(SpendingTrendAnalysisRequest.SecondDate));
-        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(SpendingTrendAnalysisRequest.TimeUnitCount));
+        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(CategoryComparativeAnalysisRequest.UserId));
+        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(CategoryComparativeAnalysisRequest.SecondPeriod));
+        result.Errors.Should().ContainSingle(x => x.PropertyName == nameof(CategoryComparativeAnalysisRequest.TimeUnitCount));
     }
     
     /// <summary>
@@ -126,11 +126,11 @@ public class SpendingTrendAnalysisRequestValidatorTests
     public async Task ValidatorShouldReturnsErrorWhenPeriodsOverlap()
     {
         // Arrange
-        var model = new SpendingTrendAnalysisRequest
+        var model = new CategoryComparativeAnalysisRequest
         {
             UserId = Guid.NewGuid(),
-            FirstDate = new(2020, 1, 10),
-            SecondDate = new(2020, 1, 15),
+            FirstPeriod = new(2020, 1, 10),
+            SecondPeriod = new(2020, 1, 15),
             TimeUnit = TimeUnit.Day,
             TimeUnitCount = 10
         };
@@ -153,11 +153,11 @@ public class SpendingTrendAnalysisRequestValidatorTests
         TimeUnit timeUnit, int timeUnitCount)
     {
         // Arrange
-        var model = new SpendingTrendAnalysisRequest
+        var model = new CategoryComparativeAnalysisRequest
         {
             UserId = Guid.NewGuid(),
-            FirstDate = new(1000, 1, 1),
-            SecondDate = new(2000, 1, 2),
+            FirstPeriod = new(1000, 1, 1),
+            SecondPeriod = new(2000, 1, 2),
             TimeUnit = timeUnit,
             TimeUnitCount = timeUnitCount
         };
@@ -179,11 +179,11 @@ public class SpendingTrendAnalysisRequestValidatorTests
     public async Task ValidatorShouldReturnsErrorWhenTimeUnitCountLessThanWeekForDay()
     {
         // Arrange
-        var model = new SpendingTrendAnalysisRequest
+        var model = new CategoryComparativeAnalysisRequest
         {
             UserId = Guid.NewGuid(),
-            FirstDate = new(2020, 1, 1),
-            SecondDate = new(2020, 2, 5),
+            FirstPeriod = new(2020, 1, 1),
+            SecondPeriod = new(2020, 2, 5),
             TimeUnit = TimeUnit.Day,
             TimeUnitCount = 6
         };

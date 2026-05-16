@@ -3,7 +3,7 @@ namespace Nasurino.SmartWallet.Models.FinancialAnalytics;
 /// <summary>
 /// Api модель для передачи тренда по категории
 /// </summary>
-public sealed class CategoryTrendApiModel
+public sealed class CategoryComparativeAnalysisApiModel
 {
     /// <summary>
     /// Идентификатор категории
@@ -14,14 +14,14 @@ public sealed class CategoryTrendApiModel
     /// Название категории
     /// </summary>
     public string CategoryName { get; set; } = string.Empty;
-    
+ 
     /// <summary>
-    /// Процент изменения тренда
+    /// Сумма во втором периоде
     /// </summary>
-    public double TrendPercentage { get; set; }
-    
+    public double SecondPeriodAmount { get; set; }
+
     /// <summary>
-    /// Сумма в текущем периоде
+    /// Сумма в первом периоде
     /// </summary>
-    public double CurrentPeriodAmount { get; set; }
+    public double FirstPeriodAmount { get; set; }
 }

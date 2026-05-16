@@ -49,18 +49,18 @@ public sealed class FinancialAnalyticsController : Controller
 	}
 
 	/// <summary>
-	/// Выполняет анализ трендов трат по категориям за два периода
+	/// Получает сравнительный анализ по категориям за два периода
 	/// </summary>
-	[HttpPut("spending-trend-analysis")]
-	[ProducesResponseType(typeof(SpendingTrendAnalysisResponse), StatusCodes.Status200OK)]
+	[HttpPut("category-comparative-analysis")]
+	[ProducesResponseType(typeof(CategoryComparativeAnalysisResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> GetSpendingTrendAnalysis([FromBody] SpendingTrendAnalysisApiRequest request, CancellationToken token)
+	public async Task<IActionResult> GetCategoryComparativeAnalysis([FromBody] CategoryComparativeAnalysisApiRequest request, CancellationToken token)
 	{
-		var model = _mapper.Map<SpendingTrendAnalysisRequest>(request);
+		var model = _mapper.Map<CategoryComparativeAnalysisRequest>(request);
 		model.UserId = _identityProvider.Id;
-		var result = await _financialAnalyticsService.GetSpendingTrendAnalysisAsync(model, token);
-		return Ok(_mapper.Map<SpendingTrendAnalysisResponse>(result));
+		var result = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(model, token);
+		return Ok(_mapper.Map<CategoryComparativeAnalysisResponse>(result));
 	}
 }
