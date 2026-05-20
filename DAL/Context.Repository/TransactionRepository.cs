@@ -108,6 +108,47 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			};
 	}
 
+	async Task<SpendingTrendLineResult> ITransactionRepository.GetSpendingTrendLineAsync(
+		Guid userId,
+		IReadOnlyCollection<DateRangeInfo> periods,
+		CancellationToken cancellationToken)
+	{
+		var overallStart = periods.Min(p => p.Start);
+		var overallEnd = periods.Max(p => p.End);
+
+		var transactions = await Storage.Read<Transaction>()
+			.NotDeleted()
+			.Where(InDateRange(overallStart, overallEnd))
+			.Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
+			.Include(t => t.DestinationAccount)
+			.ToListAsync(cancellationToken);
+
+		var periodItems = new List<SpendingTrendPeriodItem>();
+
+		foreach (var period in periods)
+		{
+			var categoryGroups = transactions
+				.Where(t => period.Start <= t.MadeAt && t.MadeAt < period.End)
+				.GroupBy(t => new { t.DestinationAccountId, t.DestinationAccount!.Name })
+				.Select(g => new SpendingTrendPeriodItem
+				{
+					CategoryId = g.Key.DestinationAccountId!.Value,
+					CategoryName = g.Key.Name,
+					Label = period.Label,
+					TotalAmount = g.Sum(t => t.Amount)
+				})
+				.Where(item => item.TotalAmount > 0);
+
+			periodItems.AddRange(categoryGroups);
+		}
+
+		return new SpendingTrendLineResult
+		{
+			Labels = periods.Select(p => p.Label).ToList(),
+			PeriodItems = periodItems
+		};
+	}
+
 	private static Expression<Func<Transaction, bool>> InDateRange(DateTime startTimeRange, DateTime endTimeRange)
 		=> transaction => startTimeRange <= transaction.MadeAt && transaction.MadeAt < endTimeRange;
 }
