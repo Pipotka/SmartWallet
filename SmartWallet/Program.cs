@@ -101,6 +101,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var allowedOrigins = builder.Configuration.GetSection("ApiSettings:CqrsSettings:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins);
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
+
 #region Регистрация классов конфигурации
 builder.Services.Configure<JwtOptions>(builder.Configuration
     .GetSection("ApiSettings:JwtSettings"));
@@ -160,7 +171,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("SmartWalletCorsPolicy");
     app.UseHangfireDashboard();
 }
 else
@@ -173,6 +183,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors();
 
 app.MapControllers();
 
