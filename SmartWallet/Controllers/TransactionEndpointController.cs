@@ -84,7 +84,7 @@ public sealed class TransactionEndpointController : Controller
 	/// Удаляет денежного храшнилища
 	/// </summary>
 	[HttpDelete]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -110,17 +110,36 @@ public static class TransactionRepositoryMockExtensions
         => mockedTransactionRepository.SetupGetCategorizedSpendingByUserIdAndDateRange(userId, startDate, endDate, token)
             .ReturnsAsync(result);
 
-    private static ISetup<ITransactionRepository, Task<CategorizedSpendingResult>> SetupGetCategorizedSpendingByUserIdAndDateRange(
-        this Mock<ITransactionRepository> mockedTransactionRepository,
-        Guid userId = default,
-        DateTime startDate = default,
-        DateTime endDate = default,
-        CancellationToken token = default)
-    {
-        return mockedTransactionRepository.Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(
-            It.Is<Guid>(g => userId == Guid.Empty || g == userId),
-            It.Is<DateTime>(d => startDate == default || d == startDate),
-            It.Is<DateTime>(d => endDate == default || d == endDate),
-            It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
-    }
+private static ISetup<ITransactionRepository, Task<CategorizedSpendingResult>> SetupGetCategorizedSpendingByUserIdAndDateRange(
+		this Mock<ITransactionRepository> mockedTransactionRepository,
+		Guid userId = default,
+		DateTime startDate = default,
+		DateTime endDate = default,
+		CancellationToken token = default)
+	{
+		return mockedTransactionRepository.Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(
+			It.Is<Guid>(g => userId == Guid.Empty || g == userId),
+			It.Is<DateTime>(d => startDate == default || d == startDate),
+			It.Is<DateTime>(d => endDate == default || d == endDate),
+			It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
+	}
+
+	/// <summary>
+	/// Настраивает мок для возврата данных линейного графика трат.
+	/// <inheritdoc cref="ITransactionRepository.GetSpendingTrendLineAsync" path="/summary"/>
+	/// </summary>
+	/// <param name="mockedTransactionRepository">Мок репозитория транзакций</param>
+	/// <param name="result">Результат для возврата</param>
+	/// <param name="userId">Идентификатор пользователя</param>
+	/// <param name="token">Токен отмены</param>
+	public static void GetSpendingTrendLineReturnValue(
+		this Mock<ITransactionRepository> mockedTransactionRepository,
+		SpendingTrendLineResult result,
+		Guid userId = default,
+		CancellationToken token = default)
+		=> mockedTransactionRepository.Setup(x => x.GetSpendingTrendLineAsync(
+			It.Is<Guid>(g => userId == Guid.Empty || g == userId),
+			It.IsAny<IReadOnlyCollection<DateRangeInfo>>(),
+			It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)))
+			.ReturnsAsync(result);
 }

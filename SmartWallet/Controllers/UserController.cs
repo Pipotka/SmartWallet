@@ -120,9 +120,8 @@ public sealed class UserController : Controller
 	/// Выход из аккаунта
 	/// </summary>
 	[HttpPost("logout")]
-	[Authorize]
+	[AllowAnonymous]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> LogOut(CancellationToken token)
 	{
 		var refreshToken = Request.Cookies["refresh_token"];
@@ -157,7 +156,7 @@ public sealed class UserController : Controller
 	/// </summary>
 	[HttpDelete]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
@@ -174,7 +173,7 @@ public sealed class UserController : Controller
 	/// </summary>
 	[HttpPut("password")]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordApiModel request, CancellationToken token)

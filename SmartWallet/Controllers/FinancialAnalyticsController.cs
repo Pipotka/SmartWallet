@@ -63,4 +63,20 @@ public sealed class FinancialAnalyticsController : Controller
 		var result = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(model, token);
 		return Ok(_mapper.Map<CategoryComparativeAnalysisResponse>(result));
 	}
+
+	/// <summary>
+	/// Получает данные линейного графика трат по категориям за серию периодов
+	/// </summary>
+	[HttpPut("spending-trend-line")]
+	[ProducesResponseType(typeof(SpendingTrendLineApiResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> GetSpendingTrendLine([FromBody] SpendingTrendLineApiRequest request, CancellationToken token)
+	{
+		var model = _mapper.Map<SpendingTrendLineRequest>(request);
+		model.UserId = _identityProvider.Id;
+		var result = await _financialAnalyticsService.GetSpendingTrendLineAsync(model, token);
+		return Ok(_mapper.Map<SpendingTrendLineApiResponse>(result));
+	}
 }

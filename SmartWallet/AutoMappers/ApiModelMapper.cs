@@ -53,5 +53,11 @@ public class ApiModelMapper : Profile
 		CreateMap<CategoryComparativeAnalysisResult, CategoryComparativeAnalysisResponse>(MemberList.Destination);
 		CreateMap<CategoryComparativeAnalysisApiRequest, CategoryComparativeAnalysisRequest>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
+
+		CreateMap<SpendingTrendLineApiRequest, SpendingTrendLineRequest>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
+		CreateMap<SpendingTrendLineNodeModel, SpendingTrendLineNodeApiModel>(MemberList.Destination);
+		CreateMap<SpendingTrendLineCategoryModel, SpendingTrendLineCategoryApiModel>(MemberList.Destination);
+		CreateMap<SpendingTrendLineResult, SpendingTrendLineApiResponse>(MemberList.Destination);
     }
 }

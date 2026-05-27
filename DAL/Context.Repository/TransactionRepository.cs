@@ -115,32 +115,57 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	{
 		var overallStart = periods.Min(p => p.Start);
 		var overallEnd = periods.Max(p => p.End);
+		var dbContext = (DbContext)Storage;
 
-		var transactions = await Storage.Read<Transaction>()
-			.NotDeleted()
-			.Where(InDateRange(overallStart, overallEnd))
-			.Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
-			.Include(t => t.DestinationAccount)
-			.ToListAsync(cancellationToken);
-
-		var periodItems = new List<SpendingTrendPeriodItem>();
+		var parameters = new List<object>();
+		var paramIndex = 0;
+		var periodSelects = new List<string>();
 
 		foreach (var period in periods)
 		{
-			var categoryGroups = transactions
-				.Where(t => period.Start <= t.MadeAt && t.MadeAt < period.End)
-				.GroupBy(t => new { t.DestinationAccountId, t.DestinationAccount!.Name })
-				.Select(g => new SpendingTrendPeriodItem
-				{
-					CategoryId = g.Key.DestinationAccountId!.Value,
-					CategoryName = g.Key.Name,
-					Label = period.Label,
-					TotalAmount = g.Sum(t => t.Amount)
-				})
-				.Where(item => item.TotalAmount > 0);
+			var labelParam = $"@p{paramIndex++}";
+			var startParam = $"@p{paramIndex++}";
+			var endParam = $"@p{paramIndex++}";
 
-			periodItems.AddRange(categoryGroups);
+			periodSelects.Add($"SELECT {labelParam} AS label, {startParam} AS start_date, {endParam} AS end_date");
+			parameters.Add(period.Label);
+			parameters.Add(period.Start);
+			parameters.Add(period.End);
 		}
+
+		var userIdParam = $"@p{paramIndex++}";
+		var overallStartParam = $"@p{paramIndex++}";
+		var overallEndParam = $"@p{paramIndex}";
+
+		parameters.Add(userId);
+		parameters.Add(overallStart);
+		parameters.Add(overallEnd);
+
+		var cte = string.Join(" UNION ALL ", periodSelects);
+
+		var sql = $@"
+			WITH periods AS ({cte})
+			SELECT
+				te.""Id"" AS ""CategoryId"",
+				te.""Name"" AS ""CategoryName"",
+				p.label AS ""Label"",
+				SUM(t.""Amount"") AS ""TotalAmount""
+			FROM ""Transaction"" t
+			INNER JOIN ""TransactionEndpoint"" te ON t.""DestinationAccountId"" = te.""Id""
+				AND te.""DeletedAt"" IS NULL
+			INNER JOIN periods p ON t.""MadeAt"" >= p.start_date AND t.""MadeAt"" < p.end_date
+			WHERE t.""DeletedAt"" IS NULL
+				AND t.""UserId"" = {userIdParam}
+				AND t.""Type"" = 1
+				AND t.""MadeAt"" >= {overallStartParam}
+				AND t.""MadeAt"" < {overallEndParam}
+			GROUP BY te.""Id"", te.""Name"", p.label
+			HAVING SUM(t.""Amount"") > 0";
+
+		var periodItems = await dbContext.Database
+			.SqlQueryRaw<SpendingTrendPeriodItem>(sql, parameters.ToArray())
+			.AsNoTracking()
+			.ToListAsync(cancellationToken);
 
 		return new SpendingTrendLineResult
 		{

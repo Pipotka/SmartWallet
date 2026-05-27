@@ -1,0 +1,70 @@
+---
+title: Диаграмма классов сервисов SmartWallet
+---
+
+classDiagram
+    direction TB
+
+    %% ===== Интерфейсы сервисов =====
+
+    class ITransactionEndpointService {
+        <<interface>>
+        +CreateAsync() Task
+        +DeleteAsync() Task
+        +GetListByUserIdAsync() Task
+        +UpdateAsync() Task
+    }
+
+    class ITransactionService {
+        <<interface>>
+        +CreateAsync() Task
+        +DeleteAsync() Task
+        +GetListByUserIdAsync() Task
+    }
+
+    %% ===== Классы сервисов =====
+
+    class TransactionEndpointService {
+        +GetListByUserIdAsync() Task
+        +CreateAsync() Task
+        +UpdateAsync() Task
+        +DeleteAsync() Task
+    }
+
+    class TransactionService {
+        +GetListByUserIdAsync() Task
+        +CreateAsync() Task
+        +DeleteAsync() Task
+    }
+
+    %% ===== Зависимости (интерфейсы, внедряемые через конструктор) =====
+
+    class IUnitOfWork {
+        <<interface>>
+    }
+
+    class ISmartWalletValidateService {
+        <<interface>>
+        +ValidateAsync~TModel~(model: TModel, token: CancellationToken) Task
+    }
+
+    class IMapper {
+        <<interface>>
+        +Map~TDestination~(source: object) TDestination
+        +Map(source: object, destination: object) object
+    }
+
+    %% ===== Связи реализации =====
+
+    TransactionEndpointService ..|> ITransactionEndpointService : implements
+    TransactionService ..|> ITransactionService : implements
+
+    %% ===== Связи зависимостей (constructor injection) =====
+
+    TransactionEndpointService ..> IUnitOfWork : uses
+    TransactionEndpointService ..> ISmartWalletValidateService : uses
+    TransactionEndpointService ..> IMapper : uses
+
+    TransactionService ..> IUnitOfWork : uses
+    TransactionService ..> ISmartWalletValidateService : uses
+    TransactionService ..> IMapper : uses

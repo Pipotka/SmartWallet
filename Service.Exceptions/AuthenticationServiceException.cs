@@ -9,7 +9,7 @@ public class AuthenticationServiceException : ServiceException
     /// Инициализирует новый экземпляр <see cref="AuthenticationServiceException"/>
     /// </summary>
     public AuthenticationServiceException() 
-        : base("Аутентификация провалилась. Неверный логин или пароль.")
+        : base("Ошибка аутентификации.")
     {
     }
 }

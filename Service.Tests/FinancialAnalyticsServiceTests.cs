@@ -15,6 +15,8 @@ using Nasurino.SmartWallet.UnitTests.Services.FluentAssertions.Shortcuts.Extensi
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
 using Service.Infrastructure.Contracts;
+using ServiceTrendLineResult = Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics.SpendingTrendLineResult;
+using DalTrendLineResult = Nasurino.SmartWallet.Context.Repository.Contracts.Models.SpendingTrendLineResult;
 using Services.Contracts;
 using Xunit;
 
@@ -1475,6 +1477,324 @@ public sealed class FinancialAnalyticsServiceTests
             TimeUnit = TimeUnit.Month,
             TimeUnitCount = 1
         };
+    }
+    #endregion
+
+    #region SpendingTrendLineAsync Tests
+
+    /// <summary>
+    /// TC-TREND-ERR-01: Должен выбросить исключение когда пользователь не найден
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineShouldThrowEntityNotFoundException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 3, 31),
+            TimeUnit = TimeUnit.Month
+        };
+
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var act = () => _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        await act.ShouldThrowEntityNotFoundException($"*{userId}*");
+    }
+
+    /// <summary>
+    /// TC-TREND-BAS-01: Пустой результат — все периоды без трат
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithNoSpendingShouldReturnEmptyCategories()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 3, 31),
+            TimeUnit = TimeUnit.Month
+        };
+
+        var emptyResult = new DalTrendLineResult
+        {
+            Labels = ["Январь", "Февраль", "Март"],
+            PeriodItems = []
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(emptyResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Labels.Should().Equal("Январь", "Февраль", "Март");
+        actual.Categories.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// TC-TREND-BAS-02: Один период, одна категория с тратами
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithOnePeriodOneCategoryShouldReturnCorrectResult()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 1, 31),
+            TimeUnit = TimeUnit.Month
+        };
+
+        var trendResult = new DalTrendLineResult
+        {
+            Labels = ["Январь"],
+            PeriodItems =
+            [
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Январь", TotalAmount = 500 }
+            ]
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Labels.Should().Equal("Январь");
+        actual.Categories.Should().HaveCount(1);
+        actual.Categories.First().CategoryId.Should().Be(categoryId);
+        actual.Categories.First().Name.Should().Be("Food");
+        actual.Categories.First().Nodes.Should().HaveCount(1);
+        actual.Categories.First().Nodes.First().Label.Should().Be("Январь");
+        actual.Categories.First().Nodes.First().Amount.Should().Be(500);
+    }
+
+    /// <summary>
+    /// TC-TREND-BAS-03: Несколько периодов, одна категория с тратами во всех периодах
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithMultiplePeriodsOneCategoryShouldReturnCorrectResult()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 5, 31),
+            TimeUnit = TimeUnit.Month
+        };
+
+        var trendResult = new DalTrendLineResult
+        {
+            Labels = ["Январь", "Февраль", "Март", "Апрель", "Май"],
+            PeriodItems =
+            [
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Январь", TotalAmount = 500 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Февраль", TotalAmount = 200 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Март", TotalAmount = 300 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Апрель", TotalAmount = 400 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Май", TotalAmount = 700 }
+            ]
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Labels.Should().Equal("Январь", "Февраль", "Март", "Апрель", "Май");
+        actual.Categories.Should().HaveCount(1);
+        actual.Categories.First().CategoryId.Should().Be(categoryId);
+        var nodes = actual.Categories.First().Nodes.ToList();
+        nodes.Should().HaveCount(5);
+        nodes[0].Label.Should().Be("Январь");
+        nodes[0].Amount.Should().Be(500);
+        nodes[1].Label.Should().Be("Февраль");
+        nodes[1].Amount.Should().Be(200);
+        nodes[2].Label.Should().Be("Март");
+        nodes[2].Amount.Should().Be(300);
+        nodes[3].Label.Should().Be("Апрель");
+        nodes[3].Amount.Should().Be(400);
+        nodes[4].Label.Should().Be("Май");
+        nodes[4].Amount.Should().Be(700);
+    }
+
+    /// <summary>
+    /// TC-TREND-CAT-01: Категория с тратами не во всех периодах — Nodes содержит только периоды с тратами
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithCategoryNotInAllPeriodsShouldReturnOnlyNonZeroPeriodNodes()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 5, 31),
+            TimeUnit = TimeUnit.Month
+        };
+
+        var trendResult = new DalTrendLineResult
+        {
+            Labels = ["Январь", "Февраль", "Март", "Апрель", "Май"],
+            PeriodItems =
+            [
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Январь", TotalAmount = 500 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "Май", TotalAmount = 700 }
+            ]
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Categories.Should().HaveCount(1);
+        var foodCategory = actual.Categories.First();
+        foodCategory.CategoryId.Should().Be(categoryId);
+        var nodes = foodCategory.Nodes.ToList();
+        nodes.Should().HaveCount(2);
+        nodes[0].Label.Should().Be("Январь");
+        nodes[0].Amount.Should().Be(500);
+        nodes[1].Label.Should().Be("Май");
+        nodes[1].Amount.Should().Be(700);
+    }
+
+    /// <summary>
+    /// TC-TREND-CAT-02: Несколько категорий, каждая с тратами в разных подмножествах периодов
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithMultipleCategoriesShouldSortByTotalAmountDescending()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var foodId = Guid.NewGuid();
+        var transportId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2025, 1, 1),
+            EndDate = new DateOnly(2025, 4, 30),
+            TimeUnit = TimeUnit.Month
+        };
+
+        var trendResult = new DalTrendLineResult
+        {
+            Labels = ["Январь", "Февраль", "Март", "Апрель"],
+            PeriodItems =
+            [
+                new SpendingTrendPeriodItem { CategoryId = foodId, CategoryName = "Food", Label = "Январь", TotalAmount = 500 },
+                new SpendingTrendPeriodItem { CategoryId = foodId, CategoryName = "Food", Label = "Март", TotalAmount = 600 },
+                new SpendingTrendPeriodItem { CategoryId = transportId, CategoryName = "Transport", Label = "Январь", TotalAmount = 200 }
+            ]
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Categories.Should().HaveCount(2);
+        actual.Categories.First().Name.Should().Be("Food");
+        actual.Categories.First().CategoryId.Should().Be(foodId);
+        var foodNodes = actual.Categories.First().Nodes.ToList();
+        foodNodes.Should().HaveCount(2);
+        foodNodes[0].Label.Should().Be("Январь");
+        foodNodes[0].Amount.Should().Be(500);
+        foodNodes[1].Label.Should().Be("Март");
+        foodNodes[1].Amount.Should().Be(600);
+        foodNodes.Sum(n => n.Amount).Should().Be(1100);
+        actual.Categories.Last().Name.Should().Be("Transport");
+        actual.Categories.Last().CategoryId.Should().Be(transportId);
+        var transportNodes = actual.Categories.Last().Nodes.ToList();
+        transportNodes.Should().HaveCount(1);
+        transportNodes[0].Label.Should().Be("Январь");
+        transportNodes[0].Amount.Should().Be(200);
+        transportNodes.Sum(n => n.Amount).Should().Be(200);
+    }
+
+    /// <summary>
+    /// TC-TREND-YEAR-01: TimeUnit = Year — корректные метки-годы и хронологический порядок узлов
+    /// </summary>
+    [Fact]
+    public async Task GetSpendingTrendLineWithTimeUnitYearShouldReturnYearLabelsAndCorrectNodeOrder()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var request = new SpendingTrendLineRequest
+        {
+            UserId = userId,
+            StartDate = new DateOnly(2023, 1, 1),
+            EndDate = new DateOnly(2025, 12, 31),
+            TimeUnit = TimeUnit.Year
+        };
+
+        // PeriodItems intentionally in reverse order to verify SUT sorts by label index
+        var trendResult = new DalTrendLineResult
+        {
+            Labels = ["2023", "2024", "2025"],
+            PeriodItems =
+            [
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "2025", TotalAmount = 1500 },
+                new SpendingTrendPeriodItem { CategoryId = categoryId, CategoryName = "Food", Label = "2023", TotalAmount = 1000 }
+            ]
+        };
+
+        _mockedUserRepository.GetUserByIdReturnNotNull(userId);
+        _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+
+        // Act
+        var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
+
+        // Assert
+        actual.Labels.Should().Equal("2023", "2024", "2025");
+        actual.Categories.Should().HaveCount(1);
+        var category = actual.Categories.First();
+        category.CategoryId.Should().Be(categoryId);
+        category.Name.Should().Be("Food");
+        var nodes = category.Nodes.ToList();
+        nodes.Should().HaveCount(2);
+        nodes[0].Label.Should().Be("2023");
+        nodes[0].Amount.Should().Be(1000);
+        nodes[1].Label.Should().Be("2025");
+        nodes[1].Amount.Should().Be(1500);
     }
     #endregion
 }

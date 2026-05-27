@@ -26,5 +26,16 @@ namespace Nasurino.SmartWallet.Services.Contracts
 		Task<CategoryComparativeAnalysisResult> GetCategoryComparativeAnalysisAsync(
 			CategoryComparativeAnalysisRequest request,
 			CancellationToken token);
+
+		/// <summary>
+		/// Возвращает данные линейного графика трат по категориям за серию периодов
+		/// </summary>
+		/// <param name="request">Параметры запроса линейного графика</param>
+		/// <param name="token">Токен отмены</param>
+		/// <returns>
+		/// Результат, содержащий метки периодов и категории с суммами трат за каждый период.
+		/// Категории без трат в конкретном периоде не содержат Node для этого периода.
+		/// </returns>
+		Task<SpendingTrendLineResult> GetSpendingTrendLineAsync(SpendingTrendLineRequest request, CancellationToken token);
 	}
 }

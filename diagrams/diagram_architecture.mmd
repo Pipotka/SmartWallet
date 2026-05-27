@@ -1,0 +1,40 @@
+graph TB
+    subgraph "Слой API"
+        C1[Controllers]
+        AM1[AutoMapper\nAPI → Service]
+        EF[Фильтр исключений]
+    end
+
+    subgraph "Слой бизнес-логики"
+        US[UserService]
+        TS[TransactionService]
+        TES[TransactionEndpointService]
+        FAS[FinancialAnalyticsService]
+        JP[JwtProvider]
+        PH[PasswordHasher]
+        FC[FinancialCalculator]
+        IP[IIdentityProvider]
+    end
+
+    subgraph "Слой доступа к данным"
+        AM2[AutoMapper\nService → Repository]
+        REP[Repositories]
+        UOW[Unit of Work]
+        EFC[EF Core]
+    end
+
+    subgraph "База данных"
+        PG[(PostgreSQL)]
+    end
+
+    C1 --> AM1
+    C1 --> EF
+    AM1 --> US & TS & TES & FAS
+    US --> JP & PH
+    TS --> FC
+    TES --> IP
+    US & TS & TES & FAS --> AM2
+    AM2 --> REP
+    REP --> UOW
+    UOW --> EFC
+    EFC --> PG

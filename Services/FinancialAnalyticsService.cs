@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Services.Contracts;
 using Service.Infrastructure.Contracts;
+using ServiceTrendLineResult = Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics.SpendingTrendLineResult;
 using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
@@ -108,5 +110,52 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 
         result.CategoryComparativeAnalyses = [.. categoryComparativeAnalyses.OrderByDescending(x => x.SecondPeriodAmount)];
 		return result;
+	}
+
+	async Task<ServiceTrendLineResult> IFinancialAnalyticsService.GetSpendingTrendLineAsync(
+		SpendingTrendLineRequest request,
+		CancellationToken token)
+	{
+		await validateService.ValidateAsync(request, token);
+
+		_ = await _userRepository.GetUserByIdAsync(request.UserId, token)
+			?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
+
+		var dateRanges = request.GetDateRanges();
+
+		var dateRangeInfos = dateRanges.Select(r => new DateRangeInfo
+		{
+			Start = r.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+			End = r.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+			Label = r.Label
+		}).ToList();
+
+		var trendLineData = await _transactionRepository
+			.GetSpendingTrendLineAsync(request.UserId, dateRangeInfos, token);
+
+		var labelOrder = dateRanges.Select((r, i) => (r.Label, i)).ToDictionary(x => x.Label, x => x.i);
+
+		var categoryGroups = trendLineData.PeriodItems
+			.GroupBy(item => new { item.CategoryId, item.CategoryName })
+			.Select(group => new SpendingTrendLineCategoryModel
+			{
+				CategoryId = group.Key.CategoryId,
+				Name = group.Key.CategoryName,
+				Nodes = group
+					.OrderBy(item => labelOrder.GetValueOrDefault(item.Label, 0))
+					.Select(item => new SpendingTrendLineNodeModel
+					{
+						Label = item.Label,
+						Amount = item.TotalAmount
+					}).ToList()
+			})
+			.OrderByDescending(c => c.Nodes.Sum(n => n.Amount))
+			.ToList();
+
+		return new ServiceTrendLineResult
+		{
+			Labels = trendLineData.Labels,
+			Categories = categoryGroups
+		};
 	}
 }

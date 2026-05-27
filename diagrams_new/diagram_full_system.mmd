@@ -1,0 +1,40 @@
+graph TB
+    subgraph Client ["User Device"]
+        Browser[Mobile Browser]
+    end
+
+    subgraph Frontend ["React SPA Frontend"]
+        Components[Components]
+        Router[React Router]
+        State[State / Hooks]
+        APIClient[API Client<br/>Axios]
+    end
+
+    subgraph Backend ["ASP.NET Core Web API"]
+        Controllers[Controllers]
+        Services[Services]
+        Repositories[Repositories]
+    end
+
+    subgraph DataLayer ["Data & Jobs"]
+        PostgreSQL[(PostgreSQL Database)]
+        Hangfire[Hangfire<br/>Background Jobs]
+    end
+
+    Browser -->|HTTPS| Components
+    Components --> Router
+    Components --> State
+    Components --> APIClient
+    State --> APIClient
+    APIClient -->|JSON / HTTPS| Controllers
+    Controllers --> Services
+    Services --> Repositories
+    Services --> Hangfire
+    Hangfire --> Repositories
+    Repositories -->|SQL| PostgreSQL
+    PostgreSQL -->|Data| Repositories
+    Repositories -->|Entities| Services
+    Services -->|DTOs| Controllers
+    Controllers -->|JSON| APIClient
+    APIClient -->|Data| State
+    State -->|State Updates| Components

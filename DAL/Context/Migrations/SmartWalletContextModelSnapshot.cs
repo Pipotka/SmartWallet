@@ -22,6 +22,41 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken", (string)null);
+                });
+
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -126,6 +161,17 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.ToTable("User", (string)null);
                 });
 
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Nasurino.SmartWallet.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.Transaction", b =>
                 {
                     b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "DestinationAccount")
@@ -171,6 +217,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.User", b =>
                 {
+                    b.Navigation("RefreshTokens");
+
                     b.Navigation("TransactionEndpoints");
 
                     b.Navigation("Transactions");

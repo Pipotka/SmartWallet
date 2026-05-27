@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant U as Пользователь
+    participant C as Controller
+    participant AM as AutoMapper
+    participant TS as TransactionService
+    participant FC as FinancialCalculator
+    participant TE as TransactionEndpointService
+    participant R as Repository
+    participant DB as PostgreSQL
+
+    U->>C: POST /api/transactions\n(Authorization: Bearer token)
+    C->>AM: Маппинг CreateTransactionRequest → CreateTransactionModel
+    AM-->>C: CreateTransactionModel
+    C->>TS: CreateTransaction(userId, model)
+    TS->>TS: Валидация входных данных
+    TS->>TE: Проверка существования и владельца счёта
+    TE->>R: GetById(accountId)
+    R->>DB: SELECT ... FROM accounts
+    DB-->>R: Account
+    R-->>TE: Account
+    TE-->>TS: Подтверждение владения
+    TS->>TS: Определение типа транзакции\n(Transfer / Expense / Income / Adjustment)
+    TS->>FC: Проверка лимитов расходов
+    FC-->>TS: Результат проверки
+    TS->>TS: Создание записи транзакции
+    TS->>TE: Обновление балансов счетов
+    TE->>R: UpdateBalance(accountId, amount)
+    TS->>R: Add(transaction)
+    R->>DB: INSERT INTO transactions\nUPDATE accounts SET balance
+    DB-->>R: OK
+    R-->>TS: Transaction
+    TS-->>C: TransactionDto
+    C->>AM: Маппинг TransactionDto → TransactionResponse
+    AM-->>C: TransactionResponse
+    C-->>U: 201 Created + TransactionResponse

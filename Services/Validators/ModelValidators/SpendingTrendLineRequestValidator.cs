@@ -1,0 +1,52 @@
+using FluentValidation;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+
+namespace Nasurino.SmartWallet.Services.Validators.ModelValidators;
+
+/// <summary>
+/// Валидатор <see cref="SpendingTrendLineRequest"/>
+/// </summary>
+public class SpendingTrendLineRequestValidator : AbstractValidator<SpendingTrendLineRequest>
+{
+    private const int MaxDays = 31;
+    private const int MaxMonths = 12;
+    private const int MaxYears = 25;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="SpendingTrendLineRequestValidator"/>
+    /// </summary>
+    public SpendingTrendLineRequestValidator()
+    {
+        RuleFor(x => x.UserId)
+            .NotEmpty()
+            .WithMessage("Идентификатор пользователя не может быть пустым");
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        RuleFor(x => x.StartDate)
+            .LessThanOrEqualTo(today)
+            .WithMessage("Дата начала не может быть в будущем");
+
+        RuleFor(x => x.EndDate)
+            .LessThanOrEqualTo(today)
+            .WithMessage("Дата окончания не может быть в будущем");
+
+        RuleFor(x => x)
+            .Must(x => x.StartDate < x.EndDate)
+            .WithMessage("Дата начала должна быть строго меньше даты окончания");
+
+        RuleFor(x => x)
+            .Must(ValidateNodeCountLimit)
+            .WithMessage($"Превышен максимальный лимит узлов: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
+    }
+
+    private bool ValidateNodeCountLimit(SpendingTrendLineRequest request)
+    {
+        return request.TimeUnit switch
+        {
+            TimeUnit.Day => (request.EndDate.DayNumber - request.StartDate.DayNumber) + 1 <= MaxDays,
+            TimeUnit.Month => ((request.EndDate.Year - request.StartDate.Year) * 12 + request.EndDate.Month - request.StartDate.Month) + 1 <= MaxMonths,
+            TimeUnit.Year => (request.EndDate.Year - request.StartDate.Year) + 1 <= MaxYears,
+            _ => false
+        };
+    }
+}

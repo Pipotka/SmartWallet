@@ -1,0 +1,36 @@
+flowchart LR
+    Start([Start]) --> LoginPage[LoginPage]
+    Start --> RegisterPage[RegisterPage]
+
+    LoginPage --> DashboardPage[DashboardPage]
+    RegisterPage --> LoginPage
+
+    DashboardPage --> TransactionsPage[TransactionsPage]
+    DashboardPage --> CreateTransactionPage[CreateTransactionPage]
+    DashboardPage --> AccountsPage[AccountsPage]
+    DashboardPage --> AnalyticsPage[AnalyticsPage]
+    DashboardPage --> ProfilePage[ProfilePage]
+
+    TransactionsPage --> CreateTransactionPage
+    CreateTransactionPage --> DashboardPage
+    AccountsPage --> CreateAccountPage[CreateAccountPage]
+    AnalyticsPage --> DashboardPage
+    ProfilePage --> SettingsPage[SettingsPage]
+
+    subgraph BottomNav ["Bottom Navigation"]
+        direction LR
+        NavHome[Home]
+        NavTransactions[Transactions]
+        NavAnalytics[Analytics]
+        NavProfile[Profile]
+    end
+
+    DashboardPage -.-> NavHome
+    TransactionsPage -.-> NavTransactions
+    CreateTransactionPage -.-> NavTransactions
+    AccountsPage -.-> NavHome
+    AnalyticsPage -.-> NavAnalytics
+    ProfilePage -.-> NavProfile
+    SettingsPage -.-> NavProfile
+    LoginPage -.-> NavHome
+    RegisterPage -.-> NavHome

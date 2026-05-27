@@ -1,0 +1,86 @@
+classDiagram
+    direction TB
+
+    class IUserService {
+        <<interface>>
+        +RegistrationAsync(CreateUserModel, CancellationToken) Task~UserModel~
+        +LogInAsync(LogInModel, CancellationToken) Task~string~
+        +GetUserByIdAsync(Guid, CancellationToken) Task~UserModel~
+        +UpdateAsync(UpdateUserModel, CancellationToken) Task~UserModel~
+        +DeleteAsync(DeleteUserModel, CancellationToken) Task
+        +ChangePasswordAsync(ChangePasswordModel, CancellationToken) Task
+    }
+
+    class ITransactionService {
+        <<interface>>
+        +CreateAsync(CreateTransactionModel, CancellationToken) Task~TransactionModel~
+        +DeleteAsync(DeleteTransactionModel, CancellationToken) Task
+        +GetListByUserIdAsync(Guid, CancellationToken) Task~List~TransactionModel~~
+    }
+
+    class ITransactionEndpointService {
+        <<interface>>
+        +CreateAsync(CreateTransactionEndpointModel, CancellationToken) Task~TransactionEndpointModel~
+        +UpdateAsync(UpdateTransactionEndpointModel, CancellationToken) Task~TransactionEndpointModel~
+        +DeleteAsync(DeleteTransactionEndpointModel, CancellationToken) Task
+        +GetListByUserIdAsync(Guid, CancellationToken) Task~List~TransactionEndpointModel~~
+    }
+
+    class IFinancialAnalyticsService {
+        <<interface>>
+        +GetCategorizingSpendingAsync(CategorizingSpendingRequest, CancellationToken) Task~SpendingCategoryModel~
+        +GetSpendingTrendAnalysisAsync(SpendingTrendAnalysisRequest, CancellationToken) Task~SpendingTrendAnalysisResult~
+    }
+
+    class IJwtProvider {
+        <<interface>>
+        +GenerateToken(UserModel) string
+    }
+
+    class IPasswordHasher {
+        <<interface>>
+        +Generate(string) string
+        +Verify(string, string) bool
+    }
+
+    class IFinancialCalculator {
+        <<interface>>
+        +CalculateTrendPercentage(double, double, int) double
+    }
+
+    class IUnitOfWork {
+        <<interface>>
+        +TransactionEndpointRepository : ITransactionEndpointRepository
+        +TransactionRepository : ITransactionRepository
+        +UserRepository : IUserRepository
+        +SaveChangesAsync(CancellationToken) Task
+    }
+
+    class UserController {
+        -IUserService _userService
+        -IIdentityProvider _identityProvider
+        -IMapper _mapper
+    }
+
+    class TransactionController {
+        -ITransactionService _transactionService
+        -IIdentityProvider _identityProvider
+        -IMapper _mapper
+    }
+
+    class TransactionEndpointController {
+        -ITransactionEndpointService _transactionEndpointService
+        -IIdentityProvider _identityProvider
+        -IMapper _mapper
+    }
+
+    class FinancialAnalyticsController {
+        -IFinancialAnalyticsService _financialAnalyticsService
+        -IIdentityProvider _identityProvider
+        -IMapper _mapper
+    }
+
+    UserController --> IUserService : использует
+    TransactionController --> ITransactionService : использует
+    TransactionEndpointController --> ITransactionEndpointService : использует
+    FinancialAnalyticsController --> IFinancialAnalyticsService : использует
