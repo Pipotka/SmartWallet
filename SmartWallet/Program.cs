@@ -11,6 +11,7 @@ using Nasurino.SmartWallet.Common.Infrastructure;
 using Nasurino.SmartWallet.AutoMappers;
 using Nasurino.SmartWallet.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Service.Infrastructure;
@@ -109,12 +110,14 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins);
         policy.AllowAnyHeader();
         policy.AllowAnyMethod();
+        policy.AllowCredentials();
     });
 });
 
 #region Регистрация классов конфигурации
 builder.Services.Configure<JwtOptions>(builder.Configuration
     .GetSection("ApiSettings:JwtSettings"));
+builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtOptions>>().Value);
 builder.Services.Configure<BCryptOptions>(builder.Configuration
     .GetSection("ApiSettings:BCryptSettings"));
 #endregion
@@ -149,6 +152,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITransactionEndpointRepository, TransactionEndpointRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddScoped<ITransactionEndpointService, TransactionEndpointService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
@@ -180,10 +184,10 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors();
 
 app.MapControllers();
 
