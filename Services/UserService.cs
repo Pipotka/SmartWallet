@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
@@ -19,11 +20,13 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 	ISmartWalletValidateService validateService,
 	IPasswordHasher passwordHasher,
 	IJwtProvider jwtProvider,
-	IMapper mapper) : IUserService
+	IMapper mapper,
+	JwtOptions jwtOptions) : IUserService
 {
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
+	private readonly IRefreshTokenRepository _refreshTokenRepository = unitOfWork.RefreshTokenRepository;
 
 	async Task<UserModel> IUserService.GetUserByIdAsync(Guid userId, CancellationToken token)
 	{
@@ -41,7 +44,6 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		user.HashedPassword = passwordHasher.Generate(model.Password);
 		_userRepository.Add(user);
 
-		//Создание базовых областей трат для пользователя
 		foreach (var spendingAreaName in new[] {
 			"Продукты", "Кафе и рестораны","Транспорт",
 			"Жилье", "Здоровье", "Одежда и обувь",
@@ -58,7 +60,6 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 				});
 		}
 
-		//Создание базовых денежных хранилищ для пользователя
 		foreach (var cashVaultName in new[] { "Кошелёк", "Карта" })
 		{
 			_transactionEndpointRepository.Add(new()
@@ -74,7 +75,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		return mapper.Map<UserModel>(user);
 	}
 
-	async Task<string> IUserService.LogInAsync(LogInModel model, CancellationToken token)
+	async Task<(string AccessToken, string RefreshToken)> IUserService.LogInAsync(LogInModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
 		var user = await _userRepository.GetUserByEmailAsync(model.Email, token)
@@ -83,7 +84,73 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		{
 			throw new AuthenticationServiceException();
 		}
-		return jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
+
+		var accessToken = jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
+		var refreshTokenValue = Guid.NewGuid().ToString();
+		var refreshToken = new RefreshToken
+		{
+			Id = Guid.NewGuid(),
+			Token = refreshTokenValue,
+			UserId = user.Id,
+			ExpiresAt = DateTime.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
+			CreatedAt = DateTime.UtcNow,
+		};
+		_refreshTokenRepository.Add(refreshToken);
+		await unitOfWork.SaveChangesAsync(token);
+
+		return (accessToken, refreshTokenValue);
+	}
+
+	async Task<(string AccessToken, string RefreshToken)> IUserService.RefreshAsync(string refreshTokenValue, CancellationToken token)
+	{
+		var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshTokenValue, token)
+			?? throw new AuthenticationServiceException();
+
+		if (storedToken.ExpiresAt < DateTime.UtcNow)
+		{
+			throw new AuthenticationServiceException();
+		}
+
+		if (storedToken.RevokedAt is not null)
+		{
+			throw new AuthenticationServiceException();
+		}
+
+		var user = await _userRepository.GetUserByIdAsync(storedToken.UserId, token)
+			?? throw new AuthenticationServiceException();
+
+		// Mark old refresh token as revoked
+		storedToken.RevokedAt = DateTime.UtcNow;
+
+		// Generate new tokens
+		var newAccessToken = jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
+		var newRefreshTokenValue = Guid.NewGuid().ToString();
+		var newRefreshToken = new RefreshToken
+		{
+			Id = Guid.NewGuid(),
+			Token = newRefreshTokenValue,
+			UserId = user.Id,
+			ExpiresAt = DateTime.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
+			CreatedAt = DateTime.UtcNow,
+		};
+
+		storedToken.ReplacedByToken = newRefreshTokenValue;
+		_refreshTokenRepository.Update(storedToken);
+		_refreshTokenRepository.Add(newRefreshToken);
+		await unitOfWork.SaveChangesAsync(token);
+
+		return (newAccessToken, newRefreshTokenValue);
+	}
+
+	async Task IUserService.LogoutAsync(string refreshTokenValue, CancellationToken token)
+	{
+		var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshTokenValue, token);
+		if (storedToken is not null)
+		{
+			storedToken.RevokedAt = DateTime.UtcNow;
+			_refreshTokenRepository.Update(storedToken);
+			await unitOfWork.SaveChangesAsync(token);
+		}
 	}
 
 	async Task<UserModel> IUserService.UpdateAsync(UpdateUserModel model, CancellationToken token)
