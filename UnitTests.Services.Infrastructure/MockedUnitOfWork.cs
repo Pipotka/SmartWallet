@@ -30,7 +30,7 @@ public sealed class MockedUnitOfWork : IUnitOfWork
         Mock<IRefreshTokenRepository>? mockedRefreshTokenRepository = null)
     {
         _mockedCashVaultRepository = mockedCashVaultRepository ?? new Mock<ITransactionEndpointRepository>();
-        _mockedTransactionRepository =  mockedTransactionRepository ?? new Mock<ITransactionRepository>();
+        _mockedTransactionRepository = mockedTransactionRepository ?? new Mock<ITransactionRepository>();
         _mockedUserRepository = mockedUserRepository ?? new Mock<IUserRepository>();
         _mockedRefreshTokenRepository = mockedRefreshTokenRepository ?? new Mock<IRefreshTokenRepository>();
     }
