@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models.Account;
+using Nasurino.SmartWallet.Options;
+using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
@@ -21,6 +23,8 @@ public sealed class UserController : Controller
 {
 	private readonly IUserService _userService;
 	private readonly IIdentityProvider _identityProvider;
+	private readonly IWebHostEnvironment _environment;
+	private readonly JwtOptions _jwtOptions;
 	private readonly IMapper _mapper;
 
 	/// <summary>
@@ -28,10 +32,14 @@ public sealed class UserController : Controller
 	/// </summary>
 	public UserController(IUserService userService,
 		IIdentityProvider identityProvider,
+		IWebHostEnvironment environment,
+		JwtOptions jwtOptions,
 		IMapper mapper)
 	{
 		_userService = userService;
 		_identityProvider = identityProvider;
+		_environment = environment;
+		_jwtOptions = jwtOptions;
 		_mapper = mapper;
 	}
 
@@ -73,8 +81,58 @@ public sealed class UserController : Controller
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> LogIn([FromBody] RequestLogInApiModel request, CancellationToken token)
 	{
-		var response = await _userService.LogInAsync(_mapper.Map<LogInModel>(request), token);
-		return Ok(new ResponseLogInApiModel { JwtToken = response });
+		var (accessToken, refreshToken) = await _userService.LogInAsync(_mapper.Map<LogInModel>(request), token);
+
+		Response.Cookies.Append("refresh_token", refreshToken, CreateRefreshTokenCookieOptions(DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshExpiresDays)));
+		return Ok(new ResponseLogInApiModel { AccessToken = accessToken });
+	}
+
+	/// <summary>
+	/// Обновление access-токена
+	/// </summary>
+	[HttpPost("refresh")]
+	[AllowAnonymous]
+	[ProducesResponseType(typeof(ResponseRefreshApiModel), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> Refresh(CancellationToken token)
+	{
+		var refreshToken = Request.Cookies["refresh_token"];
+		if (string.IsNullOrEmpty(refreshToken))
+		{
+			return Unauthorized();
+		}
+
+		try
+		{
+			var (accessToken, newRefreshToken) = await _userService.RefreshAsync(refreshToken, token);
+
+			Response.Cookies.Append("refresh_token", newRefreshToken, CreateRefreshTokenCookieOptions(DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshExpiresDays)));
+			return Ok(new ResponseRefreshApiModel { AccessToken = accessToken });
+		}
+		catch (AuthenticationServiceException)
+		{
+			DeleteRefreshTokenCookie();
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// Выход из аккаунта
+	/// </summary>
+	[HttpPost("logout")]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	public async Task<IActionResult> LogOut(CancellationToken token)
+	{
+		var refreshToken = Request.Cookies["refresh_token"];
+		if (!string.IsNullOrEmpty(refreshToken))
+		{
+			await _userService.LogoutAsync(refreshToken, token);
+		}
+
+		DeleteRefreshTokenCookie();
+		return Ok();
 	}
 
 	/// <summary>
@@ -99,7 +157,7 @@ public sealed class UserController : Controller
 	/// </summary>
 	[HttpDelete]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
@@ -116,7 +174,7 @@ public sealed class UserController : Controller
 	/// </summary>
 	[HttpPut("password")]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordApiModel request, CancellationToken token)
@@ -125,5 +183,22 @@ public sealed class UserController : Controller
 		model.UserId = _identityProvider.Id;
 		await _userService.ChangePasswordAsync(model, token);
 		return Ok();
+	}
+
+	private void DeleteRefreshTokenCookie()
+	{
+		Response.Cookies.Append("refresh_token", "", CreateRefreshTokenCookieOptions(DateTimeOffset.UtcNow.AddDays(-1)));
+	}
+
+	private CookieOptions CreateRefreshTokenCookieOptions(DateTimeOffset expires)
+	{
+		return new CookieOptions
+		{
+			HttpOnly = true,
+			Secure = _environment.IsProduction(),
+			SameSite = SameSiteMode.Lax,
+			Path = "/",
+			Expires = expires
+		};
 	}
 }
