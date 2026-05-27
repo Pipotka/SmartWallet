@@ -21,9 +21,19 @@ namespace Services.Contracts
 		Task<UserModel> GetUserByIdAsync(Guid userId, CancellationToken token);
 
 		/// <summary>
-		/// Вход в аккаунт
+		/// Вход в аккаунт. Возвращает access-токен и refresh-токен
 		/// </summary>
-		Task<string> LogInAsync(LogInModel model, CancellationToken token);
+		Task<(string AccessToken, string RefreshToken)> LogInAsync(LogInModel model, CancellationToken token);
+
+		/// <summary>
+		/// Обновление access-токена по refresh-токену. Возвращает новый access-токен и новый refresh-токен
+		/// </summary>
+		Task<(string AccessToken, string RefreshToken)> RefreshAsync(string refreshToken, CancellationToken token);
+
+		/// <summary>
+		/// Выход из аккаунта — отзыв refresh-токена
+		/// </summary>
+		Task LogoutAsync(string refreshToken, CancellationToken token);
 
 		/// <summary>
 		/// Регистрация
