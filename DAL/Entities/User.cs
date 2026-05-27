@@ -41,11 +41,17 @@ public class User : SmartDeletedEntity
 	public ICollection<TransactionEndpoint> TransactionEndpoints { get; set; }
 
 	/// <summary>
+	/// Навигационное свойство — рефреш-токены пользователя
+	/// </summary>
+	public ICollection<RefreshToken> RefreshTokens { get; set; }
+
+	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="User"/> 
 	/// </summary>
 	public User()
 	{
 		Transactions = new List<Transaction>();
 		TransactionEndpoints = new List<TransactionEndpoint>();
+		RefreshTokens = new List<RefreshToken>();
 	}
 }
