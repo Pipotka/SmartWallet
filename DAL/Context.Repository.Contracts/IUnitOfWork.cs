@@ -14,6 +14,9 @@
 		/// <inheritdoc cref="IUserRepository"/>
 		IUserRepository UserRepository { get; }
 
+		/// <inheritdoc cref="IRefreshTokenRepository"/>
+		IRefreshTokenRepository RefreshTokenRepository { get; }
+
 		/// <summary>
 		/// Сохраняет изменения
 		/// </summary>
