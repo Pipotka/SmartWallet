@@ -99,7 +99,7 @@ public sealed class UserController : Controller
 		var refreshToken = Request.Cookies["refresh_token"];
 		if (string.IsNullOrEmpty(refreshToken))
 		{
-			return Unauthorized();
+			throw new AuthenticationServiceException();
 		}
 
 		try
