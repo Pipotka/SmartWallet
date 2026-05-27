@@ -16,6 +16,8 @@ public class UnitOfWork : IUnitOfWork
 
 	public ITransactionRepository TransactionRepository { get; init; }
 
+	public IRefreshTokenRepository RefreshTokenRepository { get; init; }
+
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="UnitOfWork"/>
 	/// </summary>
@@ -26,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
 		UserRepository = new UserRepository(storage);
 		TransactionEndpointRepository = new TransactionEndpointRepository(storage);
 		TransactionRepository = new TransactionRepository(storage);
+		RefreshTokenRepository = new RefreshTokenRepository(storage);
 	}
 
 	Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
