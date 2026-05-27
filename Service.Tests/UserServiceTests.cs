@@ -385,4 +385,77 @@ public class UserServiceTests
         _refreshTokenRepositoryMock.Verify(r => r.Update(It.IsAny<RefreshToken>()), Times.Never);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    /// <summary>
+    /// LogInAsync Should Throw EntityNotFoundServiceException When User Not Found By Email
+    /// </summary>
+    [Fact]
+    public async Task LogInAsync_ShouldThrowEntityNotFoundServiceException_WhenUserNotFoundByEmail()
+    {
+        // Arrange
+        var model = new LogInModel { Email = "nobody@test.com", Password = "pass" };
+
+        _validateServiceMock.Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _userRepositoryMock.Setup(r => r.GetUserByEmailAsync(model.Email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        // Act
+        var action = async () => await _userService.LogInAsync(model, CancellationToken.None);
+
+        // Assert
+        await action.Should().ThrowAsync<EntityNotFoundServiceException>();
+    }
+
+    /// <summary>
+    /// LogInAsync Should Throw SmartWalletValidationException When Validation Fails
+    /// </summary>
+    [Fact]
+    public async Task LogInAsync_ShouldThrowSmartWalletValidationException_WhenValidationFails()
+    {
+        // Arrange
+        var model = new LogInModel { Email = "test@test.com", Password = "pass" };
+        var expectedValidationError = new PropertyValidationError(
+            nameof(LogInModel),
+            "Validation failed.");
+
+        _validateServiceMock.Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .Throws(new SmartWalletValidationException(expectedValidationError));
+
+        // Act
+        var action = async () => await _userService.LogInAsync(model, CancellationToken.None);
+
+        // Assert
+        await action.Should().ThrowAsync<SmartWalletValidationException>()
+            .WithMessage("*Validation failed*");
+    }
+
+    /// <summary>
+    /// RefreshAsync Should Throw AuthenticationServiceException When User Not Found
+    /// </summary>
+    [Fact]
+    public async Task RefreshAsync_ShouldThrowAuthenticationServiceException_WhenUserNotFound()
+    {
+        // Arrange
+        var storedToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = "orphan-token",
+            UserId = Guid.NewGuid(),
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow,
+            RevokedAt = null
+        };
+
+        _refreshTokenRepositoryMock.Setup(r => r.GetByTokenAsync("orphan-token", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(storedToken);
+        _userRepositoryMock.Setup(r => r.GetUserByIdAsync(storedToken.UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((User?)null);
+
+        // Act
+        var action = async () => await _userService.RefreshAsync("orphan-token", CancellationToken.None);
+
+        // Assert
+        await action.Should().ThrowAsync<AuthenticationServiceException>();
+    }
 }
