@@ -17,7 +17,7 @@ namespace Nasurino.SmartWallet.Controllers;
 /// <summary>
 /// Контроллер для работы с пользователем
 /// </summary>
-[Route("api/[controller]")]
+[Route("api/users")]
 [ApiController]
 public sealed class UserController : Controller
 {

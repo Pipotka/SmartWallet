@@ -13,7 +13,7 @@ namespace Nasurino.SmartWallet.Controllers;
 /// <summary>
 /// Контроллер для работы с транзакциями
 /// </summary>
-[Route("api/[controller]")]
+[Route("api/transactions")]
 [ApiController]
 [Authorize]
 public sealed class TransactionController : Controller

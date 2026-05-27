@@ -12,7 +12,7 @@ namespace Nasurino.SmartWallet.Controllers;
 /// <summary>
 /// Контроллер для работы с аналитикой трат
 /// </summary>
-[Route("api/[controller]")]
+[Route("api/financial-analytics")]
 [ApiController]
 [Authorize]
 public sealed class FinancialAnalyticsController : Controller
