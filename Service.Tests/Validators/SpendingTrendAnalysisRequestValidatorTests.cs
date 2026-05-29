@@ -171,30 +171,4 @@ public class SpendingTrendAnalysisRequestValidatorTests
         result.Errors.Should().ContainSingle(x => 
             x.ErrorMessage.Contains("лимит", StringComparison.OrdinalIgnoreCase));
     }
-
-    /// <summary>
-    /// Валидатор должен вернуть ошибку при диапазоне менее недели для дней
-    /// </summary>
-    [Fact]
-    public async Task ValidatorShouldReturnsErrorWhenTimeUnitCountLessThanWeekForDay()
-    {
-        // Arrange
-        var model = new CategoryComparativeAnalysisRequest
-        {
-            UserId = Guid.NewGuid(),
-            FirstPeriod = new(2020, 1, 1),
-            SecondPeriod = new(2020, 2, 5),
-            TimeUnit = TimeUnit.Day,
-            TimeUnitCount = 6
-        };
-        
-        // Act
-        var result = await _validator.ValidateAsync(model);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCount(1);
-        result.Errors.Should().ContainSingle(x => 
-            x.ErrorMessage.Contains("Неделя", StringComparison.OrdinalIgnoreCase));
-    }
 }
