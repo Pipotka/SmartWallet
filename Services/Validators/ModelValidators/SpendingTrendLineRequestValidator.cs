@@ -8,9 +8,9 @@ namespace Nasurino.SmartWallet.Services.Validators.ModelValidators;
 /// </summary>
 public class SpendingTrendLineRequestValidator : AbstractValidator<SpendingTrendLineRequest>
 {
-    private const int MaxDays = 31;
-    private const int MaxMonths = 12;
-    private const int MaxYears = 25;
+    private const int MaxDays = 365;
+    private const int MaxMonths = 120;
+    private const int MaxYears = 50;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SpendingTrendLineRequestValidator"/>
