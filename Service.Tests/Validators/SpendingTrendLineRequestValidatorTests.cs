@@ -54,16 +54,16 @@ public class SpendingTrendLineRequestValidatorTests
 
     public static TheoryData<TimeUnit, DateOnly, DateOnly> NodeCountExceedsLimitCases => new()
     {
-        { TimeUnit.Day, new DateOnly(2025, 1, 1), new DateOnly(2025, 2, 1) },
-        { TimeUnit.Month, new DateOnly(2024, 1, 1), new DateOnly(2025, 1, 31) },
-        { TimeUnit.Year, new DateOnly(2000, 1, 1), new DateOnly(2025, 12, 31) }
+        { TimeUnit.Day, new DateOnly(2024, 1, 1), new DateOnly(2025, 1, 1) },
+        { TimeUnit.Month, new DateOnly(2015, 1, 1), new DateOnly(2025, 1, 31) },
+        { TimeUnit.Year, new DateOnly(1975, 1, 1), new DateOnly(2025, 12, 31) }
     };
 
     public static TheoryData<TimeUnit, DateOnly, DateOnly> NodeCountBoundaryCases => new()
     {
-        { TimeUnit.Day, new DateOnly(2025, 1, 1), new DateOnly(2025, 1, 31) },
-        { TimeUnit.Month, new DateOnly(2025, 1, 1), new DateOnly(2025, 12, 31) },
-        { TimeUnit.Year, new DateOnly(2000, 1, 1), new DateOnly(2024, 12, 31) }
+        { TimeUnit.Day, new DateOnly(2023, 1, 1), new DateOnly(2023, 12, 31) },
+        { TimeUnit.Month, new DateOnly(2015, 1, 1), new DateOnly(2024, 12, 31) },
+        { TimeUnit.Year, new DateOnly(1975, 1, 1), new DateOnly(2024, 12, 31) }
     };
 
     /// <summary>
