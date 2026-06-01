@@ -30,7 +30,7 @@ public class CreateTransactionEndpointValidator : AbstractValidator<CreateTransa
 				}
 				return false;
 			})
-			.WithName(x => x.Name)
+			.WithName(x => nameof(x.Name))
 			.WithMessage($"Денежное хранилище с подобным именем уже существует");
 	}
 }

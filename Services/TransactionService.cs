@@ -71,7 +71,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 				&& sourceAccount.Limitation > balanceResult
 				&& destinationAccount is { IsStorage: false })
 			{
-				throw new AccountBalanceLimitViolationException(sourceAccount.Id);
+				throw new AccountBalanceLimitViolationException(nameof(CreateTransactionModel.SourceAccountId), sourceAccount.Name);
 			}
 			
 			sourceAccount.Value = balanceResult;
@@ -92,7 +92,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 				&& destinationAccount.Limitation < balanceResult
 				&& destinationAccount is { IsStorage: false })
 			{
-				throw new AccountBalanceLimitViolationException(destinationAccount.Id);
+				throw new AccountBalanceLimitViolationException(nameof(CreateTransactionModel.SourceAccountId), destinationAccount.Name);
 			}
 			
 			destinationAccount.Value = balanceResult;

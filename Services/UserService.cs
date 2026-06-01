@@ -193,7 +193,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 
 		if (!passwordHasher.Verify(model.OldPassword, user.HashedPassword))
 		{
-			throw new AuthenticationServiceException();
+			throw new AuthenticationServiceException("Старый пароль указан неверно");
 		}
 
 		user.HashedPassword = passwordHasher.Generate(model.NewPassword);
