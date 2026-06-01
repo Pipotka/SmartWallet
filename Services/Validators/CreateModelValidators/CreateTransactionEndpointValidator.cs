@@ -32,5 +32,15 @@ public class CreateTransactionEndpointValidator : AbstractValidator<CreateTransa
 			})
 			.WithName(x => nameof(x.Name))
 			.WithMessage($"Денежное хранилище с подобным именем уже существует");
+		RuleFor(x => x.Limitation)
+			.Must(limitation =>
+			{
+				if (limitation == null)
+				{
+					return true;
+				}
+				return limitation > 0;
+			})
+			.WithMessage("Лимит должен быть больше нуля");
 	}
 }

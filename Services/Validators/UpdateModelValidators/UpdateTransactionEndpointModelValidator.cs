@@ -37,5 +37,15 @@ public class UpdateTransactionEndpointModelValidator : AbstractValidator<UpdateT
 			})
 			.WithName(x => nameof(x.Name))
 			.WithMessage($"Эндпоинт с подобным именем уже существует");
+		RuleFor(x => x.Limitation)
+			.Must(limitation =>
+			{
+				if (limitation == null)
+				{
+					return true;
+				}
+				return limitation > 0;
+			})
+			.WithMessage("Лимит должен быть больше нуля");
 	}
 }
