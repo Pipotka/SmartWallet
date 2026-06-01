@@ -79,10 +79,10 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 	{
 		await validateService.ValidateAsync(model, token);
 		var user = await _userRepository.GetUserByEmailAsync(model.Email, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с адресом электронной почты = {model.Email} не найден.");
+			?? throw new AuthenticationServiceException("Неверный логин или пароль");
 		if (!passwordHasher.Verify(model.Password, user.HashedPassword))
 		{
-			throw new AuthenticationServiceException();
+			throw new AuthenticationServiceException("Неверный логин или пароль");
 		}
 
 		var accessToken = jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
