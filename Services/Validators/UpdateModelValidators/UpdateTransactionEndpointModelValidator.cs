@@ -36,6 +36,6 @@ public class UpdateTransactionEndpointModelValidator : AbstractValidator<UpdateT
 				return false;
 			})
 			.WithName(x => nameof(x.Name))
-			.WithMessage($"Денежное хранилище с подобным именем уже существует");
+			.WithMessage($"Эндпоинт с подобным именем уже существует");
 	}
 }
