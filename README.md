@@ -41,6 +41,17 @@ erDiagram
         string hashedPassword
         DateTime deletedAt "nullable"
     }
+
+    RefreshToken }o--|| User : userId
+    RefreshToken {
+        Guid id PK
+        string Token
+        Guid UserId FK
+        DateTime ExpiresAt
+        DateTime CreatedAt
+        DateTime RevokedAt "nullable"
+        string ReplacedByToken "nullable"
+    }
 ```
 ## Возможные улучшения
  - Добавить под области трат, которые находятся в областях трат, а также могут иметь в себе свои под области. В таблице SpendingArea будут храниться как обычные узлы дерева области трат, так и листья дерева, которые можно будет отличить по установленному флагу `isLeaf`. Для хранения структуры дерева стоит использовать графовую БД. Можно будет удалить только узел с флагом `isLeaf`;
