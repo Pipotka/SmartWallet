@@ -32,10 +32,12 @@ public class SpendingTrendLineRequestValidator : AbstractValidator<SpendingTrend
 
         RuleFor(x => x)
             .Must(x => x.StartDate < x.EndDate)
+            .WithName(x => nameof(x.StartDate))
             .WithMessage("Дата начала должна быть строго меньше даты окончания");
 
         RuleFor(x => x)
             .Must(ValidateNodeCountLimit)
+            .WithName(x => nameof(x.TimeUnit))
             .WithMessage($"Превышен максимальный лимит узлов: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
     }
 

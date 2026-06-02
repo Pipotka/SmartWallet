@@ -31,11 +31,13 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<CategoryC
 
         RuleFor(x => x)
             .Must(ValidatePeriodsDoNotOverlap)
+            .WithName(x => nameof(x.SecondPeriod))
             .WithMessage("Периоды не должны пересекаться. Конец первого периода должен быть строго меньше начала второго периода");
 
         RuleFor(x => x)
             .Must(ValidateTimeUnitCountLimit)
-            .WithMessage($"Превышен максимальный лимит временных единиц: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
+            .WithName(x => nameof(x.TimeUnitCount))
+            .WithMessage($"Превышено максимальное количество временных единиц: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
     }
 
     private bool ValidatePeriodsDoNotOverlap(CategoryComparativeAnalysisRequest request)
