@@ -68,9 +68,9 @@ public class SpendingTrendAnalysisRequestValidatorTests
 
     public static TheoryData<TimeUnit, int> MaxLimitCases => new()
     {
-        { TimeUnit.Day, 36501 },
-        { TimeUnit.Month, 1201 },
-        { TimeUnit.Year, 101 }
+        { TimeUnit.Day, 18251 },
+        { TimeUnit.Month, 601 },
+        { TimeUnit.Year, 51 }
     };
 
     /// <summary>
