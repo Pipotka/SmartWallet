@@ -6,19 +6,13 @@
         <AssemblyName>SmartWallet.Context.Repository.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
       <ProjectReference Include="..\DAL\Context.Tests\Context.Tests.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Ahatornn.TestGenerator" />
-      <PackageReference Include="FluentAssertions" />
-      <PackageReference Include="Microsoft.NET.Test.Sdk" />
-      <PackageReference Include="xunit" />
-      <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
 </Project>

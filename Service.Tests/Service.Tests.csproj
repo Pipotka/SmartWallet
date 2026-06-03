@@ -6,16 +6,12 @@
         <AssemblyName>SmartWallet.Service.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ahatornn.TestGenerator" />
-      <PackageReference Include="FluentAssertions" />
-      <PackageReference Include="Microsoft.NET.Test.Sdk" />
-      <PackageReference Include="Microsoft.Testing.Platform" />
       <PackageReference Include="Moq" />
-      <PackageReference Include="xunit" />
-      <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
     <ItemGroup>
