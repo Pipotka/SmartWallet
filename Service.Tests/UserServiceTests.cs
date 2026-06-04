@@ -387,10 +387,10 @@ public class UserServiceTests
     }
 
     /// <summary>
-    /// LogInAsync Should Throw EntityNotFoundServiceException When User Not Found By Email
+    /// LogInAsync Should Throw AuthenticationServiceException When User Not Found By Email
     /// </summary>
     [Fact]
-    public async Task LogInAsync_ShouldThrowEntityNotFoundServiceException_WhenUserNotFoundByEmail()
+    public async Task LogInAsync_ShouldThrowAuthenticationServiceException_WhenUserNotFoundByEmail()
     {
         // Arrange
         var model = new LogInModel { Email = "nobody@test.com", Password = "pass" };
@@ -404,7 +404,7 @@ public class UserServiceTests
         var action = async () => await _userService.LogInAsync(model, CancellationToken.None);
 
         // Assert
-        await action.Should().ThrowAsync<EntityNotFoundServiceException>();
+        await action.Should().ThrowAsync<AuthenticationServiceException>().WithMessage("Неверный логин или пароль");
     }
 
     /// <summary>

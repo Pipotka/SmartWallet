@@ -37,7 +37,7 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<CategoryC
         RuleFor(x => x)
             .Must(ValidateTimeUnitCountLimit)
             .WithName(x => nameof(x.TimeUnitCount))
-            .WithMessage($"Превышено максимальное количество временных единиц: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
+            .WithMessage($"Превышен максимальный лимит временных единиц: Day <= {MaxDays}, Month <= {MaxMonths}, Year <= {MaxYears}");
     }
 
     private bool ValidatePeriodsDoNotOverlap(CategoryComparativeAnalysisRequest request)
