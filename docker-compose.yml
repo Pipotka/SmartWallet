@@ -47,7 +47,6 @@ services:
 
     smartwallet-api:
         ports:
-            - "8080:80"
             - "8443:443"
         image: nasurino/smart-wallet:latest
         container_name: smartwallet-api
@@ -60,6 +59,49 @@ services:
             ConnectionStrings__HangfireConnection: Host=smartwallet-hangfire-db;Port=5432;Database=SmartWalletHangfireDb;Username=postgres;Password=mysecretpassword
         volumes:
             - ./certs:/certs:ro
+        healthcheck:
+            test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/80'"]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 15s
+        networks: [app-net]
+        restart: unless-stopped
+
+    smartwallet-client:
+        image: nasurino/smart-wallet-client:latest
+        container_name: smartwallet-client
+        environment:
+            API_BASE_URL: ""
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz || exit 1"]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 5s
+        depends_on:
+            smartwallet-api: { condition: service_healthy }
+        networks: [app-net]
+        restart: unless-stopped
+
+    smartwallet-nginx:
+        image: nginx:1.27-alpine
+        container_name: smartwallet-nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./certs/nginx:/etc/nginx/certs:ro
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- https://localhost:443/healthz --no-check-certificate || exit 1"]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 5s
+        depends_on:
+            smartwallet-client: { condition: service_healthy }
+            smartwallet-api: { condition: service_healthy }
         networks: [app-net]
         restart: unless-stopped
 

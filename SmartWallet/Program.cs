@@ -24,6 +24,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 using Nasurino.SmartWallet.Services.BackgroundJobs;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -168,7 +169,18 @@ builder.Services.AddScoped<IClearCategoryCacheService, ClearCategoryCacheService
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedProto
+        | ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -183,13 +195,13 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok("healthy"));
 
 #region Регистрация cron задач
 using (var scope = app.Services.CreateScope())
