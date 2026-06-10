@@ -86,8 +86,21 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 					nameof(CreateTransactionModel.DestinationAccountId),
 					"Нельзя скорректировать баланс области трат"));
 			}
-			
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token) + transaction.Amount;
+
+			double currentBalace;
+			if (destinationAccount.IsStorage)
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token);
+			}
+			else
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id,
+				token,
+				new DateTime(1, DateTime.Today.Month, DateTime.Today.Year),
+				DateTime.UtcNow);
+			}
+
+			var balanceResult = currentBalace + transaction.Amount;
 			if (destinationAccount.Limitation != null
 				&& destinationAccount.Limitation < balanceResult
 				&& destinationAccount is { IsStorage: false })
