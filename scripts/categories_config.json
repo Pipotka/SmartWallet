@@ -1,0 +1,94 @@
+{
+  "default_expense_range": [200, 2000],
+  "default_expense_weight": 1,
+  "default_income_range": [50000, 150000],
+  "default_transfer_range": [1000, 50000],
+  "default_adjustment_increase_range": [100, 5000],
+  "default_adjustment_decrease_range": [50, 2000],
+  "default_seasonal_amplitude": 0.2,
+  "default_seasonal_period_days": 30,
+  "default_seasonal_phase_day": 1,
+  "default_weekday_multiplier": 1.0,
+  "default_weekend_multiplier": 1.0,
+  "salary_day": 5,
+  "salary_amount": 80000,
+  "noise_range": [0.85, 1.15],
+  "categories": {
+    "Продукты": {
+      "min": 300,
+      "max": 2000,
+      "weight": 5,
+      "seasonal_amplitude": 0.3,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 8,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 1.1
+    },
+    "Жилье": {
+      "min": 15000,
+      "max": 25000,
+      "weight": 1,
+      "anchor_day": 5,
+      "anchor_amount": 20000,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 1.0
+    },
+    "Развлечения": {
+      "min": 300,
+      "max": 3000,
+      "weight": 3,
+      "seasonal_amplitude": 0.4,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 12,
+      "weekday_multiplier": 0.5,
+      "weekend_multiplier": 1.8
+    },
+    "Транспорт": {
+      "min": 40,
+      "max": 250,
+      "weight": 4,
+      "seasonal_amplitude": 0.15,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 15,
+      "weekday_multiplier": 1.2,
+      "weekend_multiplier": 0.4
+    },
+    "Образование": {
+      "min": 500,
+      "max": 5000,
+      "weight": 1,
+      "seasonal_amplitude": 0.2,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 1,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 0.3
+    },
+    "Одежда и обувь": {
+      "min": 800,
+      "max": 6000,
+      "weight": 1,
+      "seasonal_amplitude": 0.35,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 10,
+      "weekday_multiplier": 0.8,
+      "weekend_multiplier": 1.5
+    },
+    "Здоровье": {
+      "min": 200,
+      "max": 2500,
+      "weight": 2,
+      "seasonal_amplitude": 0.25,
+      "seasonal_period_days": 30,
+      "seasonal_phase_day": 20,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 1.0
+    },
+    "Новая категория": {
+      "min": 200,
+      "max": 2000,
+      "weight": 1,
+      "weekday_multiplier": 1.0,
+      "weekend_multiplier": 1.0
+    }
+  }
+}
