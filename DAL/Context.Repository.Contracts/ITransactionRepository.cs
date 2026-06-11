@@ -44,9 +44,12 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Возвращает список транзакции по идентификатору пользователя
+	/// Возвращает постраничный список транзакций пользователя с фильтрацией
 	/// </summary>
-	Task<List<Transaction>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+	/// <param name="userId">Идентификатор пользователя</param>
+	/// <param name="query">Параметры запроса с пагинацией и фильтрацией</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	Task<PagedResult<Transaction>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Возвращает список транзакций пользователя по типу транзакции, созданных в указанный временной диапазон

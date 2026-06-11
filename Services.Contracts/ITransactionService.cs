@@ -1,4 +1,5 @@
-﻿using Nasurino.SmartWallet.Service.Models.CreateModels;
+﻿using Nasurino.SmartWallet.Service.Models;
+using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 
@@ -20,8 +21,8 @@ namespace Services.Contracts
 		Task DeleteAsync(DeleteTransactionModel model, CancellationToken token);
 
 		/// <summary>
-		/// Возвращет список транзакций по идентификатору пользователя
+		/// Возвращает постраничный список транзакций пользователя с фильтрацией
 		/// </summary>
-		Task<List<TransactionModel>> GetListByUserIdAsync(Guid userId, CancellationToken token);
+		Task<PagedResultModel<TransactionModel>> GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token);
 	}
 }

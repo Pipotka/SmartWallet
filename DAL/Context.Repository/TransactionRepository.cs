@@ -19,12 +19,39 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	public TransactionRepository(IDataStorageContext storage) : base(storage)
 	{ }
 
-	Task<List<Transaction>> ITransactionRepository.GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> Storage.Read<Transaction>()
+	async Task<PagedResult<Transaction>> ITransactionRepository.GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken)
+	{
+		var queryable = Storage.Read<Transaction>()
 			.NotDeleted()
-			.Where(x => x.UserId == userId)
+			.Where(x => x.UserId == userId);
+
+		if (query.Type.HasValue)
+		{
+			queryable = queryable.Where(x => x.Type == query.Type.Value);
+		}
+
+		if (query.AccountId.HasValue)
+		{
+			queryable = queryable.Where(x => x.SourceAccountId == query.AccountId.Value || x.DestinationAccountId == query.AccountId.Value);
+		}
+
+		var totalCount = await queryable.CountAsync(cancellationToken);
+
+		var items = await queryable
 			.OrderByDescending(x => x.MadeAt)
+			.Skip((query.Page - 1) * query.PageSize)
+			.Take(query.PageSize)
 			.ToListAsync(cancellationToken);
+
+		return new PagedResult<Transaction>
+		{
+			Items = items,
+			TotalCount = totalCount,
+			Page = query.Page,
+			PageSize = query.PageSize,
+			TotalPages = query.PageSize > 0 ? (int)Math.Ceiling((double)totalCount / query.PageSize) : 0
+		};
+	}
 
 	Task<Transaction?> ITransactionRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
 		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);

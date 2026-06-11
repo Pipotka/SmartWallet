@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Models.CashVault;
 using Nasurino.SmartWallet.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Models.Transaction;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
@@ -59,5 +61,8 @@ public class ApiModelMapper : Profile
 		CreateMap<SpendingTrendLineNodeModel, SpendingTrendLineNodeApiModel>(MemberList.Destination);
 		CreateMap<SpendingTrendLineCategoryModel, SpendingTrendLineCategoryApiModel>(MemberList.Destination);
 		CreateMap<SpendingTrendLineResult, SpendingTrendLineApiResponse>(MemberList.Destination);
+
+		CreateMap<TransactionQueryApiModel, TransactionQueryModel>(MemberList.Destination);
+		CreateMap<PagedResultModel<TransactionModel>, PagedResultApiModel<TransactionApiModel>>(MemberList.Destination);
     }
 }

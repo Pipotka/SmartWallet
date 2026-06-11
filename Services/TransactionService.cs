@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
@@ -21,14 +23,17 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
 
-	async Task<List<TransactionModel>> ITransactionService.GetListByUserIdAsync(Guid userId, CancellationToken token)
+	async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token)
 	{
+		await validateService.ValidateAsync(query, token);
+
 		_ = await _userRepository.GetUserByIdAsync(userId, token)
 		    ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		var transactionList = await _transactionRepository.GetListByUserIdAsync(userId, token);
+		var dalQuery = mapper.Map<TransactionQuery>(query);
+		var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
 
-		return mapper.Map<List<TransactionModel>>(transactionList);
+		return mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
 	}
 
 	async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)

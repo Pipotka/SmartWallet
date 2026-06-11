@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Service.Exceptions;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
@@ -44,6 +45,7 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(CategorizingSpendingRequest), new CategorizingSpendingRequestValidator());
 		_validators.Add(typeof(SpendingTrendLineRequest), new SpendingTrendLineRequestValidator());
         _validators.Add(typeof(ChangePasswordModel), new ChangePasswordModelValidator());
+		_validators.Add(typeof(TransactionQueryModel), new TransactionQueryValidator());
         #endregion
 
     }

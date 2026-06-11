@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
@@ -38,5 +39,8 @@ public class ServiceModelMapper : Profile
 
 		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
 		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
+
+		CreateMap<TransactionQueryModel, TransactionQuery>(MemberList.Destination);
+		CreateMap<PagedResult<Transaction>, PagedResultModel<TransactionModel>>(MemberList.Destination);
 	}
 }

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
+using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Transaction;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Services.Contracts;
@@ -35,16 +37,18 @@ public sealed class TransactionController : Controller
 	}
 
 	/// <summary>
-	/// Получает список транзакций по идентификатору пользователя
+	/// Получает постраничный список транзакций пользователя с фильтрацией
 	/// </summary>
-	[HttpGet("list")]
-	[ProducesResponseType(typeof(ICollection<TransactionApiModel>), StatusCodes.Status200OK)]
+	[HttpGet]
+	[ProducesResponseType(typeof(PagedResultApiModel<TransactionApiModel>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> GetList(CancellationToken token)
+	public async Task<IActionResult> GetList([FromQuery] TransactionQueryApiModel request, CancellationToken token)
 	{
-		var response = await _transactionService.GetListByUserIdAsync(_identityProvider.Id, token);
-		return Ok(_mapper.Map<List<TransactionApiModel>>(response));
+		var query = _mapper.Map<TransactionQueryModel>(request);
+		var response = await _transactionService.GetPagedListByUserIdAsync(_identityProvider.Id, query, token);
+		return Ok(_mapper.Map<PagedResultApiModel<TransactionApiModel>>(response));
 	}
 
 	/// <summary>
