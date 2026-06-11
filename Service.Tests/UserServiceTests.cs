@@ -243,8 +243,8 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             Token = "valid-refresh-token",
             UserId = userId,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
             RevokedAt = null
         };
         var user = new User { Id = userId };
@@ -297,8 +297,8 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             Token = "expired-token",
             UserId = Guid.NewGuid(),
-            ExpiresAt = DateTime.UtcNow.AddDays(-1),
-            CreatedAt = DateTime.UtcNow.AddDays(-8),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(-1),
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-8),
             RevokedAt = null
         };
 
@@ -324,9 +324,9 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             Token = "revoked-token",
             UserId = Guid.NewGuid(),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            RevokedAt = DateTime.UtcNow.AddDays(-1)
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
+            RevokedAt = DateTimeOffset.UtcNow.AddDays(-1)
         };
 
         _refreshTokenRepositoryMock.Setup(r => r.GetByTokenAsync("revoked-token", It.IsAny<CancellationToken>()))
@@ -351,8 +351,8 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             Token = "valid-token",
             UserId = Guid.NewGuid(),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
             RevokedAt = null
         };
 
@@ -442,8 +442,8 @@ public class UserServiceTests
             Id = Guid.NewGuid(),
             Token = "orphan-token",
             UserId = Guid.NewGuid(),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+            CreatedAt = DateTimeOffset.UtcNow,
             RevokedAt = null
         };
 

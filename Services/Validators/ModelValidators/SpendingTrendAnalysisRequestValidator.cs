@@ -26,7 +26,7 @@ public class SpendingTrendAnalysisRequestValidator : AbstractValidator<CategoryC
             .WithMessage("Количество временных единиц должно быть больше 0");
 
         RuleFor(x => x.SecondPeriod)
-            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
+            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime))
             .WithMessage("Дата окончания второго периода не может быть в будущем");
 
         RuleFor(x => x)

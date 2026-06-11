@@ -36,7 +36,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
         var cashVaults = new List<TransactionEndpoint>
         {
             _entityProvider.Create<TransactionEndpoint>(x => x.Id = targetId),
-            _entityProvider.Create<TransactionEndpoint>(x => x.DeletedAt = DateTime.Now),
+            _entityProvider.Create<TransactionEndpoint>(x => x.DeletedAt = DateTimeOffset.Now),
             _entityProvider.Create<TransactionEndpoint>()
         };
 
@@ -65,14 +65,14 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
         {
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
-                x.DeletedAt = DateTime.Now;
+                x.DeletedAt = DateTimeOffset.Now;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = anotherUserId;
-                x.DeletedAt = DateTime.Now;
+                x.DeletedAt = DateTimeOffset.Now;
             })
         };
 
@@ -110,7 +110,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = anotherUserId;
-                x.DeletedAt = DateTime.Now;
+                x.DeletedAt = DateTimeOffset.Now;
             })
         };
 
@@ -182,7 +182,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = anotherUserId;
-                x.DeletedAt = DateTime.Now;
+                x.DeletedAt = DateTimeOffset.Now;
             })
         };
 

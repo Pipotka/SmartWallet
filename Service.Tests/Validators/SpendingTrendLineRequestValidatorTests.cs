@@ -114,8 +114,8 @@ public class SpendingTrendLineRequestValidatorTests
         var model = new SpendingTrendLineRequest
         {
             UserId = Guid.NewGuid(),
-            StartDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1),
-            EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(10),
+            StartDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime).AddDays(1),
+            EndDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime).AddDays(10),
             TimeUnit = TimeUnit.Day
         };
 
@@ -137,8 +137,8 @@ public class SpendingTrendLineRequestValidatorTests
         var model = new SpendingTrendLineRequest
         {
             UserId = Guid.NewGuid(),
-            StartDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(-2),
-            EndDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1),
+            StartDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime).AddMonths(-2),
+            EndDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime).AddDays(1),
             TimeUnit = TimeUnit.Month
         };
 

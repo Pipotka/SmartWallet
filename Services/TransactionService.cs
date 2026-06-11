@@ -96,8 +96,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			{
 				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id,
 				token,
-				new DateTime(1, DateTime.Today.Month, DateTime.Today.Year),
-				DateTime.UtcNow);
+				new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
+				DateTimeOffset.UtcNow);
 			}
 
 			var balanceResult = currentBalace + transaction.Amount;

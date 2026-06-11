@@ -8,12 +8,12 @@ public sealed class DateRangeInfo
     /// <summary>
     /// Начало временного диапазона (включительно)
     /// </summary>
-    public DateTime Start { get; set; }
+    public DateTimeOffset Start { get; set; }
 
     /// <summary>
     /// Конец временного диапазона (исключительно)
     /// </summary>
-    public DateTime End { get; set; }
+    public DateTimeOffset End { get; set; }
 
     /// <summary>
     /// Метка временного диапазона

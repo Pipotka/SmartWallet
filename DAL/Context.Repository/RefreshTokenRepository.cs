@@ -16,7 +16,7 @@ public class RefreshTokenRepository(IDataStorageContext storage) : BaseWriteRepo
 	async Task<IReadOnlyCollection<RefreshToken>> IRefreshTokenRepository.GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken)
 	{
 		var tokens = await Storage.Read<RefreshToken>()
-			.Where(x => x.UserId == userId && x.RevokedAt == null && x.ExpiresAt > DateTime.UtcNow)
+			.Where(x => x.UserId == userId && x.RevokedAt == null && x.ExpiresAt > DateTimeOffset.UtcNow)
 			.ToListAsync(cancellationToken);
 		return tokens;
 	}

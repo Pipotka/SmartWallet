@@ -14,8 +14,8 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="startDate">Начало временного диапазона</param>
 	/// <param name="endDate">Конец временного диапазона</param>
 	void DeleteTransactionsByTransactionEndpointIdAndDateRange(Guid transactionEndpointId,
-		DateTime startDate = default,
-		DateTime endDate = default);
+		DateTimeOffset startDate = default,
+		DateTimeOffset endDate = default);
 
 	/// <summary>
 	/// Удаляет все транзакций по идентификатору пользователя
@@ -39,8 +39,8 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="endDate">Конец временного диапазона</param>
 	/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
 	Task<IReadOnlyCollection<Transaction>> GetListByDateRangeAndUserIdAsync(Guid userId,
-		DateTime startDate,
-		DateTime endDate,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
 		CancellationToken cancellationToken);
 
 	/// <summary>
@@ -57,8 +57,8 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <remarks><paramref name="endDate"/> - исключенный верхний предел временного диапазона</remarks>
 	Task<IReadOnlyCollection<Transaction>> GetListByDateRangeAndUserIdAsync(Guid userId,
 		TransactionType transactionType,
-		DateTime startDate,
-		DateTime endDate,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
 		CancellationToken cancellationToken);
 
 	/// <summary>
@@ -68,8 +68,8 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="startDate">Начало временного диапазона</param>
 	/// <param name="endDate">Конец временного диапазона</param>
 	Task<double> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
-		DateTime startDate = default,
-		DateTime endDate = default);
+		DateTimeOffset startDate = default,
+		DateTimeOffset endDate = default);
 	
 	/// <summary>
 	/// Возвращает категоризированные расходы пользователя за указанный период
@@ -84,8 +84,8 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// </returns>
 	Task<CategorizedSpendingResult> GetCategorizedSpendingByUserIdAndDateRangeAsync(
 		Guid userId, 
-		DateTime startDate, 
-		DateTime endDate, 
+		DateTimeOffset startDate, 
+		DateTimeOffset endDate, 
 		CancellationToken cancellationToken);
 
 	/// <summary>

@@ -21,7 +21,7 @@ public class SpendingTrendLineRequestValidator : AbstractValidator<SpendingTrend
             .NotEmpty()
             .WithMessage("Идентификатор пользователя не может быть пустым");
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.DateTime);
         RuleFor(x => x.StartDate)
             .LessThanOrEqualTo(today)
             .WithMessage("Дата начала не может быть в будущем");

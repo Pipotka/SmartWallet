@@ -18,17 +18,17 @@ public class RefreshToken : BaseEntity
 	/// <summary>
 	/// Дата истечения срока действия
 	/// </summary>
-	public DateTime ExpiresAt { get; set; }
+	public DateTimeOffset ExpiresAt { get; set; }
 
 	/// <summary>
 	/// Дата создания
 	/// </summary>
-	public DateTime CreatedAt { get; set; }
+	public DateTimeOffset CreatedAt { get; set; }
 
 	/// <summary>
 	/// Дата отзыва (null = активный)
 	/// </summary>
-	public DateTime? RevokedAt { get; set; }
+	public DateTimeOffset? RevokedAt { get; set; }
 
 	/// <summary>
 	/// Токен, заменивший данный

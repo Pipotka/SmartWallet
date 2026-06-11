@@ -35,5 +35,5 @@ public sealed class TransactionApiModel
 	/// <summary>
 	/// Дата создания
 	/// </summary>
-	public DateTime MadeAt { get; set; }
+	public DateTimeOffset MadeAt { get; set; }
 }

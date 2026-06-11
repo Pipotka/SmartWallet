@@ -107,7 +107,7 @@ public class TransactionServiceTests
         _transactionEndpointRepositoryMock.Setup(repo => repo.GetByIdAndUserIdAsync(destinationAccountId, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(destinationAccount);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(0.0);
 
         _validateServiceMock.Setup(service => service.ValidateAsync(model, It.IsAny<CancellationToken>()))
@@ -233,7 +233,7 @@ public class TransactionServiceTests
         _transactionEndpointRepositoryMock.Setup(repo => repo.GetByIdAndUserIdAsync(sourceAccountId, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sourceAccount);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(1000.0);
 
         _validateServiceMock.Setup(service => service.ValidateAsync(model, It.IsAny<CancellationToken>()))
@@ -289,10 +289,10 @@ public class TransactionServiceTests
         _transactionEndpointRepositoryMock.Setup(repo => repo.GetByIdAndUserIdAsync(destinationAccountId, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(destinationAccount);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(1000.0);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(0.0);
 
         _validateServiceMock.Setup(service => service.ValidateAsync(model, It.IsAny<CancellationToken>()))
@@ -348,10 +348,10 @@ public class TransactionServiceTests
         _transactionEndpointRepositoryMock.Setup(repo => repo.GetByIdAndUserIdAsync(destinationAccountId, userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(destinationAccount);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(sourceAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(1000.0);
 
-        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), default, default))
+        _transactionRepositoryMock.Setup(repo => repo.GetBalanceByAccountIdAndDateRangeAsync(destinationAccountId, It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
             .ReturnsAsync(0.0);
 
         _validateServiceMock.Setup(service => service.ValidateAsync(model, It.IsAny<CancellationToken>()))

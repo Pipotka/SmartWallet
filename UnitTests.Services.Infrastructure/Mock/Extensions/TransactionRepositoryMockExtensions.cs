@@ -27,15 +27,15 @@ public static class TransactionRepositoryMockExtensions
     public static void GetListByTimeRangeReturnValue(this Mock<ITransactionRepository> mockedTransactionRepository,
         IReadOnlyCollection<Transaction> transactions,
         Guid userId = default,
-        DateTime startTimeRange = default,
-        DateTime endTimeRange = default,
+        DateTimeOffset startTimeRange = default,
+        DateTimeOffset endTimeRange = default,
         CancellationToken token = default)
         => mockedTransactionRepository.SetupListByTimeRange(userId, startTimeRange, endTimeRange, token)
             .ReturnsAsync(transactions);
     
     /// <summary>
     /// Настраивает мок для возврата списка транзакций.
-    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,Nasurino.SmartWallet.Entities.TransactionType,System.DateTime,System.DateTime,System.Threading.CancellationToken)" path="/summary"/>
+    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,Nasurino.SmartWallet.Entities.TransactionType,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)" path="/summary"/>
     /// </summary>
     /// <param name="mockedTransactionRepository">Мок репозитория транзакций</param>
     /// <param name="transactions">Список транзакций для возврата</param>
@@ -45,14 +45,14 @@ public static class TransactionRepositoryMockExtensions
     /// <param name="endTimeRange">Конец временного диапазона</param>
     /// <param name="token">Токен отмены</param>
     /// <remarks>
-    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,Nasurino.SmartWallet.Entities.TransactionType,System.DateTime,System.DateTime,System.Threading.CancellationToken)" path="/remarks"/>
+    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,Nasurino.SmartWallet.Entities.TransactionType,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)" path="/remarks"/>
     /// </remarks>
     public static void GetTypedListByTimeRangeReturnValue(this Mock<ITransactionRepository> mockedTransactionRepository,
         IReadOnlyCollection<Transaction> transactions,
         Guid userId = default,
         TransactionType transactionType = TransactionType.ForTest,
-        DateTime startTimeRange = default,
-        DateTime endTimeRange = default,
+        DateTimeOffset startTimeRange = default,
+        DateTimeOffset endTimeRange = default,
         CancellationToken token = default)
         => mockedTransactionRepository.SetupListExpenseByTimeRange(userId, transactionType, startTimeRange, endTimeRange, token)
             .ReturnsAsync(transactions);
@@ -60,14 +60,14 @@ public static class TransactionRepositoryMockExtensions
     private static ISetup<ITransactionRepository, Task<IReadOnlyCollection<Transaction>>> SetupListByTimeRange(
         this Mock<ITransactionRepository> mockedTransactionRepository,
         Guid userId = default,
-        DateTime startTimeRange = default,
-        DateTime endTimeRange = default,
+        DateTimeOffset startTimeRange = default,
+        DateTimeOffset endTimeRange = default,
         CancellationToken token = default)
     {
         return mockedTransactionRepository.Setup(x => x.GetListByDateRangeAndUserIdAsync(
             It.Is<Guid>(g => userId == Guid.Empty || g == userId),
-            It.Is<DateTime>(d => startTimeRange == default || d == startTimeRange),
-            It.Is<DateTime>(d => endTimeRange == default || d == endTimeRange),
+            It.Is<DateTimeOffset>(d => startTimeRange == default || d == startTimeRange),
+            It.Is<DateTimeOffset>(d => endTimeRange == default || d == endTimeRange),
             It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
     }
     
@@ -75,15 +75,15 @@ public static class TransactionRepositoryMockExtensions
         this Mock<ITransactionRepository> mockedTransactionRepository,
         Guid userId = default,
         TransactionType transactionType = TransactionType.ForTest,
-        DateTime startTimeRange = default,
-        DateTime endTimeRange = default,
+        DateTimeOffset startTimeRange = default,
+        DateTimeOffset endTimeRange = default,
         CancellationToken token = default)
     {
         return mockedTransactionRepository.Setup(x => x.GetListByDateRangeAndUserIdAsync(
             It.Is<Guid>(g => userId == Guid.Empty || g == userId),
             It.Is<TransactionType>(t => t == TransactionType.ForTest || t == transactionType),
-            It.Is<DateTime>(d => startTimeRange == default || d == startTimeRange),
-            It.Is<DateTime>(d => endTimeRange == default || d == endTimeRange),
+            It.Is<DateTimeOffset>(d => startTimeRange == default || d == startTimeRange),
+            It.Is<DateTimeOffset>(d => endTimeRange == default || d == endTimeRange),
             It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
     }
 
@@ -104,23 +104,23 @@ public static class TransactionRepositoryMockExtensions
         this Mock<ITransactionRepository> mockedTransactionRepository,
         CategorizedSpendingResult result,
         Guid userId = default,
-        DateTime startDate = default,
-        DateTime endDate = default,
+        DateTimeOffset startDate = default,
+        DateTimeOffset endDate = default,
         CancellationToken token = default)
         => mockedTransactionRepository.SetupGetCategorizedSpendingByUserIdAndDateRange(userId, startDate, endDate, token)
             .ReturnsAsync(result);
 
-private static ISetup<ITransactionRepository, Task<CategorizedSpendingResult>> SetupGetCategorizedSpendingByUserIdAndDateRange(
+    private static ISetup<ITransactionRepository, Task<CategorizedSpendingResult>> SetupGetCategorizedSpendingByUserIdAndDateRange(
 		this Mock<ITransactionRepository> mockedTransactionRepository,
 		Guid userId = default,
-		DateTime startDate = default,
-		DateTime endDate = default,
+		DateTimeOffset startDate = default,
+		DateTimeOffset endDate = default,
 		CancellationToken token = default)
 	{
 		return mockedTransactionRepository.Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(
 			It.Is<Guid>(g => userId == Guid.Empty || g == userId),
-			It.Is<DateTime>(d => startDate == default || d == startDate),
-			It.Is<DateTime>(d => endDate == default || d == endDate),
+			It.Is<DateTimeOffset>(d => startDate == default || d == startDate),
+			It.Is<DateTimeOffset>(d => endDate == default || d == endDate),
 			It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
 	}
 

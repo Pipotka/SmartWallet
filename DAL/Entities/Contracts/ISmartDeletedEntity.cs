@@ -8,5 +8,5 @@ public interface ISmartDeletedEntity
 	/// <summary>
 	/// Дата удаления
 	/// </summary>
-	DateTime? DeletedAt { get; set; }
+	DateTimeOffset? DeletedAt { get; set; }
 }

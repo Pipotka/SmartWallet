@@ -33,8 +33,8 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
 	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
-		DateTime startTimeRange,
-		DateTime endTimeRange,
+		DateTimeOffset startTimeRange,
+		DateTimeOffset endTimeRange,
 		CancellationToken cancellationToken)
 		=> await Storage.Read<Transaction>().NotDeleted()
 						.Where(InDateRange(startTimeRange, endTimeRange))
@@ -44,15 +44,15 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	/// <inheritdoc/>
 	public override void Add(Transaction entity)
 	{
-		entity.MadeAt = DateTime.UtcNow;
+		entity.MadeAt = DateTimeOffset.UtcNow;
 		base.Add(entity);
 	}
 
 	void ITransactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(Guid transactionEndpointId,
-		DateTime startDate = default,
-		DateTime endDate = default)
+		DateTimeOffset startDate = default,
+		DateTimeOffset endDate = default)
 	{
-		endDate = endDate == default ? DateTime.MaxValue : endDate;
+		endDate = endDate == default ? DateTimeOffset.MaxValue : endDate;
 		DeleteEverythingBy(x => (x.DestinationAccountId == transactionEndpointId || x.SourceAccountId == transactionEndpointId) 
 		                        && startDate <= x.MadeAt && x.MadeAt < endDate);
 	}
@@ -62,8 +62,8 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	
 	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
 		TransactionType transactionType,
-		DateTime startDate,
-		DateTime endDate,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
 		CancellationToken cancellationToken)
 		=> await Storage.Read<Transaction>().NotDeleted()
 			.Where(InDateRange(startDate, endDate))
@@ -72,10 +72,10 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 
 	async Task<double> ITransactionRepository.GetBalanceByAccountIdAndDateRangeAsync(Guid accountId,
 		CancellationToken cancellationToken,
-		DateTime startDate = default,
-		DateTime endDate = default)
+		DateTimeOffset startDate = default,
+		DateTimeOffset endDate = default)
 	{
-		endDate = endDate == default ? DateTime.MaxValue : endDate;
+		endDate = endDate == default ? DateTimeOffset.MaxValue : endDate;
 		
 		return await Storage.Read<Transaction>().NotDeleted()
 			.Where(InDateRange(startDate, endDate))
@@ -85,7 +85,7 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	}
 	
 	async Task<CategorizedSpendingResult> ITransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeAsync(
-		Guid userId, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
+		Guid userId, DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken cancellationToken)
 	{
 		var categories = await Storage.Read<Transaction>()
 			.NotDeleted()
@@ -174,6 +174,6 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 		};
 	}
 
-	private static Expression<Func<Transaction, bool>> InDateRange(DateTime startTimeRange, DateTime endTimeRange)
+	private static Expression<Func<Transaction, bool>> InDateRange(DateTimeOffset startTimeRange, DateTimeOffset endTimeRange)
 		=> transaction => startTimeRange <= transaction.MadeAt && transaction.MadeAt < endTimeRange;
 }

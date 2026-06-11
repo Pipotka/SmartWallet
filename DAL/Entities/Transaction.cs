@@ -48,5 +48,5 @@ public sealed class Transaction : SmartDeletedEntity
 	/// <summary>
 	/// Дата и время создания
 	/// </summary>
-	public DateTime MadeAt { get; set; }
+	public DateTimeOffset MadeAt { get; set; }
 }

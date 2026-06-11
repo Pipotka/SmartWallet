@@ -40,7 +40,7 @@ public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntit
 	{
 		if (entity is ISmartDeletedEntity smartDeletedEntity)
 		{
-			smartDeletedEntity.DeletedAt = DateTime.UtcNow;
+			smartDeletedEntity.DeletedAt = DateTimeOffset.UtcNow;
 			Storage.Update(smartDeletedEntity);
 			return;
 		}
@@ -56,7 +56,7 @@ public abstract class BaseWriteRepository<TEntity> : IBaseWriteRepository<TEntit
 		if (typeof(ISmartDeletedEntity).IsAssignableFrom(typeof(TEntity)))
 		{
 			query.ExecuteUpdate(x => x
-			.SetProperty(e => ((ISmartDeletedEntity)e).DeletedAt, DateTime.UtcNow));
+			.SetProperty(e => ((ISmartDeletedEntity)e).DeletedAt, DateTimeOffset.UtcNow));
 			return;
 		}
 		query.ExecuteDelete();

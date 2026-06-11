@@ -31,8 +31,8 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 
 		var result = await _transactionRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
-                request.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-                request.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), token);
+                new DateTimeOffset(request.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+                new DateTimeOffset(request.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero), token);
 
 		return mapper.Map<SpendingCategoryModel>(result);
 	}
@@ -49,15 +49,15 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		var previousPeriodDateRange = request.GetFirstDateRange();
 		var previousPeriod = await _transactionRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
-				previousPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-				previousPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+				new DateTimeOffset(previousPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				new DateTimeOffset(previousPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 				token);
 	
 		var currentPeriodDateRange = request.GetSecondDateRange();
 		var currentPeriod = await _transactionRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
-				currentPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-				currentPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+				new DateTimeOffset(currentPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				new DateTimeOffset(currentPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 				token);
 		var currentPeriodCategories = currentPeriod.Categories
 			.ToDictionary(x => x.CategoryName); 
@@ -125,8 +125,8 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 
 		var dateRangeInfos = dateRanges.Select(r => new DateRangeInfo
 		{
-			Start = r.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-			End = r.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+			Start = new DateTimeOffset(r.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+			End = new DateTimeOffset(r.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 			Label = r.Label
 		}).ToList();
 

@@ -92,8 +92,8 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 			Id = Guid.NewGuid(),
 			Token = refreshTokenValue,
 			UserId = user.Id,
-			ExpiresAt = DateTime.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
-			CreatedAt = DateTime.UtcNow,
+			ExpiresAt = DateTimeOffset.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
+			CreatedAt = DateTimeOffset.UtcNow,
 		};
 		_refreshTokenRepository.Add(refreshToken);
 		await unitOfWork.SaveChangesAsync(token);
@@ -106,7 +106,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshTokenValue, token)
 			?? throw new AuthenticationServiceException();
 
-		if (storedToken.ExpiresAt < DateTime.UtcNow)
+		if (storedToken.ExpiresAt < DateTimeOffset.UtcNow)
 		{
 			throw new AuthenticationServiceException();
 		}
@@ -120,7 +120,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 			?? throw new AuthenticationServiceException();
 
 		// Mark old refresh token as revoked
-		storedToken.RevokedAt = DateTime.UtcNow;
+		storedToken.RevokedAt = DateTimeOffset.UtcNow;
 
 		// Generate new tokens
 		var newAccessToken = jwtProvider.GenerateToken(mapper.Map<UserModel>(user));
@@ -130,8 +130,8 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 			Id = Guid.NewGuid(),
 			Token = newRefreshTokenValue,
 			UserId = user.Id,
-			ExpiresAt = DateTime.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
-			CreatedAt = DateTime.UtcNow,
+			ExpiresAt = DateTimeOffset.UtcNow.AddDays(jwtOptions.RefreshExpiresDays),
+			CreatedAt = DateTimeOffset.UtcNow,
 		};
 
 		storedToken.ReplacedByToken = newRefreshTokenValue;
@@ -147,7 +147,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 		var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshTokenValue, token);
 		if (storedToken is not null)
 		{
-			storedToken.RevokedAt = DateTime.UtcNow;
+			storedToken.RevokedAt = DateTimeOffset.UtcNow;
 			_refreshTokenRepository.Update(storedToken);
 			await unitOfWork.SaveChangesAsync(token);
 		}
