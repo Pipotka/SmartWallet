@@ -27,5 +27,10 @@ public class CategorizingSpendingRequestValidator : AbstractValidator<Categorizi
         RuleFor(x => x.EndDate)
             .LessThanOrEqualTo(new DateOnly(nextMonth.Year, nextMonth.Month, 1))
             .WithMessage("Временной диапазон не может затрагивать следующий месяц");
+
+        RuleFor(x => x)
+            .Must(x => x.StartDate <= x.EndDate)
+            .WithName(x => nameof(x.StartDate))
+            .WithMessage("Дата начала должна быть меньше или ровна дате конца временного диапазона");
     }
 }
