@@ -33,7 +33,7 @@ public class UpdateTransactionEndpointModelValidator : AbstractValidator<UpdateT
 					var model = await transactionEndpointRepository.GetByNameAndUserIdAsync(request.UserId, request.Name, token);
 					return model is null || model.Id == request.Id;
 				}
-				return false;
+				return true;
 			})
 			.WithName(x => nameof(x.Name))
 			.WithMessage($"Эндпоинт с подобным именем уже существует");
