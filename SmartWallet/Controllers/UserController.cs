@@ -73,7 +73,7 @@ public sealed class UserController : Controller
 	/// <summary>
 	/// Вход в аккаунт
 	/// </summary>
-	[HttpPut("login")]
+	[HttpPost("login")]
 	[AllowAnonymous]
 	[ProducesResponseType(typeof(ResponseLogInApiModel), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
@@ -171,7 +171,7 @@ public sealed class UserController : Controller
 	/// <summary>
 	/// Смена пароля пользователя
 	/// </summary>
-	[HttpPut("password")]
+	[HttpPatch("password")]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
