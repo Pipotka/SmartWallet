@@ -16,5 +16,8 @@ public class DeleteTransactionModelValidator : AbstractValidator<DeleteTransacti
 		RuleFor(x => x.Id)
 			.NotEmpty()
 			.WithMessage("Id не должен быть пустым");
+		RuleFor(x => x.UserId)
+			.NotEmpty()
+			.WithMessage("Идентификатор пользователя не должен быть пустым");
 	}
 }

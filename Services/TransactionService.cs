@@ -1,91 +1,198 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Services.Contracts;
+using Services.Contracts.Models.Exceptions;
 
 namespace Nasurino.SmartWallet.Services;
 
 /// <summary>
 /// Сервис для работы с транзакциями
 /// </summary>
-public class TransactionService(IUnitOfWork unitOfWork,
+public sealed class TransactionService(IUnitOfWork unitOfWork,
 	ISmartWalletValidateService validateService,
 	IMapper mapper) : ITransactionService
 {
-	private readonly IUnitOfWork unitOfWork = unitOfWork;
-	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
-	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
-	private readonly ICashVaultRepository cashVaultRepository = unitOfWork.CashVaultRepository;
-	private readonly ISpendingAreaRepository spendingAreaRepository = unitOfWork.SpendingAreaRepository;
-	private readonly ISmartWalletValidateService validateService = validateService;
-	private readonly IMapper mapper = mapper;
+	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
+	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
+	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
 
-	async Task<List<TransactionModel>> ITransactionService.GetListByUserIdAsync(Guid userId, CancellationToken token)
+	async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token)
 	{
-		var user = await userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		await validateService.ValidateAsync(query, token);
 
-		var transactionList = await transactionRepository.GetListByUserIdAsync(userId, token);
+		_ = await _userRepository.GetUserByIdAsync(userId, token)
+		    ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		return mapper.Map<List<TransactionModel>>(transactionList);
+		var dalQuery = mapper.Map<TransactionQuery>(query);
+		var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
+
+		return mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
 	}
 
-	async Task<TransactionModel> ITransactionService.CreateAsync(Guid userId, CreateTransactionModel model, CancellationToken token)
+	async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
-		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
-		}
+		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+						?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+		
 		var transaction = mapper.Map<Transaction>(model);
-		transaction.Id = Guid.NewGuid();
-		transaction.UserId = userId;
+		TransactionEndpoint? sourceAccount = null;
+		TransactionEndpoint? destinationAccount = null;
 
-		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(transaction.FromCashVaultId, userId, token)
-			?? throw new EntityNotFoundServiceException($"Денежное хранилище с Id = {transaction.FromCashVaultId} не найдена.");
-		var spendingArea = await spendingAreaRepository.GetByIdAndUserIdAsync(transaction.ToSpendingAreaId, userId, token)
-			?? throw new EntityNotFoundServiceException($"Область трат с Id = {transaction.ToSpendingAreaId} не найдена.");
+		if (model.SourceAccountId.HasValue)
+		{
+			sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
+									model.UserId,
+									token)
+							?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.SourceAccountId!.Value);
+		}
+		if (model.DestinationAccountId.HasValue)
+		{
+			destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.DestinationAccountId!.Value,
+				                    model.UserId,
+				                    token)
+			                    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(transaction.DestinationAccountId!.Value);
+		}
 
-		cashVault.Value -= transaction.Value;
-		spendingArea.Value += transaction.Value;
+		if (sourceAccount != null)
+		{
+			if (!sourceAccount.IsStorage)
+			{
+				throw new SmartWalletValidationException(new PropertyValidationError(
+					nameof(CreateTransactionModel.SourceAccountId),
+					"Область трат не может быть указана как SourceAccount"));
+			}
 
-		transactionRepository.Add(transaction);
-		cashVaultRepository.Update(cashVault);
-		spendingAreaRepository.Update(spendingArea);
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(sourceAccount.Id, token) - transaction.Amount;
+			
+			if (sourceAccount.Limitation != null
+				&& sourceAccount.Limitation > balanceResult
+				&& destinationAccount is { IsStorage: false })
+			{
+				throw new AccountBalanceLimitViolationException(nameof(CreateTransactionModel.SourceAccountId), sourceAccount.Name);
+			}
+			
+			sourceAccount.Value = balanceResult;
+			_transactionEndpointRepository.Update(sourceAccount);
+		}
+
+		if (destinationAccount != null)
+		{
+			if (!model.SourceAccountId.HasValue && !destinationAccount.IsStorage)
+			{
+				throw new SmartWalletValidationException(new PropertyValidationError(
+					nameof(CreateTransactionModel.DestinationAccountId),
+					"Нельзя скорректировать баланс области трат"));
+			}
+
+			double currentBalace;
+			if (destinationAccount.IsStorage)
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token);
+			}
+			else
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id,
+				token,
+				new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
+				DateTimeOffset.UtcNow);
+			}
+
+			var balanceResult = currentBalace + transaction.Amount;
+			if (destinationAccount.Limitation != null
+				&& destinationAccount.Limitation < balanceResult
+				&& destinationAccount is { IsStorage: false })
+			{
+				throw new AccountBalanceLimitViolationException(nameof(CreateTransactionModel.DestinationAccountId), destinationAccount.Name);
+			}
+			
+			destinationAccount.Value = balanceResult;
+			_transactionEndpointRepository.Update(destinationAccount);
+			
+		}
+		
+		if (sourceAccount is { IsStorage: true })
+		{
+			transaction.Type = TransactionType.Expense;
+			
+			if (destinationAccount == null)
+			{
+				transaction.Type = TransactionType.AdjustmentDecrease;
+			}
+
+			if (destinationAccount is { IsStorage: true })
+			{
+				transaction.Type = TransactionType.Transfer;
+			}
+		}
+		else if (destinationAccount is { IsStorage: true })
+		{
+			transaction.Type = TransactionType.AdjustmentIncrease;
+		}
+		
+		_transactionRepository.Add(transaction);
+		
 		await unitOfWork.SaveChangesAsync(token);
 
 		return mapper.Map<TransactionModel>(transaction);
 	}
 
-	async Task ITransactionService.DeleteAsync(Guid userId, DeleteTransactionModel model, CancellationToken token)
+	async Task ITransactionService.DeleteAsync(DeleteTransactionModel model, CancellationToken token)
 	{
 		await validateService.ValidateAsync(model, token);
-		if (await userRepository.GetUserByIdAsync(userId, token) is null)
+		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
 		{
-			throw new EntityNotFoundServiceException($"Пользователь с Id = {userId} не найден.");
+			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 		}
-		var transaction = await transactionRepository.GetByIdAndUserIdAsync(model.Id, userId, token)
-			?? throw new EntityNotFoundServiceException($"Транзакция с Id = {model.Id} не найдена.");
+		var transaction = await _transactionRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
+			?? throw new EntityNotFoundByIdServiceException<Transaction>(model.Id);
 
-		var cashVault = await cashVaultRepository.GetByIdAndUserIdAsync(transaction.FromCashVaultId, userId, token);
-		var spendingArea = await spendingAreaRepository.GetByIdAndUserIdAsync(transaction.ToSpendingAreaId, userId, token);
-
-		if (cashVault is not null)
+		if (transaction.SourceAccountId.HasValue)
 		{
-			cashVault.Value += transaction.Value;
-			cashVaultRepository.Update(cashVault);
-		}
-		if (spendingArea is not null)
-		{
-			spendingArea.Value -= transaction.Value;
-			spendingAreaRepository.Update(spendingArea);
+			var sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(transaction.SourceAccountId!.Value,
+				                    model.UserId,
+				                    token);
+			
+			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(sourceAccount!.Id, token) + transaction.Amount;
+			sourceAccount.Value = balanceResult;
+			_transactionEndpointRepository.Update(sourceAccount);
 		}
 
-		transactionRepository.Delete(transaction);
+		if (transaction.DestinationAccountId.HasValue)
+		{
+			var destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(
+									transaction.DestinationAccountId!.Value,
+									model.UserId,
+									token);
+
+			double currentBalace;
+			if (destinationAccount is {IsStorage: true})
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token);
+			}
+			else
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id,
+				token,
+				new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
+				DateTimeOffset.UtcNow);
+			}
+
+			var balanceResult = currentBalace - transaction.Amount;
+
+			destinationAccount.Value = balanceResult;
+			_transactionEndpointRepository.Update(destinationAccount);
+			
+		}
+
+		_transactionRepository.Delete(transaction);
 		await unitOfWork.SaveChangesAsync(token);
 	}
 }

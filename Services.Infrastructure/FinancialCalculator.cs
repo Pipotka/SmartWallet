@@ -15,4 +15,25 @@ public class FinancialCalculator : IFinancialCalculator
     
         return sum * (percentage / 100);
     }
+
+    public double CalculateTrendPercentage(double currentValue, double previousValue, int decimals = 2)
+    {
+        if (currentValue < 0)
+        {
+            throw new ArgumentException("Текущее значение не может быть отрицательным", nameof(currentValue));
+        }
+
+        if (previousValue < 0)
+        {
+            throw new ArgumentException("Предыдущее значение не может быть отрицательным", nameof(previousValue));
+        }
+
+        if (previousValue == 0)
+        {
+            return 0.0;
+        }
+        
+        var trend = ((currentValue - previousValue) / previousValue) * 100;
+        return Math.Round(trend, decimals);
+    }
 }

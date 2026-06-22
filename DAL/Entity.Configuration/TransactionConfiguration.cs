@@ -20,13 +20,13 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 			.WithMany(x => x.Transactions)
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
-		builder.HasOne(x => x.CashVault)
-			.WithMany(x => x.Transactions)
-			.HasForeignKey(x => x.FromCashVaultId)
+		builder.HasOne(x => x.SourceAccount)
+			.WithMany(x => x.OutgoingTransactions)
+			.HasForeignKey(x => x.SourceAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
-		builder.HasOne(x => x.SpendingArea)
-			.WithMany(x => x.Transactions)
-			.HasForeignKey(x => x.ToSpendingAreaId)
+		builder.HasOne(x => x.DestinationAccount)
+			.WithMany(x => x.IncomingTransactions)
+			.HasForeignKey(x => x.DestinationAccountId)
 			.OnDelete(DeleteBehavior.NoAction);
 	}
 }

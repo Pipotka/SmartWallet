@@ -11,6 +11,7 @@ using Nasurino.SmartWallet.Common.Infrastructure;
 using Nasurino.SmartWallet.AutoMappers;
 using Nasurino.SmartWallet.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Service.Infrastructure;
@@ -18,13 +19,48 @@ using Services.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Service.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Context.Contracts;
+using Nasurino.SmartWallet.Services.Contracts;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
+using Nasurino.SmartWallet.Services.BackgroundJobs;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Length > 0)
+{
+    var migrationIndex = Array.IndexOf(args, "-m");
+    if (migrationIndex != -1)
+    {
+        var connectionIndex = migrationIndex + 1;
+        if (connectionIndex < args.Length && !string.IsNullOrEmpty(args[connectionIndex]))
+        {
+            var options = new DbContextOptionsBuilder<SmartWalletContext>()
+                .UseNpgsql(args[connectionIndex])
+                .Options;
+            await SmartWalletMigrator.MigrateAsync(options);
+            return;
+        }
+        else
+        {
+            throw new ArgumentException("РћР¶РёРґР°Р»Р°СЃСЊ СЃС‚СЂРѕРєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ РїРѕСЃР»Рµ РєР»СЋС‡Р° -m, РЅРѕ РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ");
+        }
+    }
+}
 
 // Add services to the container.
 
 builder.Services.AddDbContext<SmartWalletContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("SmartWalletConnectionString")));
+
+builder.Services.AddHangfire(conf => conf
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(c =>
+        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("HangfireConnection"))));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddControllers(x =>
 {
@@ -67,12 +103,27 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-#region Регистрация классов конфигурации
+var allowedOrigins = builder.Configuration.GetSection("ApiSettings:CqrsSettings:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins);
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+        policy.AllowCredentials();
+    });
+});
+
+#region Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃРѕРІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 builder.Services.Configure<JwtOptions>(builder.Configuration
     .GetSection("ApiSettings:JwtSettings"));
+builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtOptions>>().Value);
+builder.Services.Configure<BCryptOptions>(builder.Configuration
+    .GetSection("ApiSettings:BCryptSettings"));
 #endregion
 
-#region Регистрация сервисов в контейнере
+#region Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃРµСЂРІРёСЃРѕРІ
 builder.Services.AddAutoMapper(typeof(ServiceModelMapper));
 builder.Services.AddAutoMapper(typeof(ApiModelMapper));
 builder.Services.AddAuthentication(x =>
@@ -94,17 +145,17 @@ builder.Services.AddAuthentication(x =>
 });
 
 builder.Services.AddScoped<IIdentityProvider, ApiIdentityProvider>();
+builder.Services.AddScoped<IFinancialCalculator, FinancialCalculator>();
 
 builder.Services.AddScoped<IDataStorageContext, SmartWalletContext>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ICashVaultRepository, CashVaultRepository>();
+builder.Services.AddScoped<ITransactionEndpointRepository, TransactionEndpointRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ISpendingAreaRepository, SpendingAreaRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-builder.Services.AddScoped<ICashVaultService, CashVaultService>();
-builder.Services.AddScoped<ISpendingAreaService, SpendingAreaService>();
+builder.Services.AddScoped<ITransactionEndpointService, TransactionEndpointService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IFinancialAnalyticsService, FinancialAnalyticsService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -113,25 +164,56 @@ builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddScoped<ISmartWalletValidateService, SmartWalletValidateService>();
+builder.Services.AddScoped<IClearCategoryCacheService, ClearCategoryCacheService>();
 #endregion
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedProto
+        | ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("SmartWalletCorsPolicy");
+    app.UseHangfireDashboard();
+}
+else
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok("healthy"));
+
+#region Р РµРіРёСЃС‚СЂР°С†РёСЏ cron Р·Р°РґР°С‡
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider
+        .GetRequiredService<IRecurringJobManager>();
+
+    recurringJobManager.AddOrUpdate<IClearCategoryCacheService>(
+        "clear-category-cache",
+        service => service.ClearCategoryCacheAsync(),
+        Cron.Monthly);
+}
+#endregion
 
 app.Run();

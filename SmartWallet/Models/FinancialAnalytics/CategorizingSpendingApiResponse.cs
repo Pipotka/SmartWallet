@@ -3,8 +3,8 @@
 /// <summary>
 /// Модель Api ответа категоризации трат
 /// </summary>
-/// <param name="SpendingAmount">Сумма трат</param>
-/// <param name="CategorizedSpending">Категоризированные траты</param>
+/// <param name="TotalSpending">Сумма трат</param>
+/// <param name="Categories">Категоризированные траты</param>
 public record CategorizingSpendingApiResponse(
-    double SpendingAmount,
-    Dictionary<Guid, double> CategorizedSpending);
+    double TotalSpending,
+    IReadOnlyCollection<CategorySpendingItemApiModel> Categories);

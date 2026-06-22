@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Models.CashVault;
-using Nasurino.SmartWallet.Models.SpendingArea;
+using Nasurino.SmartWallet.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Models.Transaction;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.AutoMappers;
@@ -28,22 +31,38 @@ public class ApiModelMapper : Profile
 		CreateMap<DeleteUserApiModel, DeleteUserModel>(MemberList.Destination)
 			.ForMember(x => x.Id, opt => opt.Ignore());
 
+		CreateMap<ChangePasswordApiModel, ChangePasswordModel>(MemberList.Source);
+
 		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
-		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination);
-		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination);
+		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
+		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
 
-		CreateMap<SpendingAreaModel, SpendingAreaApiModel>(MemberList.Destination);
-		CreateMap<CreateSpendingAreaApiModel, CreateSpendingAreaModel>(MemberList.Destination)
+		CreateMap<TransactionEndpointModel, TransactionEndpointApiModel>(MemberList.Destination);
+		CreateMap<CreateTransactionEndpointApiModel, CreateTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<UpdateSpendingAreaApiModel, UpdateSpendingAreaModel>(MemberList.Destination)
+		CreateMap<UpdateTransactionEndpointApiModel, UpdateTransactionEndpointModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<DeleteSpendingAreaApiModel, DeleteSpendingAreaModel>(MemberList.Destination);
+		CreateMap<DeleteTransactionEndpointApiModel, DeleteTransactionEndpointModel>(MemberList.Destination)
+			.ForMember(x => x.UserId, opt => opt.Ignore());
 
-		CreateMap<CashVaultModel, CashVaultApiModel>(MemberList.Destination);
-		CreateMap<CreateCashVaultApiModel, CreateCashVaultModel>(MemberList.Destination)
+		CreateMap<CategorySpendingItemModel, CategorySpendingItemApiModel>(MemberList.Destination);
+		CreateMap<SpendingCategoryModel, CategorizingSpendingApiResponse>(MemberList.Destination);
+        CreateMap<CategorizingSpendingApiRequest, CategorizingSpendingRequest>(MemberList.Source);
+
+        CreateMap<CategoryComparativeAnalysisModel, CategoryComparativeAnalysisApiModel>(MemberList.Destination);
+		CreateMap<CategoryComparativeAnalysisResult, CategoryComparativeAnalysisResponse>(MemberList.Destination);
+		CreateMap<CategoryComparativeAnalysisApiRequest, CategoryComparativeAnalysisRequest>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<UpdateCashVaultApiModel, UpdateCashVaultModel>(MemberList.Destination)
+
+		CreateMap<SpendingTrendLineApiRequest, SpendingTrendLineRequest>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
-		CreateMap<DeleteCashVaultApiModel, DeleteCashVaultModel>(MemberList.Destination);
-	}
+		CreateMap<SpendingTrendLineNodeModel, SpendingTrendLineNodeApiModel>(MemberList.Destination);
+		CreateMap<SpendingTrendLineCategoryModel, SpendingTrendLineCategoryApiModel>(MemberList.Destination);
+		CreateMap<SpendingTrendLineResult, SpendingTrendLineApiResponse>(MemberList.Destination);
+
+		CreateMap<TransactionQueryApiModel, TransactionQueryModel>(MemberList.Destination);
+		CreateMap<PagedResultModel<TransactionModel>, PagedResultApiModel<TransactionApiModel>>(MemberList.Destination);
+    }
 }

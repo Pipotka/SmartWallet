@@ -10,5 +10,5 @@ public abstract class SmartDeletedEntity : BaseEntity, ISmartDeletedEntity
 	/// <summary>
 	/// Дата удаления
 	/// </summary>
-	public DateTime? DeletedAt { get; set; }
+	public DateTimeOffset? DeletedAt { get; set; }
 }

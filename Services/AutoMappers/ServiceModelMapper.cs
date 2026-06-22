@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Service.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.Services.AutoMappers;
@@ -17,36 +20,27 @@ public class ServiceModelMapper : Profile
 	public ServiceModelMapper()
 	{
 		CreateMap<User, UserModel>(MemberList.Destination);
-		CreateMap<CreateUserModel, User>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.CashVaults, opt => opt.Ignore())
-			.ForMember(dest => dest.SpendingAreas, opt => opt.Ignore())
-			.ForMember(dest => dest.HashedPassword, opt => opt.Ignore());
-		CreateMap<UpdateUserModel, User>(MemberList.Destination);
-
-		CreateMap<CashVault, CashVaultModel>(MemberList.Destination);
-		CreateMap<UpdateCashVaultModel, CashVault>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-		CreateMap<CreateCashVaultModel, CashVault>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.Id, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-
-		CreateMap<SpendingArea, SpendingAreaModel>(MemberList.Destination);
-		CreateMap<UpdateSpendingAreaModel, SpendingArea>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-		CreateMap<CreateSpendingAreaModel, SpendingArea>(MemberList.Destination)
-			.ForMember(dest => dest.Transactions, opt => opt.Ignore())
-			.ForMember(dest => dest.Id, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+		CreateMap<CreateUserModel, User>(MemberList.Source)
+			.ForSourceMember(x => x.Password, opt => opt.DoNotValidate());
+		CreateMap<UpdateUserModel, User>(MemberList.Source);
+		CreateMap<TransactionEndpoint, TransactionEndpointModel>(MemberList.Destination);
+		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
+		CreateMap<CreateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
 
 		CreateMap<Transaction, TransactionModel>(MemberList.Destination);
 		CreateMap<CreateTransactionModel, Transaction>(MemberList.Destination)
-			.ForMember(dest => dest.UserId, opt => opt.Ignore())
 			.ForMember(dest => dest.Id, opt => opt.Ignore())
+			.ForMember(dest => dest.Type, opt => opt.Ignore())
+			.ForMember(dest => dest.User, opt => opt.Ignore())
+			.ForMember(dest => dest.SourceAccount, opt => opt.Ignore())
+			.ForMember(dest => dest.DestinationAccount, opt => opt.Ignore())
 			.ForMember(dest => dest.MadeAt, opt => opt.Ignore())
 			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
+		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
+
+		CreateMap<TransactionQueryModel, TransactionQuery>(MemberList.Destination);
+		CreateMap<PagedResult<Transaction>, PagedResultModel<TransactionModel>>(MemberList.Destination);
 	}
 }

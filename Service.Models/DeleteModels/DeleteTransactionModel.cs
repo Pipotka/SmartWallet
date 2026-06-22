@@ -9,4 +9,9 @@ public class DeleteTransactionModel
 	/// Идентификатор
 	/// </summary>
 	public Guid Id { get; set; }
+	
+	/// <summary>
+	/// Идентификатор пользователя
+	/// </summary>
+	public Guid UserId { get; set; }
 }

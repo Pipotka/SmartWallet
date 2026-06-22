@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Entity.Configuration;
+using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context;
 
@@ -9,6 +10,11 @@ namespace Nasurino.SmartWallet.Context;
 /// </summary>
 public class SmartWalletContext : DbContext, IDataStorageContext
 {
+	/// <summary>
+	/// Рефреш-токены
+	/// </summary>
+	public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletContext"/>
 	/// </summary>
@@ -26,7 +32,7 @@ public class SmartWalletContext : DbContext, IDataStorageContext
 	void IDataStorageContext.Delete<TEntity>(TEntity entity) where TEntity : class 
 		=> Entry(entity).State = EntityState.Deleted;
 
-	void IDataStorageContext.Update<TEntity>(TEntity entity)
+	void IDataStorageContext.Update<TEntity>(TEntity entity) where TEntity : class
 		=> Entry(entity).State = EntityState.Modified;
 
 	/// <inheritdoc />

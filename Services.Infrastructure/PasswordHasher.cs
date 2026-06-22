@@ -1,14 +1,18 @@
-﻿using Bc = BCrypt.Net;
+﻿using Microsoft.Extensions.Options;
+using Nasurino.SmartWallet.Options;
+using Bc = BCrypt.Net;
 
 namespace Nasurino.SmartWallet.Service.Infrastructure;
 
 /// <summary>
 /// Хэшер паролей
 /// </summary>
-public class PasswordHasher : IPasswordHasher
+public class PasswordHasher(IOptions<BCryptOptions> options) : IPasswordHasher
 {
-	string IPasswordHasher.Generate(string password)
-		=> Bc.BCrypt.HashPassword(password);
+    private readonly BCryptOptions options = options.Value;
+
+    string IPasswordHasher.Generate(string password)
+		=> Bc.BCrypt.HashPassword(password, workFactor: options.WorkFactor);
 
 	bool IPasswordHasher.Verify(string password, string hashedPassword)
 		=> Bc.BCrypt.Verify(password, hashedPassword);

@@ -10,8 +10,6 @@ public static class EntityFilters
 	/// <summary>
 	/// Фильтрует сущности, исключая мягко удалённые (для <see cref="ISmartDeletedEntity"/>)
 	/// </summary>
-	public static IQueryable<TEntity> NotDeleted<TEntity>(this IQueryable<TEntity> query) where TEntity : class
-		=> typeof(ISmartDeletedEntity).IsAssignableFrom(typeof(TEntity))
-			? query.Where(x => ((ISmartDeletedEntity)x).DeletedAt == null)
-			: query;
+	public static IQueryable<TEntity> NotDeleted<TEntity>(this IQueryable<TEntity> query) where TEntity : ISmartDeletedEntity
+		=>query.Where(x => x.DeletedAt == null);
 }

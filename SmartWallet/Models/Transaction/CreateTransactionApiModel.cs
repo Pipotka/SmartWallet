@@ -3,20 +3,20 @@
 /// <summary>
 /// Api модель создания транзакции
 /// </summary>
-public class CreateTransactionApiModel
+public sealed class CreateTransactionApiModel
 {
 	/// <summary>
-	/// Идентификатор денежного хранилища 
+	/// Идентификатор аккаунта-источника
 	/// </summary>
-	public Guid FromCashVaultId { get; set; }
+	public Guid? SourceAccountId { get; set; }
 
 	/// <summary>
-	/// Идентификатор области трат
+	/// Идентификатор аккаунта назначения
 	/// </summary>
-	public Guid ToSpendingAreaId { get; set; }
+	public Guid? DestinationAccountId { get; set; }
 
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public double Amount { get; set; } = 0.0;
 }

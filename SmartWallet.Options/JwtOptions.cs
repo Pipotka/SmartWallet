@@ -1,7 +1,7 @@
 ﻿namespace Nasurino.SmartWallet.Options;
 
 /// <summary>
-/// Найстройки конфигурацииы для Jwt
+/// Настройки конфигурации для Jwt
 /// </summary>
 public class JwtOptions
 {
@@ -11,7 +11,12 @@ public class JwtOptions
 	public string Key { get; set; }
 
 	/// <summary>
-	/// Количество часов, которое действует Jwt
+	/// Количество минут, которое действует access-токен
 	/// </summary>
-	public int ExpiresHours { get; set; }
+	public int ExpiresMinutes { get; set; }
+
+	/// <summary>
+	/// Количество дней, которое действует refresh-токен
+	/// </summary>
+	public int RefreshExpiresDays { get; set; }
 }

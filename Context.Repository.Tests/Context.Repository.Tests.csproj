@@ -2,20 +2,17 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Nasurino.SmartWallet.Context.Repository.Tests</RootNamespace>
+        <AssemblyName>SmartWallet.Context.Repository.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
       <ProjectReference Include="..\DAL\Context.Tests\Context.Tests.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Ahatornn.TestGenerator" Version="1.1.29" />
-      <PackageReference Include="FluentAssertions" Version="7.2.0" />
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-      <PackageReference Include="xunit" Version="2.9.3" />
     </ItemGroup>
 
 </Project>

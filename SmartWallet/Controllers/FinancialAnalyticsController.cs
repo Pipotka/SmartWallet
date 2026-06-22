@@ -1,50 +1,85 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models.FinancialAnalytics;
-using Services.Contracts;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Services.Contracts;
 
 namespace Nasurino.SmartWallet.Controllers;
 
 /// <summary>
 /// Контроллер для работы с аналитикой трат
 /// </summary>
-[Route("api/[controller]")]
+[Route("api/financial-analytics")]
 [ApiController]
 [Authorize]
-public class FinancialAnalyticsController : Controller
+public sealed class FinancialAnalyticsController : Controller
 {
-	private readonly IFinancialAnalyticsService financialAnalyticsService;
-	private readonly IIdentityProvider identityProvider;
+	private readonly IFinancialAnalyticsService _financialAnalyticsService;
+	private readonly IIdentityProvider _identityProvider;
+	private readonly IMapper _mapper;
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="FinancialAnalyticsController"/>
 	/// </summary>
 	public FinancialAnalyticsController(IFinancialAnalyticsService financialAnalyticsService,
-		IIdentityProvider identityProvider)
+		IIdentityProvider identityProvider,
+		IMapper mapper)
 	{
-		this.financialAnalyticsService = financialAnalyticsService;
-		this.identityProvider = identityProvider;
+		_financialAnalyticsService = financialAnalyticsService;
+		_identityProvider = identityProvider;
+		_mapper = mapper;
 	}
 
 	/// <summary>
-	/// Получает категоризированные траты пользователя по месяцу года
+	/// Получает категоризированные траты пользователя по временному диапазону
 	/// </summary>
-	[HttpPut("categorized-spending")]
+	[HttpPost("categorized-spending")]
 	[ProducesResponseType(typeof(CategorizingSpendingApiResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	public async Task<IActionResult> GetCategorizingSpendingByMonthOfYear([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	public async Task<IActionResult> GetCategorizingSpendingByDateRange([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
-		var minDateInMonth = new DateTime(request.Year, request.Month, 1);
-		var minDateInNextMonth = minDateInMonth.AddMonths(1);
-		var result = await financialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(identityProvider.Id,
-			minDateInMonth,
-			minDateInNextMonth,
-			request.AsPercentage,
-			token);
-		var response = new CategorizingSpendingApiResponse(result.SpendingAmount, result.CategorizedSpending);
-		return Ok(response);
+		var model = _mapper.Map<CategorizingSpendingRequest>(request);
+		model.UserId = _identityProvider.Id;
+        var result = await _financialAnalyticsService.GetCategorizingSpendingAsync(model, token);
+		return Ok(_mapper.Map<CategorizingSpendingApiResponse>(result));
+	}
+
+	/// <summary>
+	/// Получает сравнительный анализ по категориям за два периода
+	/// </summary>
+	[HttpPost("category-comparative-analysis")]
+	[ProducesResponseType(typeof(CategoryComparativeAnalysisResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	public async Task<IActionResult> GetCategoryComparativeAnalysis([FromBody] CategoryComparativeAnalysisApiRequest request, CancellationToken token)
+	{
+		var model = _mapper.Map<CategoryComparativeAnalysisRequest>(request);
+		model.UserId = _identityProvider.Id;
+		var result = await _financialAnalyticsService.GetCategoryComparativeAnalysisAsync(model, token);
+		return Ok(_mapper.Map<CategoryComparativeAnalysisResponse>(result));
+	}
+
+	/// <summary>
+	/// Получает данные линейного графика трат по категориям за серию периодов
+	/// </summary>
+	[HttpPost("spending-trend-line")]
+	[ProducesResponseType(typeof(SpendingTrendLineApiResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	public async Task<IActionResult> GetSpendingTrendLine([FromBody] SpendingTrendLineApiRequest request, CancellationToken token)
+	{
+		var model = _mapper.Map<SpendingTrendLineRequest>(request);
+		model.UserId = _identityProvider.Id;
+		var result = await _financialAnalyticsService.GetSpendingTrendLineAsync(model, token);
+		return Ok(_mapper.Map<SpendingTrendLineApiResponse>(result));
 	}
 }

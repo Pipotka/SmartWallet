@@ -1,7 +1,12 @@
-﻿using Nasurino.SmartWallet.Context.Repository.Contracts;
+﻿using AutoMapper;
+using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
+using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
-using Nasurino.SmartWallet.Service.Models.Models;
+using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Services.Contracts;
 using Service.Infrastructure.Contracts;
+using ServiceTrendLineResult = Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics.SpendingTrendLineResult;
 using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
@@ -9,54 +14,148 @@ namespace Nasurino.SmartWallet.Services;
 /// <summary>
 /// Сервис финансовой аналитики
 /// </summary>
-public class FinancialAnalyticsService(IUnitOfWork unitOfWork, IFinancialCalculator calculator) : IFinancialAnalyticsService
+public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
+	IFinancialCalculator calculator,
+	ISmartWalletValidateService validateService,
+	IMapper mapper) : IFinancialAnalyticsService
 {
-	private readonly IUserRepository userRepository = unitOfWork.UserRepository;
-	private readonly ITransactionRepository transactionRepository = unitOfWork.TransactionRepository;
+	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
+	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 
-	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingByTimeRangeAndUserIdAsync(Guid userId,
-		DateTime startTimeRange,
-		DateTime endTimeRange,
-		bool asPercentage,
+	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingAsync(CategorizingSpendingRequest request, CancellationToken token)
+	{
+        await validateService.ValidateAsync(request, token);
+
+        _ = await _userRepository.GetUserByIdAsync(request.UserId, token) 
+			?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
+
+		var result = await _transactionRepository
+			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
+                new DateTimeOffset(request.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+                new DateTimeOffset(request.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero), token);
+
+		return mapper.Map<SpendingCategoryModel>(result);
+	}
+	
+	async Task<CategoryComparativeAnalysisResult> IFinancialAnalyticsService.GetCategoryComparativeAnalysisAsync(
+		CategoryComparativeAnalysisRequest request,
 		CancellationToken token)
 	{
-		if (await userRepository.GetUserByIdAsync(userId, token) is null) 
-			throw new EntityNotFoundServiceException($"Пользователь с id = {userId} не найден.");
+		await validateService.ValidateAsync(request, token);
+		
+		_ = await _userRepository.GetUserByIdAsync(request.UserId, token) 
+		    ?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
+		
+		var previousPeriodDateRange = request.GetFirstDateRange();
+		var previousPeriod = await _transactionRepository
+			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
+				new DateTimeOffset(previousPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				new DateTimeOffset(previousPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				token);
+	
+		var currentPeriodDateRange = request.GetSecondDateRange();
+		var currentPeriod = await _transactionRepository
+			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
+				new DateTimeOffset(currentPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				new DateTimeOffset(currentPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+				token);
+		var currentPeriodCategories = currentPeriod.Categories
+			.ToDictionary(x => x.CategoryName); 
 
-		var source = await transactionRepository.GetListByTimeRangeAndUserIdAsync(userId,
-			NormalizeDateTime(startTimeRange),
-			NormalizeDateTime(endTimeRange),
-			token);
-
-		var categorizedTransactions = source.GroupBy(x => x.ToSpendingAreaId).ToList();
-		var spendingAmount = 0.0;
-		var categorizedSpending = new Dictionary<Guid, double>();
-		foreach (var category in categorizedTransactions)
+		var result = new CategoryComparativeAnalysisResult
 		{
-			categorizedSpending.Add(category.Key, 0.0);
-			foreach (var transaction in category)
+			TotalSecondPeriodSpending = currentPeriod.TotalSpending,
+			TotalFirstPeriodSpending = previousPeriod.TotalSpending,
+		};
+
+		var categoryComparativeAnalyses = new LinkedList<CategoryComparativeAnalysisModel>();
+		foreach (var previousCategory in previousPeriod.Categories) 
+		{
+			token.ThrowIfCancellationRequested();
+			
+			if (currentPeriodCategories.TryGetValue(previousCategory.CategoryName, out var currentCategory)) 
 			{
-				spendingAmount += transaction.Value;
-				categorizedSpending[category.Key] += transaction.Value;
+				categoryComparativeAnalyses.AddFirst(new CategoryComparativeAnalysisModel
+				{
+					CategoryId = previousCategory.CategoryId,
+					CategoryName = previousCategory.CategoryName,
+					SecondPeriodAmount = currentCategory.TotalAmount,
+					FirstPeriodAmount = previousCategory.TotalAmount
+				});	
+			}
+			else
+			{
+				categoryComparativeAnalyses.AddLast(new CategoryComparativeAnalysisModel
+				{
+					CategoryId = previousCategory.CategoryId,
+					CategoryName = previousCategory.CategoryName,
+					SecondPeriodAmount = 0,
+					FirstPeriodAmount = previousCategory.TotalAmount
+				}); 
 			}
 		}
 
-		if (asPercentage)
+		foreach (var newCategory in currentPeriod.Categories.Except(previousPeriod.Categories))
 		{
-			foreach (var category in categorizedSpending.Keys)
+			token.ThrowIfCancellationRequested();
+
+			categoryComparativeAnalyses.AddLast(new CategoryComparativeAnalysisModel
 			{
-				categorizedSpending[category] = calculator.GetPercentage(spendingAmount, categorizedSpending[category]);
-			}
+				CategoryId = newCategory.CategoryId,
+				CategoryName = newCategory.CategoryName,
+				SecondPeriodAmount = newCategory.TotalAmount,
+				FirstPeriodAmount = 0
+			});
 		}
 
-		return new SpendingCategoryModel(spendingAmount, categorizedSpending);
+        result.CategoryComparativeAnalyses = [.. categoryComparativeAnalyses.OrderByDescending(x => x.SecondPeriodAmount)];
+		return result;
 	}
 
-	static DateTime NormalizeDateTime(DateTime unnormalizedDateTime)
-		=> unnormalizedDateTime.Kind switch
+	async Task<ServiceTrendLineResult> IFinancialAnalyticsService.GetSpendingTrendLineAsync(
+		SpendingTrendLineRequest request,
+		CancellationToken token)
+	{
+		await validateService.ValidateAsync(request, token);
+
+		_ = await _userRepository.GetUserByIdAsync(request.UserId, token)
+			?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
+
+		var dateRanges = request.GetDateRanges();
+
+		var dateRangeInfos = dateRanges.Select(r => new DateRangeInfo
 		{
-			DateTimeKind.Utc => unnormalizedDateTime,
-			DateTimeKind.Local => unnormalizedDateTime.ToUniversalTime(),
-			_ => DateTime.SpecifyKind(unnormalizedDateTime, DateTimeKind.Utc),
+			Start = new DateTimeOffset(r.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+			End = new DateTimeOffset(r.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
+			Label = r.Label
+		}).ToList();
+
+		var trendLineData = await _transactionRepository
+			.GetSpendingTrendLineAsync(request.UserId, dateRangeInfos, token);
+
+		var labelOrder = dateRanges.Select((r, i) => (r.Label, i)).ToDictionary(x => x.Label, x => x.i);
+
+		var categoryGroups = trendLineData.PeriodItems
+			.GroupBy(item => new { item.CategoryId, item.CategoryName })
+			.Select(group => new SpendingTrendLineCategoryModel
+			{
+				CategoryId = group.Key.CategoryId,
+				Name = group.Key.CategoryName,
+				Nodes = group
+					.OrderBy(item => labelOrder.GetValueOrDefault(item.Label, 0))
+					.Select(item => new SpendingTrendLineNodeModel
+					{
+						Label = item.Label,
+						Amount = item.TotalAmount
+					}).ToList()
+			})
+			.OrderByDescending(c => c.Nodes.Sum(n => n.Amount))
+			.ToList();
+
+		return new ServiceTrendLineResult
+		{
+			Labels = trendLineData.Labels,
+			Categories = categoryGroups
 		};
+	}
 }

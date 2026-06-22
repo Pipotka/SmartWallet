@@ -3,7 +3,7 @@
 /// <summary>
 /// Пользователь
 /// </summary>
-public class User : BaseEntity
+public class User : SmartDeletedEntity
 {
 	/// <summary>
 	/// Электронная почта
@@ -38,12 +38,12 @@ public class User : BaseEntity
 	/// <summary>
 	/// Навигационное свойство
 	/// </summary>
-	public ICollection<SpendingArea> SpendingAreas { get; set; }
+	public ICollection<TransactionEndpoint> TransactionEndpoints { get; set; }
 
 	/// <summary>
-	/// Навигационное свойство
+	/// Навигационное свойство — рефреш-токены пользователя
 	/// </summary>
-	public ICollection<CashVault> CashVaults { get; set; }
+	public ICollection<RefreshToken> RefreshTokens { get; set; }
 
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="User"/> 
@@ -51,7 +51,7 @@ public class User : BaseEntity
 	public User()
 	{
 		Transactions = new List<Transaction>();
-		SpendingAreas = new List<SpendingArea>();
-		CashVaults = new List<CashVault>();
+		TransactionEndpoints = new List<TransactionEndpoint>();
+		RefreshTokens = new List<RefreshToken>();
 	}
 }

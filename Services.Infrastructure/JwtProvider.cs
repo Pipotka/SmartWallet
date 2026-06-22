@@ -9,7 +9,6 @@ using System.Text;
 
 namespace Nasurino.SmartWallet.Service.Infrastructure;
 
-// [TODO] Регистрация проекта
 /// <summary>
 /// Провайдер JWT
 /// </summary>
@@ -31,7 +30,7 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
 		var token = new JwtSecurityToken(
 			claims: claims,
 			signingCredentials: signingCredentials,
-			expires: DateTime.UtcNow.AddHours(options.ExpiresHours));
+			expires: DateTime.UtcNow.AddMinutes(options.ExpiresMinutes));
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}

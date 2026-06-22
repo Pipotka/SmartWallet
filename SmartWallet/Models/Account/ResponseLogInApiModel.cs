@@ -1,12 +1,12 @@
 ﻿namespace Nasurino.SmartWallet.Models.Account;
 
 /// <summary>
-/// Api модель входа пользователя
+/// Api модель ответа входа пользователя
 /// </summary>
 public class ResponseLogInApiModel
 {
 	/// <summary>
-	/// Jwt токен
+	/// Access-токен (JWT)
 	/// </summary>
-	public string JwtToken { get; set; }
+	public string AccessToken { get; set; }
 }

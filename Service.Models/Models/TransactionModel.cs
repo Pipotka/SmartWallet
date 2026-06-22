@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.Models;
+﻿using Nasurino.SmartWallet.Entities;
+
+namespace Nasurino.SmartWallet.Service.Models.Models;
 
 /// <summary>
 /// Модель транзакции
@@ -11,22 +13,27 @@ public class TransactionModel
 	public Guid Id { get; set; }
 
 	/// <summary>
-	/// Идентификатор денежного хранилища 
+	/// Идентификатор аккаунта-источника 
 	/// </summary>
-	public Guid FromCashVaultId { get; set; }
+	public Guid? SourceAccountId { get; set; }
 
 	/// <summary>
-	/// Идентификатор области трат
+	/// Идентификатор аккаунта назначения
 	/// </summary>
-	public Guid ToSpendingAreaId { get; set; }
+	public Guid? DestinationAccountId { get; set; }
+	
+	/// <summary>
+	/// Тип транзакции
+	/// </summary>
+	public TransactionType Type { get; set; }
 
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public double Amount { get; set; } = 0.0;
 
 	/// <summary>
 	/// Дата создания
 	/// </summary>
-	public DateTime MadeAt { get; set; }
+	public DateTimeOffset MadeAt { get; set; }
 }
