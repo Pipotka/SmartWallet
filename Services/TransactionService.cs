@@ -171,7 +171,22 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 									transaction.DestinationAccountId!.Value,
 									model.UserId,
 									token);
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount!.Id, token) - transaction.Amount;
+
+			double currentBalace;
+			if (destinationAccount is {IsStorage: true})
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id, token);
+			}
+			else
+			{
+				currentBalace = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(destinationAccount.Id,
+				token,
+				new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
+				DateTimeOffset.UtcNow);
+			}
+
+			var balanceResult = currentBalace - transaction.Amount;
+
 			destinationAccount.Value = balanceResult;
 			_transactionEndpointRepository.Update(destinationAccount);
 			
