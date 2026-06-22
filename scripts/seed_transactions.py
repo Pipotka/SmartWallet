@@ -509,15 +509,17 @@ def _compute_transaction_probability(
     day: date,
     pattern: CategoryPatternConfig,
     tx_per_day: int,
+    total_weight: int,
 ) -> float:
     """
     Вычисляет вероятность генерации транзакции категории в данный день.
 
-    Базовая вероятность = weight / tx_per_day.
+    Базовая вероятность = weight / total_weight * tx_per_day.
+    Это обеспечивает ожидаемое количество транзакций в день ≈ tx_per_day.
     Для выходных корректируется отношением weekend/weekday.
     Результат ограничивается диапазоном [0.0, 1.0].
     """
-    base_prob = pattern.weight / tx_per_day
+    base_prob = pattern.weight / total_weight * tx_per_day
     if day.weekday() >= 5:
         ratio = pattern.weekend_multiplier / pattern.weekday_multiplier
         base_prob *= ratio
@@ -585,6 +587,17 @@ def generate_all_transactions(config: Config) -> List[Dict[str, Any]]:
 
     all_transactions: List[Dict[str, Any]] = []
 
+    # Сумма весов не-якорных категорий для нормализации вероятности
+    total_weight = sum(
+        config.category_patterns[cat_id].weight
+        for cat_id in config.expense_category_ids
+        if config.category_patterns.get(cat_id) is not None
+        and config.category_patterns[cat_id].anchor_day is None
+    )
+    # Fallback: если все категории якорные, используем общее количество категорий
+    if total_weight == 0:
+        total_weight = len(config.expense_category_ids)
+
     current_date = start_date
     while current_date <= today:
         for cat_id in config.expense_category_ids:
@@ -604,9 +617,13 @@ def generate_all_transactions(config: Config) -> List[Dict[str, Any]]:
                 all_transactions.append(tx)
                 continue
 
+            # --- Для якорных категорий — только якорная транзакция ---
+            if pattern.anchor_day is not None:
+                continue
+
             # --- Вероятность транзакции в этот день ---
             prob = _compute_transaction_probability(
-                current_date, pattern, config.tx_per_day
+                current_date, pattern, config.tx_per_day, total_weight
             )
             if random.random() >= prob:
                 continue
