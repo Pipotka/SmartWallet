@@ -19,7 +19,7 @@ public class CreateTransactionModelValidator : AbstractValidator<CreateTransacti
 			.WithMessage($"По крайней мере одно из свойств ({nameof(CreateTransactionModel.SourceAccountId)} или {nameof(CreateTransactionModel.DestinationAccountId)}) должно иметь значение.");
 		RuleFor(x => x.DestinationAccountId)
 			.NotEqual(x => x.SourceAccountId)
-			.WithMessage($"Нельзя создать {nameof(Transaction)}, где {nameof(Transaction.SourceAccountId)} и {nameof(Transaction.DestinationAccountId)} имеют одинаковые значения");
+			.WithMessage($"Нельзя создать транзакцию, где {nameof(CreateTransactionModel.SourceAccountId)} и {nameof(CreateTransactionModel.DestinationAccountId)} имеют одинаковые значения");
 		RuleFor(x => x.Amount)
 			.GreaterThan(0.0)
 			.WithMessage("Значение должно быть больше нуля");

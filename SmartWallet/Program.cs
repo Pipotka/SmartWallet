@@ -23,6 +23,7 @@ using Nasurino.SmartWallet.Services.Contracts;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
+using Nasurino.SmartWallet.Services.BackgroundService;
 using Nasurino.SmartWallet.Services.BackgroundJobs;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -165,6 +166,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddScoped<ISmartWalletValidateService, SmartWalletValidateService>();
 builder.Services.AddScoped<IClearCategoryCacheService, ClearCategoryCacheService>();
+builder.Services.AddScoped<IDailyExpenseCategorieService, DailyExpenseCategorieService>();
 #endregion
 
 builder.Services.AddHttpContextAccessor();

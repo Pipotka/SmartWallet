@@ -105,4 +105,12 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 		Guid userId,
 		IReadOnlyCollection<DateRangeInfo> periods,
 		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Пересчитывает агрегаты дневных трат (<see cref="DailyExpenseCategorie"/>) для областей трат,
+	/// затронутых указанной транзакцией (постинги в области трат с положительным Amount).
+	/// </summary>
+	/// <param name="transaction">Транзакция, постинги которой анализируются</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	Task RecalculateDailyExpenseCategoriesAsync(Transaction transaction, CancellationToken cancellationToken);
 }

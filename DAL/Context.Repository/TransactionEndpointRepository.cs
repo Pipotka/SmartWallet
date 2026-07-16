@@ -35,4 +35,16 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.Where(x => x.IsStorage == false && x.Value > 0)
 			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, 0));
+
+	async Task ITransactionEndpointRepository.RecalculateValueAsync(Guid endpointId, CancellationToken cancellationToken)
+	{
+		var value = await Storage.Read<Posting>()
+			.NotDeleted()
+			.Where(p => p.AccountId == endpointId)
+			.SumAsync(p => p.Amount, cancellationToken);
+
+		await Storage.Read<TransactionEndpoint>()
+			.Where(x => x.Id == endpointId)
+			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, value), cancellationToken);
+	}
 }
