@@ -1,20 +1,14 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
 /// Агрегат дневных трат по области трат (конечной точке потока денег).
-/// Составной ключ: идентификатор области трат + день.
+/// Составной ключ (CategorieId, Day) и маппинг таблицы задаются в DailyExpenseCategorieConfiguration.
 /// </summary>
-[Table(nameof(DailyExpenseCategorie))]
 public class DailyExpenseCategorie
 {
 	/// <summary>
 	/// Идентификатор области трат (конечной точки потока денег)
 	/// </summary>
-	[Key]
-	[Column(Order = 0)]
 	public Guid CategorieId { get; set; }
 
 	/// <summary>
@@ -25,8 +19,6 @@ public class DailyExpenseCategorie
 	/// <summary>
 	/// День (точность до дня)
 	/// </summary>
-	[Key]
-	[Column(Order = 1)]
 	public DateTime Day { get; set; }
 
 	/// <summary>
