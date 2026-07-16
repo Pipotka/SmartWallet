@@ -36,12 +36,12 @@ public class TransactionEndpoint : SmartDeletedEntity
 	public double Value { get; set; } = 0.0;
 
 	/// <summary>
-	/// Транзакции, где текущая точка выступает как источник средств
+	/// Записи движения средств по текущей точке
 	/// </summary>
-	public ICollection<Transaction> OutgoingTransactions { get; set; } = new List<Transaction>();
+	public ICollection<Posting> Postings { get; set; } = new List<Posting>();
 
 	/// <summary>
-	/// Транзакции, где текущая точка выступает как получатель средств
+	/// Агрегаты дневных трат по текущей области трат
 	/// </summary>
-	public ICollection<Transaction> IncomingTransactions { get; set; } = new List<Transaction>();
+	public ICollection<DailyExpenseCategorie> DailyExpenseCategories { get; set; } = new List<DailyExpenseCategorie>();
 }
