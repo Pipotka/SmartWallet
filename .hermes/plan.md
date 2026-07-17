@@ -31,14 +31,13 @@
 - [x] Миграция: `20260716103856_RefactorToPostings` (drop Amount/Source/Destination из Transaction; create Posting, DailyExpenseCategorie)
 - [x] Сборка DAL/Context успешна (0 ошибок)
 
-## Этап 2 (В РАБОТЕ) — логика
-- [x] ITransactionRepository / TransactionRepository: GetBalance по Posting, DeleteByEndpoint, аналитика через Posting
-- [x] TransactionService.CreateAsync / DeleteAsync: генерация Posting, валидация суммы, лимиты по постингам, пересчёт Value
-- [x] Модели Create/Update/Transaction + API модели + валидаторы (контракт CreateTransactionModel не менялся, Source/Destination/Amount остались)
-- [x] ServiceModelMapper: маппинг Posting в DTO (AfterMap из постингов)
-- [x] Фоновая задача IDailyExpenseCategorieService + DailyExpenseCategorieService (триггер из TransactionService при создании/удалении)
-- [x] ITransactionEndpointRepository.RecalculateValueAsync — пересчёт Value из постингов
-- [ ] Тесты: TransactionServiceTests, FinancialAnalyticsServiceTests, репозиторные (СЛЕДУЮЩИЙ ПОДЭТАП — ломают сборку решения)
+## Этап 2 (СЛЕДУЮЩИЙ, после ревью) — логика
+- [ ] ITransactionRepository / TransactionRepository: GetBalance по Posting, DeleteByEndpoint, аналитика через Posting
+- [ ] TransactionService.CreateAsync / DeleteAsync: генерация Posting, валидация суммы=0, лимиты по постингам
+- [ ] Модели Create/Update/Transaction + API модели + валидаторы (постинги вместо Source/Destination/Amount)
+- [ ] ServiceModelMapper: маппинг Posting
+- [ ] Фоновая задача заполнения DailyExpenseCategorie (расширить/заменить ClearCategoryCacheService)
+- [ ] Тесты: TransactionServiceTests, FinancialAnalyticsServiceTests, репозиторные
 
 ## Этап 3 (в конце) — документация
 - [ ] README.md: диаграмма БД из bd.md

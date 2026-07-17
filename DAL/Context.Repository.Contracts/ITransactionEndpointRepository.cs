@@ -34,16 +34,8 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		Task<List<TransactionEndpoint>> GetListByUserIdAsync(Guid userId, CancellationToken cancellationToken);
 
 		/// <summary>
-	/// Очищает кэш значения категории
-	/// </summary>
-	Task ClearCategoryValueCacheAsync(CancellationToken cancellationToken);
-
-	/// <summary>
-	/// Пересчитывает баланс (<see cref="TransactionEndpoint.Value"/>) области трат/хранилища
-	/// как сумму подтверждённых постингов по этому счёту
-	/// </summary>
-	/// <param name="endpointId">Идентификатор конечной точки</param>
-	/// <param name="cancellationToken">Токен отмены</param>
-	Task RecalculateValueAsync(Guid endpointId, CancellationToken cancellationToken);
-}
+		/// Очищает кэш значения категории
+		/// </summary>
+		Task ClearCategoryValueCacheAsync(CancellationToken cancellationToken);
+    }
 }
