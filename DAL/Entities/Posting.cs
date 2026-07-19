@@ -29,5 +29,10 @@ public sealed class Posting : SmartDeletedEntity
 	/// <summary>
 	/// Сумма движения средств со знаком (минус — расход, плюс — приход)
 	/// </summary>
-	public double Amount { get; set; } = 0.0;
+	public decimal Amount { get; set; }
+
+	/// <summary>
+	/// Дата создания проводки
+	/// </summary>
+	public DateTimeOffset CreatedAt { get; set; }
 }

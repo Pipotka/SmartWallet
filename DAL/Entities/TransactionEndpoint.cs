@@ -23,17 +23,17 @@ public class TransactionEndpoint : SmartDeletedEntity
 	/// <summary>
 	/// Ограничение трат
 	/// </summary>
-	public double? Limitation { get; set; }
-	
+	public decimal? Limitation { get; set; }
+
 	/// <summary>
 	/// Флаг указывающий, что конечная точка является денежным хранилищем
 	/// </summary>
 	public bool IsStorage { get; set; }
-	
+
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public decimal Value { get; set; }
 
 	/// <summary>
 	/// Записи движения средств по текущей точке

@@ -30,8 +30,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<DateTime>("Day")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("TotalAmount")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
 
                     b.HasKey("CategorieId", "Day");
 
@@ -47,8 +47,11 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -137,8 +140,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<bool>("IsStorage")
                         .HasColumnType("boolean");
 
-                    b.Property<double?>("Limitation")
-                        .HasColumnType("double precision");
+                    b.Property<decimal?>("Limitation")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -147,8 +150,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

@@ -24,5 +24,5 @@ public class DailyExpenseCategorie
 	/// <summary>
 	/// Суммарная сумма трат за день по области
 	/// </summary>
-	public double TotalAmount { get; set; } = 0.0;
+	public decimal TotalAmount { get; set; }
 }
