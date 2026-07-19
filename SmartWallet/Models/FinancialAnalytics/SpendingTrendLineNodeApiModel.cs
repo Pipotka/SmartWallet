@@ -13,5 +13,5 @@ public sealed class SpendingTrendLineNodeApiModel
     /// <summary>
     /// Сумма трат по категории за период
     /// </summary>
-    public double Amount { get; set; }
+    public decimal Amount { get; set; }
 }
