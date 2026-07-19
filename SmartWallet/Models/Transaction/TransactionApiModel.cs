@@ -13,27 +13,17 @@ public sealed class TransactionApiModel
 	public Guid Id { get; set; }
 
 	/// <summary>
-	/// Идентификатор аккаунта-источника 
-	/// </summary>
-	public Guid? SourceAccountId { get; set; }
-
-	/// <summary>
-	/// Идентификатор аккаунта назначения
-	/// </summary>
-	public Guid? DestinationAccountId { get; set; }
-	
-	/// <summary>
 	/// Тип транзакции
 	/// </summary>
 	public TransactionType Type { get; set; }
 
 	/// <summary>
-	/// Значение
-	/// </summary>
-	public double Amount { get; set; } = 0.0;
-
-	/// <summary>
 	/// Дата создания
 	/// </summary>
 	public DateTimeOffset MadeAt { get; set; }
+
+	/// <summary>
+	/// Проводки (движения средств по счетам)
+	/// </summary>
+	public List<PostingApiModel> Postings { get; set; } = [];
 }

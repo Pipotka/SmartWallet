@@ -42,6 +42,8 @@ public class ServiceModelMapper : Profile
 		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
 		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
 
+		CreateMap<TransactionData, TransactionModel>(MemberList.Destination)
+			.ForMember(dest => dest.Postings, opt => opt.MapFrom(src => src.Postings));
 		CreateMap<TransactionQueryModel, TransactionQuery>(MemberList.Destination);
 		CreateMap<PagedResult<TransactionData>, PagedResultModel<TransactionModel>>(MemberList.Destination);
 	}
