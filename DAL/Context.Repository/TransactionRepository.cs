@@ -17,9 +17,13 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	/// Инициализирует новый экземпляр <see cref="TransactionRepository"/>
 	/// </summary>
 	public TransactionRepository(IDataStorageContext storage) : base(storage)
-	{ }
+	{
+	}
 
-	async Task<PagedResult<Transaction>> ITransactionRepository.GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken)
+	async Task<PagedResult<TransactionModel>> ITransactionRepository.GetPagedListByUserIdAsync(
+		Guid userId,
+		TransactionQuery query,
+		CancellationToken cancellationToken)
 	{
 		var queryable = Storage.Read<Transaction>()
 			.NotDeleted()
@@ -32,7 +36,9 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 
 		if (query.AccountId.HasValue)
 		{
-			queryable = queryable.Where(x => x.SourceAccountId == query.AccountId.Value || x.DestinationAccountId == query.AccountId.Value);
+			var accountId = query.AccountId.Value;
+			queryable = queryable
+				.Where(x => x.Postings.Any(p => p.AccountId == accountId));
 		}
 
 		var totalCount = await queryable.CountAsync(cancellationToken);
@@ -41,15 +47,33 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			.OrderByDescending(x => x.MadeAt)
 			.Skip((query.Page - 1) * query.PageSize)
 			.Take(query.PageSize)
+			.Select(x => new TransactionModel
+			{
+				Id = x.Id,
+				UserId = x.UserId,
+				Type = x.Type,
+				MadeAt = x.MadeAt,
+				Postings = x.Postings
+					.Select(p => new PostingModel
+					{
+						Id = p.Id,
+						AccountId = p.AccountId,
+						TransactionId = p.TransactionId,
+						Amount = p.Amount
+					})
+					.ToList()
+			})
 			.ToListAsync(cancellationToken);
 
-		return new PagedResult<Transaction>
+		return new PagedResult<TransactionModel>
 		{
 			Items = items,
 			TotalCount = totalCount,
 			Page = query.Page,
 			PageSize = query.PageSize,
-			TotalPages = query.PageSize > 0 ? (int)Math.Ceiling((double)totalCount / query.PageSize) : 0
+			TotalPages = query.PageSize > 0
+				? (int)Math.Ceiling((double)totalCount / query.PageSize)
+				: 0
 		};
 	}
 
@@ -57,16 +81,19 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 	Task<Transaction?> ITransactionRepository.GetByIdAndUserIdAsync(Guid id, Guid userId, CancellationToken cancellationToken)
-		=> Storage.Read<Transaction>().NotDeleted().FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+		=> Storage.Read<Transaction>().NotDeleted()
+			.Include(x => x.Postings)
+			.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
 
-	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
+	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(
+		Guid userId,
 		DateTimeOffset startTimeRange,
 		DateTimeOffset endTimeRange,
 		CancellationToken cancellationToken)
 		=> await Storage.Read<Transaction>().NotDeleted()
-						.Where(InDateRange(startTimeRange, endTimeRange))
-						.Where(x => x.UserId == userId)
-						.ToListAsync(cancellationToken);
+				.Where(InDateRange(startTimeRange, endTimeRange))
+				.Where(x => x.UserId == userId)
+				.ToListAsync(cancellationToken);
 
 	/// <inheritdoc/>
 	public override void Add(Transaction entity)
@@ -75,64 +102,70 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 		base.Add(entity);
 	}
 
-	void ITransactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(Guid transactionEndpointId,
+	void ITransactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(
+		Guid transactionEndpointId,
 		DateTimeOffset startDate = default,
 		DateTimeOffset endDate = default)
 	{
 		endDate = endDate == default ? DateTimeOffset.MaxValue : endDate;
-		DeleteEverythingBy(x => (x.DestinationAccountId == transactionEndpointId || x.SourceAccountId == transactionEndpointId) 
-		                        && startDate <= x.MadeAt && x.MadeAt < endDate);
+		DeleteEverythingBy(x => x.Postings.Any(p => p.AccountId == transactionEndpointId)
+			&& startDate <= x.MadeAt && x.MadeAt < endDate);
 	}
 
 	void ITransactionRepository.DeleteTransactionsByUserId(Guid userId)
 		=> DeleteEverythingBy(e => e.UserId == userId);
-	
-	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid userId,
+
+	async Task<IReadOnlyCollection<Transaction>> ITransactionRepository.GetListByDateRangeAndUserIdAsync(
+		Guid userId,
 		TransactionType transactionType,
 		DateTimeOffset startDate,
 		DateTimeOffset endDate,
 		CancellationToken cancellationToken)
 		=> await Storage.Read<Transaction>().NotDeleted()
-			.Where(InDateRange(startDate, endDate))
-			.Where(x => x.UserId == userId && x.Type == transactionType)
-			.ToListAsync(cancellationToken);
+				.Where(InDateRange(startDate, endDate))
+				.Where(x => x.UserId == userId && x.Type == transactionType)
+				.ToListAsync(cancellationToken);
 
-	async Task<double> ITransactionRepository.GetBalanceByAccountIdAndDateRangeAsync(Guid accountId,
+	async Task<decimal> ITransactionRepository.GetBalanceByAccountIdAndDateRangeAsync(
+		Guid accountId,
 		CancellationToken cancellationToken,
 		DateTimeOffset startDate = default,
 		DateTimeOffset endDate = default)
 	{
 		endDate = endDate == default ? DateTimeOffset.MaxValue : endDate;
-		
-		return await Storage.Read<Transaction>().NotDeleted()
-			.Where(InDateRange(startDate, endDate))
-			.Where(x => (x.SourceAccountId != null && x.SourceAccountId == accountId)
-			            || (x.DestinationAccountId != null && x.DestinationAccountId == accountId))
-			.SumAsync(x => x.SourceAccountId == accountId ? -x.Amount : x.Amount, cancellationToken);
+
+		return await Storage.Read<Posting>().NotDeleted()
+			.Where(p => p.AccountId == accountId)
+			.Where(p => p.Transaction!.MadeAt >= startDate && p.Transaction.MadeAt < endDate)
+			.SumAsync(p => p.Amount, cancellationToken);
 	}
-	
+
 	async Task<CategorizedSpendingResult> ITransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeAsync(
-		Guid userId, DateTimeOffset startDate, DateTimeOffset endDate, CancellationToken cancellationToken)
+		Guid userId,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
+		CancellationToken cancellationToken)
 	{
-		var categories = await Storage.Read<Transaction>()
-			.NotDeleted()
-			.Where(InDateRange(startDate, endDate))
-			.Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
-			.GroupBy(t => new { t.DestinationAccountId, t.DestinationAccount!.Name })
+		var categories = await Storage.Read<Posting>().NotDeleted()
+			.Where(p => p.Transaction!.MadeAt >= startDate && p.Transaction.MadeAt < endDate)
+			.Where(p => p.Transaction!.UserId == userId
+				&& p.Transaction.Type == TransactionType.Expense
+				&& p.Account!.IsStorage == false)
+			.GroupBy(p => new { p.AccountId, p.Account!.Name })
 			.Select(g => new CategorySpendingItem
-				{
-					CategoryId = g.Key.DestinationAccountId!.Value,
-					CategoryName = g.Key.Name,
-					TotalAmount = g.Sum(t => t.Amount)
-				})
+			{
+				CategoryId = g.Key.AccountId,
+				CategoryName = g.Key.Name,
+				TotalAmount = g.Sum(p => p.Amount)
+			})
 			.OrderByDescending(cs => cs.TotalAmount)
 			.ToListAsync(cancellationToken);
 
-		return new CategorizedSpendingResult 
-			{
-				TotalSpending = categories.Sum(c => c.TotalAmount),
-				Categories = categories
-			};
+		return new CategorizedSpendingResult
+		{
+			TotalSpending = categories.Sum(c => c.TotalAmount),
+			Categories = categories
+		};
 	}
 
 	async Task<SpendingTrendLineResult> ITransactionRepository.GetSpendingTrendLineAsync(
@@ -176,10 +209,12 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 				te.""Id"" AS ""CategoryId"",
 				te.""Name"" AS ""CategoryName"",
 				p.label AS ""Label"",
-				SUM(t.""Amount"") AS ""TotalAmount""
-			FROM ""Transaction"" t
-			INNER JOIN ""TransactionEndpoint"" te ON t.""DestinationAccountId"" = te.""Id""
+				SUM(po.""Amount"") AS ""TotalAmount""
+			FROM ""Posting"" po
+			INNER JOIN ""TransactionEndpoint"" te ON po.""AccountId"" = te.""Id""
 				AND te.""DeletedAt"" IS NULL
+			INNER JOIN ""Transaction"" t ON po.""TransactionId"" = t.""Id""
+				AND t.""DeletedAt"" IS NULL
 			INNER JOIN periods p ON t.""MadeAt"" >= p.start_date AND t.""MadeAt"" < p.end_date
 			WHERE t.""DeletedAt"" IS NULL
 				AND t.""UserId"" = {userIdParam}
@@ -187,7 +222,7 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 				AND t.""MadeAt"" >= {overallStartParam}
 				AND t.""MadeAt"" < {overallEndParam}
 			GROUP BY te.""Id"", te.""Name"", p.label
-			HAVING SUM(t.""Amount"") > 0";
+			HAVING SUM(po.""Amount"") > 0";
 
 		var periodItems = await dbContext.Database
 			.SqlQueryRaw<SpendingTrendPeriodItem>(sql, parameters.ToArray())

@@ -18,7 +18,7 @@ public sealed class CategorySpendingItem
     /// <summary>
     /// Сумма трат по категории
     /// </summary>
-    public double TotalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
     
     /// <summary> <inheritdoc /> </summary>
     public override bool Equals(object? obj)

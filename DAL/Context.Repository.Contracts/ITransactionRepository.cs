@@ -49,7 +49,7 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="userId">Идентификатор пользователя</param>
 	/// <param name="query">Параметры запроса с пагинацией и фильтрацией</param>
 	/// <param name="cancellationToken">Токен отмены</param>
-	Task<PagedResult<Transaction>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
+	Task<PagedResult<TransactionModel>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Возвращает список транзакций пользователя по типу транзакции, созданных в указанный временной диапазон
@@ -70,7 +70,7 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="accountId">Идентификатор аккаунта</param>
 	/// <param name="startDate">Начало временного диапазона</param>
 	/// <param name="endDate">Конец временного диапазона</param>
-	Task<double> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
+	Task<decimal> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
 		DateTimeOffset startDate = default,
 		DateTimeOffset endDate = default);
 	
