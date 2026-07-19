@@ -20,7 +20,7 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	{
 	}
 
-	async Task<PagedResult<TransactionModel>> ITransactionRepository.GetPagedListByUserIdAsync(
+	async Task<PagedResult<TransactionData>> ITransactionRepository.GetPagedListByUserIdAsync(
 		Guid userId,
 		TransactionQuery query,
 		CancellationToken cancellationToken)
@@ -47,14 +47,14 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			.OrderByDescending(x => x.MadeAt)
 			.Skip((query.Page - 1) * query.PageSize)
 			.Take(query.PageSize)
-			.Select(x => new TransactionModel
+			.Select(x => new TransactionData
 			{
 				Id = x.Id,
 				UserId = x.UserId,
 				Type = x.Type,
 				MadeAt = x.MadeAt,
 				Postings = x.Postings
-					.Select(p => new PostingModel
+					.Select(p => new PostingData
 					{
 						Id = p.Id,
 						AccountId = p.AccountId,
@@ -65,7 +65,7 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			})
 			.ToListAsync(cancellationToken);
 
-		return new PagedResult<TransactionModel>
+		return new PagedResult<TransactionData>
 		{
 			Items = items,
 			TotalCount = totalCount,

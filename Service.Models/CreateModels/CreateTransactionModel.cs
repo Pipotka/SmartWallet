@@ -23,5 +23,5 @@ public class CreateTransactionModel
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Amount { get; set; } = 0.0;
+	public decimal Amount { get; set; } = 0.0m;
 }

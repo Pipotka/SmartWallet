@@ -55,7 +55,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 				{
 					UserId = user.Id,
 					Name = spendingAreaName,
-					Value = 0.0,
+					Value = 0.0m,
 					IsStorage = false
 				});
 		}
@@ -66,7 +66,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 			{
 				UserId = user.Id,
 				Name = cashVaultName,
-				Value = 0.0,
+				Value = 0.0m,
 				IsStorage = true
 			});
 		}

@@ -4,7 +4,7 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 /// Проводка (движение средств по счёту) без полей мягкого удаления и даты создания.
 /// Используется для проекции из репозитория.
 /// </summary>
-public sealed class PostingModel
+public sealed class PostingData
 {
 	/// <summary>
 	/// Идентификатор проводки

@@ -6,7 +6,7 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 /// Транзакция с постингами (без полей мягкого удаления и даты создания постингов).
 /// Проекция из репозитория для списков.
 /// </summary>
-public sealed class TransactionModel
+public sealed class TransactionData
 {
 	/// <summary>
 	/// Идентификатор транзакции
@@ -31,5 +31,5 @@ public sealed class TransactionModel
 	/// <summary>
 	/// Проводки транзакции
 	/// </summary>
-	public List<PostingModel> Postings { get; set; } = [];
+	public List<PostingData> Postings { get; set; } = [];
 }

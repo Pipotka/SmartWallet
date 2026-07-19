@@ -18,7 +18,7 @@ public class CreateTransactionEndpointModel
 	/// <summary>
 	/// Ограничение трат
 	/// </summary>
-	public double? Limitation { get; set; }
+	public decimal? Limitation { get; set; }
 	
 	/// <summary>
 	/// Флаг указывающий, что конечная точка является денежным хранилищем
