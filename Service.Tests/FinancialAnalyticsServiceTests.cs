@@ -39,12 +39,7 @@ public sealed class FinancialAnalyticsServiceTests
     /// </summary>
     public FinancialAnalyticsServiceTests()
     {
-        _entityProvider = new TestEntityProviderBuilder()
-            .AddPreset<Transaction>(x =>
-            {
-                x.DestinationAccountId = Guid.NewGuid();
-                x.SourceAccountId = Guid.NewGuid();
-            }).Build();
+        _entityProvider = new TestEntityProviderBuilder().Build();
         var mapper = new MapperConfiguration(conf => conf.AddProfile<ServiceModelMapper>()).CreateMapper();
         
         _calculator = new FinancialCalculator();
@@ -70,39 +65,39 @@ public sealed class FinancialAnalyticsServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var targetSum = 10_000d;
-        var firstTransaction = _entityProvider.Create<Transaction>(x => 
-            x.Amount = _calculator.PercentageOfSum(targetSum, 25d));
-        var secondTransaction = _entityProvider.Create<Transaction>(x => 
-            x.Amount = _calculator.PercentageOfSum(targetSum, 75d));
-        
+        var targetSum = 10_000m;
+        var categoryId1 = Guid.NewGuid();
+        var categoryId2 = Guid.NewGuid();
+        var sum1 = (decimal)_calculator.PercentageOfSum((double)targetSum, 25d);
+        var sum2 = (decimal)_calculator.PercentageOfSum((double)targetSum, 75d);
+
         var spendingItems = ImmutableArray.Create([
             new CategorySpendingItem
             {
-                CategoryId = firstTransaction.DestinationAccountId!.Value,
+                CategoryId = categoryId1,
                 CategoryName = string.Empty,
-                TotalAmount = firstTransaction.Amount
+                TotalAmount = sum1
             },
             new CategorySpendingItem
             {
-                CategoryId = secondTransaction.DestinationAccountId!.Value,
+                CategoryId = categoryId2,
                 CategoryName = string.Empty,
-                TotalAmount = secondTransaction.Amount
+                TotalAmount = sum2
             }
         ]);
-        
+
         var categorizedResult = new CategorizedSpendingResult
         {
             TotalSpending = targetSum,
             Categories = spendingItems
         };
-        
+
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.AddDays(1).Year, DateTime.Today.AddDays(1).Month, DateTime.Today.AddDays(1).Day, 0, 0, 0, TimeSpan.Zero));
 
-        var request = new CategorizingSpendingRequest 
-        { 
+        var request = new CategorizingSpendingRequest
+        {
             UserId = userId,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
             EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
@@ -113,14 +108,14 @@ public sealed class FinancialAnalyticsServiceTests
 
         // Assert
         actual.TotalSpending.Should().Be(targetSum);
-        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == categoryId1);
         item1.Should().NotBeNull();
-        item1.TotalAmount.Should().Be(firstTransaction.Amount);
-        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        item1.TotalAmount.Should().Be(sum1);
+        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == categoryId2);
         item2.Should().NotBeNull();
-        item2.TotalAmount.Should().Be(secondTransaction.Amount);
+        item2.TotalAmount.Should().Be(sum2);
     }
-    
+
     /// <summary>
     /// Должен вернуть значение для сегодняшнего дня
     /// </summary>
@@ -129,39 +124,33 @@ public sealed class FinancialAnalyticsServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var targetSum = 10_000d;
-        var firstTransaction = _entityProvider.Create<Transaction>(x =>
-            {
-                x.Amount = _calculator.PercentageOfSum(targetSum, 25d);
-                x.MadeAt = new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero);
-            });
-        var secondTransaction = _entityProvider.Create<Transaction>(x =>
-            {
-                x.Amount = _calculator.PercentageOfSum(targetSum, 75d);
-                x.MadeAt = new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero);
-            });
-        
+        var targetSum = 10_000m;
+        var categoryId1 = Guid.NewGuid();
+        var categoryId2 = Guid.NewGuid();
+        var sum1 = (decimal)_calculator.PercentageOfSum((double)targetSum, 25d);
+        var sum2 = (decimal)_calculator.PercentageOfSum((double)targetSum, 75d);
+
         var spendingItems = ImmutableArray.Create([
             new CategorySpendingItem
             {
-                CategoryId = firstTransaction.DestinationAccountId!.Value,
+                CategoryId = categoryId1,
                 CategoryName = string.Empty,
-                TotalAmount = firstTransaction.Amount
+                TotalAmount = sum1
             },
             new CategorySpendingItem
             {
-                CategoryId = secondTransaction.DestinationAccountId!.Value,
+                CategoryId = categoryId2,
                 CategoryName = string.Empty,
-                TotalAmount = secondTransaction.Amount
+                TotalAmount = sum2
             }
         ]);
-        
+
         var categorizedResult = new CategorizedSpendingResult
         {
             TotalSpending = targetSum,
             Categories = spendingItems
         };
-        
+
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero));
@@ -178,14 +167,14 @@ public sealed class FinancialAnalyticsServiceTests
 
         // Assert
         actual.TotalSpending.Should().Be(targetSum);
-        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == firstTransaction.DestinationAccountId!.Value);
+        var item1 = actual.Categories.FirstOrDefault(x => x.CategoryId == categoryId1);
         item1.Should().NotBeNull();
-        item1.TotalAmount.Should().Be(firstTransaction.Amount);
-        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == secondTransaction.DestinationAccountId!.Value);
+        item1.TotalAmount.Should().Be(sum1);
+        var item2 = actual.Categories.FirstOrDefault(x => x.CategoryId == categoryId2);
         item2.Should().NotBeNull();
-        item2.TotalAmount.Should().Be(secondTransaction.Amount);
+        item2.TotalAmount.Should().Be(sum2);
     }
-    
+
     /// <summary>
     /// Должен вернуть нулевое значение общей суммы и пустой список категорий
     /// </summary>
@@ -217,7 +206,7 @@ public sealed class FinancialAnalyticsServiceTests
         var actual = await _financialAnalyticsService.GetCategorizingSpendingAsync(request, CancellationToken.None);
 
         // Assert
-        actual.TotalSpending.Should().Be(0d);
+        actual.TotalSpending.Should().Be(0m);
         actual.Categories.Should().BeEmpty();
     }
     
@@ -898,7 +887,7 @@ public sealed class FinancialAnalyticsServiceTests
         var request = CreateDefaultRequest(userId);
         
         var categoryId = Guid.NewGuid();
-        var amount = 500.0;
+        var amount = 500.0m;
         
         var previousSpending = new CategorizedSpendingResult
         {
@@ -1378,17 +1367,17 @@ public sealed class FinancialAnalyticsServiceTests
         
         var previousSpending = new CategorizedSpendingResult
         {
-            TotalSpending = 123.456,
+            TotalSpending = 123.456m,
             Categories = ImmutableArray.Create([
-                new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 123.456 }
+                new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 123.456m }
             ])
         };
         
         var currentSpending = new CategorizedSpendingResult
         {
-            TotalSpending = 234.567,
+            TotalSpending = 234.567m,
             Categories = ImmutableArray.Create([
-                new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 234.567 }
+                new CategorySpendingItem { CategoryId = categoryId, CategoryName = "Food", TotalAmount = 234.567m }
             ])
         };
 
@@ -1409,8 +1398,8 @@ public sealed class FinancialAnalyticsServiceTests
         
         // Assert
         var trend = actual.CategoryComparativeAnalyses.First();
-        trend.SecondPeriodAmount.Should().Be(234.567);
-        trend.FirstPeriodAmount.Should().Be(123.456);
+        trend.SecondPeriodAmount.Should().Be(234.567m);
+        trend.FirstPeriodAmount.Should().Be(123.456m);
     }
     
     /// <summary>
