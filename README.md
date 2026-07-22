@@ -124,29 +124,42 @@ smartwallet-db (healthy)
 ## Диаграмма базы данных
 ```mermaid
 erDiagram
-    TransactionEndpoint }|--|| User : is
+    TransactionEndpoint }|--|| User : userId
     TransactionEndpoint {
         Guid id PK
         Guid userId FK
         string name
-        double limitation "nullable"
+        decimal limitation "nullable"
         bool isStorage
-        double value
+        decimal value
         DateTime deletedAt "nullable"
     }
 
-    Transaction }o--|| User : is
-    Transaction }o--o| TransactionEndpoint : sourceAccountId
-    Transaction }o--o| TransactionEndpoint : destinationAccountId
+    Transaction }o--|| User : userId
     Transaction {
         Guid id PK
         Guid userId FK
-        Guid sourceAccountId FK "nullable"
-        Guid destinationAccountId FK "nullable"
-        double amount
-        TransactionType Type
+        TransactionType type
         DateTime madeAt
         DateTime deletedAt "nullable"
+    }
+
+    Posting }o--|| TransactionEndpoint : accountId
+    Posting }|--|| Transaction : transactionId
+    Posting {
+        Guid id PK
+        Guid accountId FK
+        Guid transactionId FK
+        decimal amount
+        DateTime createdAt
+        DateTime deletedAt "nullable"
+    }
+
+    DailyExpenseCategorie }o--|| TransactionEndpoint : categorieId
+    DailyExpenseCategorie {
+        Guid categorieId FK "PK"
+        DateTime day "PK"
+        decimal totalAmount
     }
 
     User {
@@ -162,12 +175,12 @@ erDiagram
     RefreshToken }o--|| User : userId
     RefreshToken {
         Guid id PK
-        string Token
-        Guid UserId FK
-        DateTime ExpiresAt
-        DateTime CreatedAt
-        DateTime RevokedAt "nullable"
-        string ReplacedByToken "nullable"
+        string token
+        Guid userId FK
+        DateTime expiresAt
+        DateTime createdAt
+        DateTime revokedAt "nullable"
+        string replacedByToken "nullable"
     }
 ```
 ## Возможные улучшения

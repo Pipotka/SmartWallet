@@ -4,7 +4,7 @@ erDiagram
     DailyExpenseCategorie {
         Guid categorieId FK,PK
         DateTime day PK
-        double totalAmount
+        decimal totalAmount
     }
 
     TransactionEndpoint }|--|| User : userId
@@ -12,9 +12,9 @@ erDiagram
         Guid id PK
         Guid userId FK
         string name
-        double limitation "nullable"
+        decimal limitation "nullable"
         bool isStorage
-        double value
+        decimal value
         DateTime deletedAt "nullable"
     }
 
@@ -33,7 +33,8 @@ erDiagram
         Guid id PK
         Guid accountId FK
         Guid transactionId FK
-        double amount
+        decimal amount
+        DateTime createdAt
         DateTime deletedAt "nullable"
     }
   
