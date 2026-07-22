@@ -24,6 +24,6 @@ public class PostingConfiguration : IEntityTypeConfiguration<Posting>
 		builder.HasOne(x => x.Transaction)
 			.WithMany(x => x.Postings)
 			.HasForeignKey(x => x.TransactionId)
-			.OnDelete(DeleteBehavior.Cascade);
+			.OnDelete(DeleteBehavior.NoAction);
 	}
 }

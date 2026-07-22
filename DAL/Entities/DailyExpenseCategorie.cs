@@ -17,6 +17,16 @@ public class DailyExpenseCategorie
 	public TransactionEndpoint? Category { get; set; }
 
 	/// <summary>
+	/// Идентификатор пользователя
+	/// </summary>
+	public Guid UserId { get; set; }
+
+	/// <summary>
+	/// Навигационное свойство — пользователь
+	/// </summary>
+	public User? User { get; set; }
+
+	/// <summary>
 	/// День (точность до дня)
 	/// </summary>
 	public DateTime Day { get; set; }

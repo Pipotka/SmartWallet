@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nasurino.SmartWallet.Context.Migrations
 {
     [DbContext(typeof(SmartWalletContext))]
-    [Migration("20260719161942_DbSchemaUpdate")]
+    [Migration("20260722211643_DbSchemaUpdate")]
     partial class DbSchemaUpdate
     {
         /// <inheritdoc />
@@ -36,7 +36,12 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("CategorieId", "Day");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("DailyExpenseCategorie", (string)null);
                 });
@@ -202,10 +207,18 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "Category")
                         .WithMany("DailyExpenseCategories")
                         .HasForeignKey("CategorieId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Nasurino.SmartWallet.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.Posting", b =>
@@ -219,7 +232,7 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.HasOne("Nasurino.SmartWallet.Entities.Transaction", "Transaction")
                         .WithMany("Postings")
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Account");

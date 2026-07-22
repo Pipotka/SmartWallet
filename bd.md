@@ -1,9 +1,11 @@
 ```mermaid
 erDiagram
     DailyExpenseCategorie }o--|| TransactionEndpoint : categorieId
+    DailyExpenseCategorie }o--|| User : userId
     DailyExpenseCategorie {
-        Guid categorieId FK,PK
-        DateTime day PK
+        Guid categorieId FK "PK"
+        Guid userId FK
+        DateTime day "PK"
         decimal totalAmount
     }
 

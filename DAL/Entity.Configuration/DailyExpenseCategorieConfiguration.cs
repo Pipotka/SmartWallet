@@ -19,6 +19,11 @@ public class DailyExpenseCategorieConfiguration : IEntityTypeConfiguration<Daily
 		builder.HasOne(x => x.Category)
 			.WithMany(x => x.DailyExpenseCategories)
 			.HasForeignKey(x => x.CategorieId)
-			.OnDelete(DeleteBehavior.Cascade);
+			.OnDelete(DeleteBehavior.NoAction);
+
+		builder.HasOne(x => x.User)
+			.WithMany()
+			.HasForeignKey(x => x.UserId)
+			.OnDelete(DeleteBehavior.NoAction);
 	}
 }
