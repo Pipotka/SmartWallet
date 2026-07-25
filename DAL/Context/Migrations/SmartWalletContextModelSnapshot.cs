@@ -38,7 +38,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
                     b.HasKey("CategorieId", "Day");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Day", "CategorieId", "TotalAmount")
+                        .HasDatabaseName("IX_DailyExpenseCategorie_UserId_Day_Covering");
 
                     b.ToTable("DailyExpenseCategorie", (string)null);
                 });

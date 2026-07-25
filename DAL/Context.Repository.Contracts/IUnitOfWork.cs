@@ -11,6 +11,9 @@
 		/// <inheritdoc cref="ITransactionRepository"/>
 		ITransactionRepository TransactionRepository { get; }
 
+		/// <inheritdoc cref="IDailyExpenseCategorieRepository"/>
+		IDailyExpenseCategorieRepository DailyExpenseCategorieRepository { get; }
+
 		/// <inheritdoc cref="IUserRepository"/>
 		IUserRepository UserRepository { get; }
 

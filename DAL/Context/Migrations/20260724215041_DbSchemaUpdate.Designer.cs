@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nasurino.SmartWallet.Context.Migrations
 {
     [DbContext(typeof(SmartWalletContext))]
-    [Migration("20260722211643_DbSchemaUpdate")]
+    [Migration("20260724215041_DbSchemaUpdate")]
     partial class DbSchemaUpdate
     {
         /// <inheritdoc />
@@ -41,7 +41,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
                     b.HasKey("CategorieId", "Day");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Day", "CategorieId", "TotalAmount")
+                        .HasDatabaseName("IX_DailyExpenseCategorie_UserId_Day_Covering");
 
                     b.ToTable("DailyExpenseCategorie", (string)null);
                 });

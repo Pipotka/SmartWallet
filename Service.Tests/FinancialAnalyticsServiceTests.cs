@@ -32,6 +32,7 @@ public sealed class FinancialAnalyticsServiceTests
     private readonly Mock<ISmartWalletValidateService> _validateServiceMock;
     private readonly Mock<IUserRepository> _mockedUserRepository;
     private readonly Mock<ITransactionRepository> _mockedTransactionRepository;
+    private readonly Mock<IDailyExpenseCategorieRepository> _mockedDailyExpenseCategorieRepository;
     private readonly IFinancialAnalyticsService _financialAnalyticsService;
 
     /// <summary>
@@ -48,8 +49,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository = new Mock<IUserRepository>();
         _mockedTransactionRepository = new Mock<ITransactionRepository>();
+        _mockedDailyExpenseCategorieRepository = new Mock<IDailyExpenseCategorieRepository>();
         var unitOfWork = new MockedUnitOfWork(mockedUserRepository : _mockedUserRepository,
-            mockedTransactionRepository : _mockedTransactionRepository);
+            mockedTransactionRepository : _mockedTransactionRepository,
+            mockedDailyExpenseCategorieRepository : _mockedDailyExpenseCategorieRepository);
         
         _financialAnalyticsService = new FinancialAnalyticsService(unitOfWork,
             _calculator,
@@ -93,7 +96,7 @@ public sealed class FinancialAnalyticsServiceTests
         };
 
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.AddDays(1).Year, DateTime.Today.AddDays(1).Month, DateTime.Today.AddDays(1).Day, 0, 0, 0, TimeSpan.Zero));
 
         var request = new CategorizingSpendingRequest
@@ -152,7 +155,7 @@ public sealed class FinancialAnalyticsServiceTests
         };
 
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero));
 
         var request = new CategorizingSpendingRequest
@@ -192,7 +195,7 @@ public sealed class FinancialAnalyticsServiceTests
         };
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult, userId,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero));
 
         var request = new CategorizingSpendingRequest
@@ -227,7 +230,7 @@ public sealed class FinancialAnalyticsServiceTests
         };
         
         _mockedUserRepository.GetUserByIdReturnNotNull(Guid.NewGuid());
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(categorizedResult,
             startDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero), endDate: new DateTimeOffset(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day, 0, 0, 0, TimeSpan.Zero));
 
         var request = new CategorizingSpendingRequest
@@ -438,7 +441,7 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(emptyResult, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(emptyResult, userId,
             startDate: It.IsAny<DateTimeOffset>(), endDate: It.IsAny<DateTimeOffset>());
         
         // Act
@@ -491,10 +494,10 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousEmpty, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousEmpty, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -556,10 +559,10 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentEmpty, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentEmpty, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -621,10 +624,10 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -681,10 +684,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -750,10 +753,10 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -811,10 +814,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -860,10 +863,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -910,10 +913,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -959,10 +962,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1006,10 +1009,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1055,10 +1058,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1109,10 +1112,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1167,10 +1170,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1224,10 +1227,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1274,10 +1277,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1331,10 +1334,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1386,10 +1389,10 @@ public sealed class FinancialAnalyticsServiceTests
         
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(previousSpending, userId,
             startDate: new DateTimeOffset(previousPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(previousPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
-        _mockedTransactionRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
+        _mockedDailyExpenseCategorieRepository.GetCategorizedSpendingByUserIdAndDateRangeReturnValue(currentSpending, userId,
             startDate: new DateTimeOffset(currentPeriod.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
             endDate: new DateTimeOffset(currentPeriod.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero));
         
@@ -1432,14 +1435,14 @@ public sealed class FinancialAnalyticsServiceTests
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()));
         
         // Настраиваем моки с проверкой дат
-        _mockedTransactionRepository
+        _mockedDailyExpenseCategorieRepository
             .Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
                 new DateTimeOffset(firstDate.AddDays(-4).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
                 new DateTimeOffset(firstDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(emptyResult);
             
-        _mockedTransactionRepository
+        _mockedDailyExpenseCategorieRepository
             .Setup(x => x.GetCategorizedSpendingByUserIdAndDateRangeAsync(userId,
                 new DateTimeOffset(secondDate.AddDays(-4).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
                 new DateTimeOffset(secondDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
@@ -1522,7 +1525,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(emptyResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(emptyResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
@@ -1561,7 +1564,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
@@ -1609,7 +1612,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
@@ -1662,7 +1665,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
@@ -1711,7 +1714,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);
@@ -1767,7 +1770,7 @@ public sealed class FinancialAnalyticsServiceTests
         _mockedUserRepository.GetUserByIdReturnNotNull(userId);
         _validateServiceMock.Setup(x => x.ValidateAsync(request, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        _mockedTransactionRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
+        _mockedDailyExpenseCategorieRepository.GetSpendingTrendLineReturnValue(trendResult, userId);
 
         // Act
         var actual = await _financialAnalyticsService.GetSpendingTrendLineAsync(request, CancellationToken.None);

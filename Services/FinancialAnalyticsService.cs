@@ -20,7 +20,7 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 	IMapper mapper) : IFinancialAnalyticsService
 {
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
-	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
+	private readonly IDailyExpenseCategorieRepository _dailyExpenseCategorieRepository = unitOfWork.DailyExpenseCategorieRepository;
 
 	async Task<SpendingCategoryModel> IFinancialAnalyticsService.GetCategorizingSpendingAsync(CategorizingSpendingRequest request, CancellationToken token)
 	{
@@ -29,7 +29,7 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
         _ = await _userRepository.GetUserByIdAsync(request.UserId, token) 
 			?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
 
-		var result = await _transactionRepository
+		var result = await _dailyExpenseCategorieRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
                 new DateTimeOffset(request.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
                 new DateTimeOffset(request.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero), token);
@@ -47,14 +47,14 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 		    ?? throw new EntityNotFoundByIdServiceException<User>(request.UserId);
 		
 		var previousPeriodDateRange = request.GetFirstDateRange();
-		var previousPeriod = await _transactionRepository
+		var previousPeriod = await _dailyExpenseCategorieRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
 				new DateTimeOffset(previousPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 				new DateTimeOffset(previousPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 				token);
 	
 		var currentPeriodDateRange = request.GetSecondDateRange();
-		var currentPeriod = await _transactionRepository
+		var currentPeriod = await _dailyExpenseCategorieRepository
 			.GetCategorizedSpendingByUserIdAndDateRangeAsync(request.UserId,
 				new DateTimeOffset(currentPeriodDateRange.Start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
 				new DateTimeOffset(currentPeriodDateRange.End.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero),
@@ -130,7 +130,7 @@ public sealed class FinancialAnalyticsService(IUnitOfWork unitOfWork,
 			Label = r.Label
 		}).ToList();
 
-		var trendLineData = await _transactionRepository
+		var trendLineData = await _dailyExpenseCategorieRepository
 			.GetSpendingTrendLineAsync(request.UserId, dateRangeInfos, token);
 
 		var labelOrder = dateRanges.Select((r, i) => (r.Label, i)).ToDictionary(x => x.Label, x => x.i);

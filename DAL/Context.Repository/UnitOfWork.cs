@@ -16,6 +16,8 @@ public class UnitOfWork : IUnitOfWork
 
 	public ITransactionRepository TransactionRepository { get; init; }
 
+	public IDailyExpenseCategorieRepository DailyExpenseCategorieRepository { get; init; }
+
 	public IRefreshTokenRepository RefreshTokenRepository { get; init; }
 
 	/// <summary>
@@ -28,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
 		UserRepository = new UserRepository(storage);
 		TransactionEndpointRepository = new TransactionEndpointRepository(storage);
 		TransactionRepository = new TransactionRepository(storage);
+		DailyExpenseCategorieRepository = new DailyExpenseCategorieRepository(storage);
 		RefreshTokenRepository = new RefreshTokenRepository(storage);
 	}
 

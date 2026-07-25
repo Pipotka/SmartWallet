@@ -25,5 +25,8 @@ public class DailyExpenseCategorieConfiguration : IEntityTypeConfiguration<Daily
 			.WithMany()
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
+
+		builder.HasIndex(x => new { x.UserId, x.Day, x.CategorieId, x.TotalAmount })
+			.HasDatabaseName("IX_DailyExpenseCategorie_UserId_Day_Covering");
 	}
 }

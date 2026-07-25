@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Nasurino.SmartWallet.BackgroundTaskSystem.Contracts</RootNamespace>
+    <AssemblyName>SmartWallet.BackgroundTaskSystem.Contracts</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
