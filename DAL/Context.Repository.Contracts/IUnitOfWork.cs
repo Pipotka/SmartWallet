@@ -20,6 +20,9 @@
 		/// <inheritdoc cref="IRefreshTokenRepository"/>
 		IRefreshTokenRepository RefreshTokenRepository { get; }
 
+		/// <inheritdoc cref="IPostingRepository"/>
+		IPostingRepository PostingRepository { get; }
+
 		/// <summary>
 		/// Сохраняет изменения
 		/// </summary>

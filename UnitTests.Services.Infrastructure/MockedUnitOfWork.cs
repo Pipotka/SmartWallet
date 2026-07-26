@@ -13,6 +13,7 @@ public sealed class MockedUnitOfWork : IUnitOfWork
     private readonly Mock<IDailyExpenseCategorieRepository> _mockedDailyExpenseCategorieRepository;
     private readonly Mock<IUserRepository> _mockedUserRepository;
     private readonly Mock<IRefreshTokenRepository> _mockedRefreshTokenRepository;
+    private readonly Mock<IPostingRepository> _mockedPostingRepository;
 
     ITransactionEndpointRepository IUnitOfWork.TransactionEndpointRepository => _mockedCashVaultRepository.Object;
 
@@ -23,6 +24,8 @@ public sealed class MockedUnitOfWork : IUnitOfWork
     IUserRepository IUnitOfWork.UserRepository => _mockedUserRepository.Object;
 
     IRefreshTokenRepository IUnitOfWork.RefreshTokenRepository => _mockedRefreshTokenRepository.Object;
+
+    IPostingRepository IUnitOfWork.PostingRepository => _mockedPostingRepository.Object;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MockedUnitOfWork"/>
@@ -38,6 +41,7 @@ public sealed class MockedUnitOfWork : IUnitOfWork
         _mockedDailyExpenseCategorieRepository = mockedDailyExpenseCategorieRepository ?? new Mock<IDailyExpenseCategorieRepository>();
         _mockedUserRepository = mockedUserRepository ?? new Mock<IUserRepository>();
         _mockedRefreshTokenRepository = mockedRefreshTokenRepository ?? new Mock<IRefreshTokenRepository>();
+        _mockedPostingRepository = new Mock<IPostingRepository>();
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;

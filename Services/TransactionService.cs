@@ -25,6 +25,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
+	private readonly IPostingRepository _postingRepository = unitOfWork.PostingRepository;
 	private readonly IBackgroundTaskSystemProvider _backgroundTaskSystemProvider = backgroundTaskSystemProvider;
 
 	async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token)
@@ -120,14 +121,17 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			_transactionEndpointRepository.Update(destinationAccount);
 		}
 
+		var transactionId = Guid.NewGuid();
 		var transaction = new Transaction
 		{
+			Id = transactionId,
 			UserId = model.UserId,
 			Type = ResolveType(sourceAccount, destinationAccount),
-			Postings = BuildPostings(sourceAccount, destinationAccount, amount)
+			Postings = BuildPostings(sourceAccount, destinationAccount, amount, transactionId)
 		};
 
 		_transactionRepository.Add(transaction);
+		_postingRepository.AddRange(transaction.Postings);
 		await unitOfWork.SaveChangesAsync(token);
 
 		if (destinationAccount is { IsStorage: false })
@@ -257,7 +261,11 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			: TransactionType.Expense;
 	}
 
-	private static List<Posting> BuildPostings(TransactionEndpoint? source, TransactionEndpoint? destination, decimal amount)
+	private static List<Posting> BuildPostings(
+		TransactionEndpoint? source,
+		TransactionEndpoint? destination,
+		decimal amount,
+		Guid transactionId)
 	{
 		var postings = new List<Posting>();
 
@@ -265,6 +273,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		{
 			postings.Add(new Posting
 			{
+				TransactionId = transactionId,
+				Transaction = null,
 				AccountId = source.Id,
 				Amount = -amount
 			});
@@ -274,6 +284,8 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		{
 			postings.Add(new Posting
 			{
+				TransactionId = transactionId,
+				Transaction = null,
 				AccountId = destination.Id,
 				Amount = amount
 			});

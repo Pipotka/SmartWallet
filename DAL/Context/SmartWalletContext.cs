@@ -22,7 +22,7 @@ public class SmartWalletContext : DbContext, IDataStorageContext
 		=> Set<TEntity>().AsNoTracking().AsQueryable();
 
 	void IDataStorageContext.Create<TEntity>(TEntity entity) where TEntity : class 
-		=> Set<TEntity>().Add(entity);
+		=> Entry(entity).State = EntityState.Added;
 
 	void IDataStorageContext.Delete<TEntity>(TEntity entity) where TEntity : class 
 		=> Entry(entity).State = EntityState.Deleted;

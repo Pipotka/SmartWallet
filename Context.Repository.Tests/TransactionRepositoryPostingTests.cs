@@ -8,52 +8,61 @@ using Xunit;
 namespace Nasurino.SmartWallet.Context.Repository.Tests;
 
 /// <summary>
-/// Проверка каскадного сохранения постингов при добавлении транзакции.
-/// Регрессионный тест на баг: постинги не сохранялись и имели пустой Id
-/// из-за того, что IDataStorageContext.Create использовал Entry().State вместо DbSet.Add.
+/// Проверка явного сохранения постингов через PostingRepository при добавлении транзакции.
+/// Регрессионный тест на баг: постинги не сохранялись и имели пустой Id.
+/// Подход: транзакция добавляется через TransactionRepository, постинги — через
+/// PostingRepository.AddRange (IDataStorageContext.Create использует Entry().State = Added,
+/// поэтому каскадной вставки дочерних сущностей не происходит).
 /// </summary>
 public class TransactionRepositoryPostingTests : SmartWalletContextInMemory
 {
-    private readonly TransactionRepository _transactionRepository;
+	private readonly TransactionRepository _transactionRepository;
+	private readonly PostingRepository _postingRepository;
 
-    public TransactionRepositoryPostingTests()
-    {
-        _transactionRepository = new TransactionRepository(StorageContext);
-    }
+	public TransactionRepositoryPostingTests()
+	{
+		_transactionRepository = new TransactionRepository(StorageContext);
+		_postingRepository = new PostingRepository(StorageContext);
+	}
 
-    [Fact]
-    async Task AddTransactionShouldPersistPostingsWithGeneratedId()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var accountId = Guid.NewGuid();
+	[Fact]
+	async Task AddTransactionThenAddPostingsViaRepositoryShouldPersistPostingsWithGeneratedId()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		var accountId = Guid.NewGuid();
+		var transactionId = Guid.NewGuid();
 
-        var transaction = new Transaction
-        {
-            UserId = userId,
-            Type = TransactionType.AdjustmentIncrease,
-            Postings = new List<Posting>
-            {
-                new Posting
-                {
-                    AccountId = accountId,
-                    Amount = 100_000m
-                }
-            }
-        };
+		var transaction = new Transaction
+		{
+			Id = transactionId,
+			UserId = userId,
+			Type = TransactionType.AdjustmentIncrease
+		};
 
-        // Act
-        _transactionRepository.Add(transaction);
-        await Context.SaveChangesAsync();
+		var postings = new List<Posting>
+		{
+			new Posting
+			{
+				TransactionId = transactionId,
+				AccountId = accountId,
+				Amount = 100_000m
+			}
+		};
 
-        // Assert
-        transaction.Id.Should().NotBe(Guid.Empty);
+		// Act — транзакция и постинги добавляются явно через свои репозитории
+		_transactionRepository.Add(transaction);
+		_postingRepository.AddRange(postings);
+		await Context.SaveChangesAsync();
 
-        var savedPostings = await Context.Set<Posting>().ToListAsync();
-        savedPostings.Should().ContainSingle();
-        savedPostings[0].Id.Should().NotBe(Guid.Empty);
-        savedPostings[0].AccountId.Should().Be(accountId);
-        savedPostings[0].Amount.Should().Be(100_000m);
-        savedPostings[0].TransactionId.Should().Be(transaction.Id);
-    }
+		// Assert
+		transaction.Id.Should().Be(transactionId);
+
+		var savedPostings = await Context.Set<Posting>().ToListAsync();
+		savedPostings.Should().ContainSingle();
+		savedPostings[0].Id.Should().NotBe(Guid.Empty);
+		savedPostings[0].AccountId.Should().Be(accountId);
+		savedPostings[0].Amount.Should().Be(100_000m);
+		savedPostings[0].TransactionId.Should().Be(transactionId);
+	}
 }

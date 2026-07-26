@@ -26,6 +26,7 @@ public class TransactionServiceTests
 	private readonly Mock<ITransactionRepository> _transactionRepositoryMock;
 	private readonly Mock<ITransactionEndpointRepository> _transactionEndpointRepositoryMock;
 	private readonly Mock<IDailyExpenseCategorieRepository> _dailyExpenseCategorieRepositoryMock;
+	private readonly Mock<IPostingRepository> _postingRepositoryMock;
 	private readonly Mock<IBackgroundTaskSystemProvider> _backgroundTaskSystemProviderMock;
 	private readonly ITransactionService _transactionService;
 
@@ -40,12 +41,14 @@ public class TransactionServiceTests
 		_transactionEndpointRepositoryMock = new Mock<ITransactionEndpointRepository>();
 
 		_dailyExpenseCategorieRepositoryMock = new Mock<IDailyExpenseCategorieRepository>();
+		_postingRepositoryMock = new Mock<IPostingRepository>();
 		_backgroundTaskSystemProviderMock = new Mock<IBackgroundTaskSystemProvider>();
 
 		_unitOfWorkMock.Setup(u => u.UserRepository).Returns(_userRepositoryMock.Object);
 		_unitOfWorkMock.Setup(u => u.TransactionRepository).Returns(_transactionRepositoryMock.Object);
 		_unitOfWorkMock.Setup(u => u.TransactionEndpointRepository).Returns(_transactionEndpointRepositoryMock.Object);
 		_unitOfWorkMock.Setup(u => u.DailyExpenseCategorieRepository).Returns(_dailyExpenseCategorieRepositoryMock.Object);
+		_unitOfWorkMock.Setup(u => u.PostingRepository).Returns(_postingRepositoryMock.Object);
 
 		_transactionService = new TransactionService(
 			_unitOfWorkMock.Object,
@@ -129,6 +132,7 @@ public class TransactionServiceTests
 		result.Should().NotBeNull();
 		result.Postings.Should().ContainSingle(p => p.AccountId == destinationAccountId && p.Amount == 100.0m);
 		_transactionRepositoryMock.Verify(repo => repo.Add(It.IsAny<Transaction>()), Times.Once);
+		_postingRepositoryMock.Verify(repo => repo.AddRange(It.IsAny<IEnumerable<Posting>>()), Times.Once);
 		_unitOfWorkMock.Verify(unit => unit.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
@@ -254,6 +258,7 @@ public class TransactionServiceTests
 		result.Should().NotBeNull();
 		result.Postings.Should().ContainSingle(p => p.AccountId == sourceAccountId && p.Amount == -100.0m);
 		_transactionRepositoryMock.Verify(repo => repo.Add(It.IsAny<Transaction>()), Times.Once);
+		_postingRepositoryMock.Verify(repo => repo.AddRange(It.IsAny<IEnumerable<Posting>>()), Times.Once);
 		_unitOfWorkMock.Verify(unit => unit.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
@@ -311,6 +316,7 @@ public class TransactionServiceTests
 		result.Postings.Should().Contain(p => p.AccountId == sourceAccountId && p.Amount == -100.0m);
 		result.Postings.Should().Contain(p => p.AccountId == destinationAccountId && p.Amount == 100.0m);
 		_transactionRepositoryMock.Verify(repo => repo.Add(It.IsAny<Transaction>()), Times.Once);
+		_postingRepositoryMock.Verify(repo => repo.AddRange(It.IsAny<IEnumerable<Posting>>()), Times.Once);
 		_unitOfWorkMock.Verify(unit => unit.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 
@@ -368,6 +374,7 @@ public class TransactionServiceTests
 		result.Postings.Should().Contain(p => p.AccountId == sourceAccountId && p.Amount == -100.0m);
 		result.Postings.Should().Contain(p => p.AccountId == destinationAccountId && p.Amount == 100.0m);
 		_transactionRepositoryMock.Verify(repo => repo.Add(It.IsAny<Transaction>()), Times.Once);
+		_postingRepositoryMock.Verify(repo => repo.AddRange(It.IsAny<IEnumerable<Posting>>()), Times.Once);
 		_unitOfWorkMock.Verify(unit => unit.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 	}
 }
