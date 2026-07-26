@@ -58,7 +58,6 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 					{
 						Id = p.Id,
 						AccountId = p.AccountId,
-						TransactionId = p.TransactionId,
 						Amount = p.Amount
 					})
 					.ToList()

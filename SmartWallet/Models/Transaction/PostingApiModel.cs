@@ -16,11 +16,6 @@ public sealed class PostingApiModel
 	public Guid AccountId { get; set; }
 
 	/// <summary>
-	/// Идентификатор транзакции
-	/// </summary>
-	public Guid TransactionId { get; set; }
-
-	/// <summary>
 	/// Сумма (со знаком: минус — списание, плюс — зачисление)
 	/// </summary>
 	public decimal Amount { get; set; }
