@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nasurino.SmartWallet.Context.Migrations
 {
     [DbContext(typeof(SmartWalletContext))]
-    [Migration("20260726174407_FixTransactionEndpointMoneyTypes")]
-    partial class FixTransactionEndpointMoneyTypes
+    [Migration("20260726202412_DbSchemaUpdate")]
+    partial class DbSchemaUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -146,8 +146,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<bool>("IsStorage")
                         .HasColumnType("boolean");
 
-                    b.Property<double?>("Limitation")
-                        .HasColumnType("double precision");
+                    b.Property<decimal?>("Limitation")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -156,8 +156,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
