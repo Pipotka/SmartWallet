@@ -197,8 +197,6 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 				account.Value = currentBalance - posting.Amount;
 				_transactionEndpointRepository.Update(account);
 
-				posting.DeletedAt = DateTimeOffset.UtcNow;
-
 				if (account is { IsStorage: false })
 				{
 					affectedCategories.Add(account.Id);
@@ -206,6 +204,12 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 			}
 		}
 
+		foreach (var posting in transaction.Postings)
+		{
+			posting.DeletedAt = DateTimeOffset.UtcNow;
+		}
+
+		_postingRepository.UpdateRange(transaction.Postings);
 		_transactionRepository.Delete(transaction);
 		await unitOfWork.SaveChangesAsync(token);
 

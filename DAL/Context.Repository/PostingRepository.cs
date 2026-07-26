@@ -17,4 +17,13 @@ public sealed class PostingRepository(IDataStorageContext storage) : BaseWriteRe
 			Storage.Create(posting);
 		}
 	}
+
+	/// <inheritdoc />
+	public void UpdateRange(IEnumerable<Posting> postings)
+	{
+		foreach (var posting in postings)
+		{
+			Storage.Update(posting);
+		}
+	}
 }

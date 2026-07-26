@@ -12,4 +12,10 @@ public interface IPostingRepository : IBaseWriteRepository<Posting>
 	/// </summary>
 	/// <param name="postings">Коллекция постингов</param>
 	void AddRange(IEnumerable<Posting> postings);
+
+	/// <summary>
+	/// Обновляет коллекцию постингов единой операцией
+	/// </summary>
+	/// <param name="postings">Коллекция постингов</param>
+	void UpdateRange(IEnumerable<Posting> postings);
 }
