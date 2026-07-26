@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentAssertions;
 using Moq;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
+using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
@@ -24,6 +25,8 @@ public class TransactionServiceTests
 	private readonly Mock<IUserRepository> _userRepositoryMock;
 	private readonly Mock<ITransactionRepository> _transactionRepositoryMock;
 	private readonly Mock<ITransactionEndpointRepository> _transactionEndpointRepositoryMock;
+	private readonly Mock<IDailyExpenseCategorieRepository> _dailyExpenseCategorieRepositoryMock;
+	private readonly Mock<IBackgroundTaskSystemProvider> _backgroundTaskSystemProviderMock;
 	private readonly ITransactionService _transactionService;
 
 	public TransactionServiceTests()
@@ -36,14 +39,19 @@ public class TransactionServiceTests
 		_transactionRepositoryMock = new Mock<ITransactionRepository>();
 		_transactionEndpointRepositoryMock = new Mock<ITransactionEndpointRepository>();
 
+		_dailyExpenseCategorieRepositoryMock = new Mock<IDailyExpenseCategorieRepository>();
+		_backgroundTaskSystemProviderMock = new Mock<IBackgroundTaskSystemProvider>();
+
 		_unitOfWorkMock.Setup(u => u.UserRepository).Returns(_userRepositoryMock.Object);
 		_unitOfWorkMock.Setup(u => u.TransactionRepository).Returns(_transactionRepositoryMock.Object);
 		_unitOfWorkMock.Setup(u => u.TransactionEndpointRepository).Returns(_transactionEndpointRepositoryMock.Object);
+		_unitOfWorkMock.Setup(u => u.DailyExpenseCategorieRepository).Returns(_dailyExpenseCategorieRepositoryMock.Object);
 
 		_transactionService = new TransactionService(
 			_unitOfWorkMock.Object,
 			_validateServiceMock.Object,
-			mapper);
+			mapper,
+			_backgroundTaskSystemProviderMock.Object);
 	}
 
 	/// <summary>

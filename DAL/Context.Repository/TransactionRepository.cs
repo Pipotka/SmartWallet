@@ -140,6 +140,52 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 			.SumAsync(p => p.Amount, cancellationToken);
 	}
 
+	async Task<Dictionary<Guid, decimal>> ITransactionRepository.GetStorageBalancesAsync(
+		IReadOnlyCollection<Guid> storageIds,
+		CancellationToken cancellationToken)
+	{
+		if (storageIds is null || storageIds.Count == 0)
+		{
+			return new Dictionary<Guid, decimal>();
+		}
+
+		return await Storage.Read<Posting>().NotDeleted()
+			.Where(p => storageIds.Contains(p.AccountId))
+			.GroupBy(p => p.AccountId)
+			.Select(g => new { g.Key, Sum = g.Sum(p => p.Amount) })
+			.ToDictionaryAsync(
+				x => x.Key,
+				x => x.Sum,
+				cancellationToken);
+	}
+
+	async Task<Dictionary<Guid, decimal>> ITransactionRepository.GetCategoryBalancesAsync(
+		IReadOnlyCollection<Guid> categoryIds,
+		CancellationToken cancellationToken)
+	{
+		if (categoryIds is null || categoryIds.Count == 0)
+		{
+			return new Dictionary<Guid, decimal>();
+		}
+
+		var startOfMonth = new DateTimeOffset(
+			DateTimeOffset.UtcNow.Year,
+			DateTimeOffset.UtcNow.Month,
+			1,
+			0, 0, 0,
+			TimeSpan.Zero);
+
+		return await Storage.Read<Posting>().NotDeleted()
+			.Where(p => categoryIds.Contains(p.AccountId))
+			.Where(p => p.Transaction!.MadeAt >= startOfMonth)
+			.GroupBy(p => p.AccountId)
+			.Select(g => new { g.Key, Sum = g.Sum(p => p.Amount) })
+			.ToDictionaryAsync(
+				x => x.Key,
+				x => x.Sum,
+				cancellationToken);
+	}
+
 	private static Expression<Func<Transaction, bool>> InDateRange(DateTimeOffset startTimeRange, DateTimeOffset endTimeRange)
 		=> transaction => startTimeRange <= transaction.MadeAt && transaction.MadeAt < endTimeRange;
 }

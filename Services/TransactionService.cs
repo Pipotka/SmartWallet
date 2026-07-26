@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
+using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
+using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models;
@@ -17,11 +19,13 @@ namespace Nasurino.SmartWallet.Services;
 /// </summary>
 public sealed class TransactionService(IUnitOfWork unitOfWork,
 	ISmartWalletValidateService validateService,
-	IMapper mapper) : ITransactionService
+	IMapper mapper,
+	IBackgroundTaskSystemProvider backgroundTaskSystemProvider) : ITransactionService
 {
 	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
 	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
 	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
+	private readonly IBackgroundTaskSystemProvider _backgroundTaskSystemProvider = backgroundTaskSystemProvider;
 
 	async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token)
 	{
@@ -126,6 +130,14 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		_transactionRepository.Add(transaction);
 		await unitOfWork.SaveChangesAsync(token);
 
+		if (destinationAccount is { IsStorage: false })
+		{
+			var categoryId = destinationAccount.Id;
+			var day = DateTime.UtcNow.Date;
+			_backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
+				s.RecalculateAsync(model.UserId, categoryId, day, token));
+		}
+
 		return mapper.Map<TransactionModel>(transaction);
 	}
 
@@ -140,27 +152,66 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		var transaction = await _transactionRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
 			?? throw new EntityNotFoundByIdServiceException<Transaction>(model.Id);
 
-		foreach (var posting in transaction.Postings)
+		var affectedCategories = new HashSet<Guid>();
+
+		var accountIds = transaction.Postings
+			.Select(p => p.AccountId)
+			.Distinct()
+			.ToList();
+
+		var endpoints = await _transactionEndpointRepository.GetListByIdsAndUserIdAsync(
+			model.UserId,
+			accountIds,
+			token);
+
+		if (endpoints.Count > 0)
 		{
-			var account = await _transactionEndpointRepository.GetByIdAndUserIdAsync(
-				posting.AccountId,
-				model.UserId,
-				token);
+			var storageIds = endpoints
+				.Where(e => e.IsStorage)
+				.Select(e => e.Id)
+				.ToList();
+			var categoryIds = endpoints
+				.Where(e => !e.IsStorage)
+				.Select(e => e.Id)
+				.ToList();
 
-			if (account is null)
+			var storageBalances = await _transactionRepository.GetStorageBalancesAsync(storageIds, token);
+			var categoryBalances = await _transactionRepository.GetCategoryBalancesAsync(categoryIds, token);
+
+			var endpointById = endpoints.ToDictionary(e => e.Id);
+
+			foreach (var posting in transaction.Postings)
 			{
-				continue;
+				if (!endpointById.TryGetValue(posting.AccountId, out var account))
+				{
+					continue;
+				}
+
+				var currentBalance = account.IsStorage
+					? storageBalances.TryGetValue(account.Id, out var sb) ? sb : 0m
+					: categoryBalances.TryGetValue(account.Id, out var cb) ? cb : 0m;
+				account.Value = currentBalance - posting.Amount;
+				_transactionEndpointRepository.Update(account);
+
+				posting.DeletedAt = DateTimeOffset.UtcNow;
+
+				if (account is { IsStorage: false })
+				{
+					affectedCategories.Add(account.Id);
+				}
 			}
-
-			var currentBalance = await GetBalanceForAccountAsync(account.Id, account.IsStorage, token);
-			account.Value = currentBalance - posting.Amount;
-			_transactionEndpointRepository.Update(account);
-
-			posting.DeletedAt = DateTimeOffset.UtcNow;
 		}
 
 		_transactionRepository.Delete(transaction);
 		await unitOfWork.SaveChangesAsync(token);
+
+		if (affectedCategories.Count > 0)
+		{
+			var day = transaction.MadeAt.Date;
+
+			_backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
+				s.RecalculateManyAsync(model.UserId, affectedCategories, day, token));
+		}
 	}
 
 	private async Task<decimal> GetBalanceForAccountAsync(

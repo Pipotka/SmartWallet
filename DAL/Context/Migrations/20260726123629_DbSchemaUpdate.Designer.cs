@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nasurino.SmartWallet.Context.Migrations
 {
     [DbContext(typeof(SmartWalletContext))]
-    [Migration("20260724215041_DbSchemaUpdate")]
+    [Migration("20260726123629_DbSchemaUpdate")]
     partial class DbSchemaUpdate
     {
         /// <inheritdoc />
@@ -58,9 +58,6 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");

@@ -39,4 +39,24 @@ public interface IDailyExpenseCategorieRepository : IBaseWriteRepository<DailyEx
 		Guid userId,
 		IReadOnlyCollection<DateRangeInfo> periods,
 		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Атомарно вставляет или обновляет запись <see cref="DailyExpenseCategorie"/> для категории и дня.
+	/// Значение TotalAmount перезаписывается напрямую в БД (UPSERT), без предварительного чтения строки.
+	/// </summary>
+	/// <param name="entity">Модель агрегата ежедневных трат (UserId, CategorieId, Day, TotalAmount)</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	Task UpsertAsync(
+		DailyExpenseCategorie entity,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Атомарно вставляет или обновляет пакет записей <see cref="DailyExpenseCategorie"/>.
+	/// Значения TotalAmount перезаписываются напрямую в БД (UPSERT), без предварительного чтения строк.
+	/// </summary>
+	/// <param name="entities">Коллекция моделей агрегата ежедневных трат</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	Task UpsertManyAsync(
+		IReadOnlyCollection<DailyExpenseCategorie> entities,
+		CancellationToken cancellationToken);
 }

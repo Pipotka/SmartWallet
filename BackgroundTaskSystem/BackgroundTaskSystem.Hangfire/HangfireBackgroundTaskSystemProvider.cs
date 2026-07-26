@@ -8,7 +8,7 @@ namespace Nasurino.SmartWallet.BackgroundTaskSystem.Hangfire;
 /// Реализация <see cref="IBackgroundTaskSystemProvider"/> поверх Hangfire.
 /// Использует BackgroundJob.Enqueue для post-and-forget выполнения.
 /// </summary>
-public sealed class BackgroundTaskSystemProvider : IBackgroundTaskSystemProvider
+public sealed class HangfireBackgroundTaskSystemProvider : IBackgroundTaskSystemProvider
 {
 	/// <inheritdoc/>
 	public void FireAndForget<T>(Expression<Func<T, Task>> method)

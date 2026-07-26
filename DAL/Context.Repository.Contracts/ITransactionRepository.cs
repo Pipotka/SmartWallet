@@ -73,4 +73,26 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	Task<decimal> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
 		DateTimeOffset startDate = default,
 		DateTimeOffset endDate = default);
+
+	/// <summary>
+	/// Возвращает балансы (суммы постингов) для коллекции хранилищ за всё время
+	/// единственным запросом к БД.
+	/// </summary>
+	/// <param name="storageIds">Коллекция идентификаторов хранилищ</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	/// <returns>Словарь: идентификатор хранилища -> баланс</returns>
+	Task<Dictionary<Guid, decimal>> GetStorageBalancesAsync(
+		IReadOnlyCollection<Guid> storageIds,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Возвращает балансы (суммы постингов) для коллекции категорий трат за текущий месяц
+	/// единственным запросом к БД.
+	/// </summary>
+	/// <param name="categoryIds">Коллекция идентификаторов категорий трат</param>
+	/// <param name="cancellationToken">Токен отмены</param>
+	/// <returns>Словарь: идентификатор категории -> баланс</returns>
+	Task<Dictionary<Guid, decimal>> GetCategoryBalancesAsync(
+		IReadOnlyCollection<Guid> categoryIds,
+		CancellationToken cancellationToken);
 }

@@ -124,4 +124,66 @@ public sealed class DailyExpenseCategorieRepository : BaseWriteRepository<DailyE
 			PeriodItems = periodItems
 		};
 	}
+
+	async Task IDailyExpenseCategorieRepository.UpsertAsync(
+		DailyExpenseCategorie entity,
+		CancellationToken cancellationToken)
+	{
+		var userIdParam = "@p0";
+		var categorieIdParam = "@p1";
+		var dayParam = "@p2";
+		var totalAmountParam = "@p3";
+
+		var sql = $@"
+			INSERT INTO ""DailyExpenseCategorie"" (""UserId"", ""CategorieId"", ""Day"", ""TotalAmount"")
+			VALUES ({userIdParam}, {categorieIdParam}, {dayParam}::date, {totalAmountParam})
+			ON CONFLICT (""CategorieId"", ""Day"")
+			DO UPDATE SET ""TotalAmount"" = EXCLUDED.""TotalAmount"", ""UserId"" = EXCLUDED.""UserId""";
+
+		var parameters = new object[]
+		{
+			entity.UserId,
+			entity.CategorieId,
+			entity.Day.Date,
+			entity.TotalAmount
+		};
+
+		var dbContext = (DbContext)Storage;
+		await dbContext.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
+	}
+
+	async Task IDailyExpenseCategorieRepository.UpsertManyAsync(
+		IReadOnlyCollection<DailyExpenseCategorie> entities,
+		CancellationToken cancellationToken)
+	{
+		if (entities is null || entities.Count == 0)
+		{
+			return;
+		}
+
+		foreach (var entity in entities)
+		{
+			var userIdParam = "@p0";
+			var categorieIdParam = "@p1";
+			var dayParam = "@p2";
+			var totalAmountParam = "@p3";
+
+			var sql = $@"
+				INSERT INTO ""DailyExpenseCategorie"" (""UserId"", ""CategorieId"", ""Day"", ""TotalAmount"")
+				VALUES ({userIdParam}, {categorieIdParam}, {dayParam}::date, {totalAmountParam})
+				ON CONFLICT (""CategorieId"", ""Day"")
+				DO UPDATE SET ""TotalAmount"" = EXCLUDED.""TotalAmount"", ""UserId"" = EXCLUDED.""UserId""";
+
+			var parameters = new object[]
+			{
+				entity.UserId,
+				entity.CategorieId,
+				entity.Day.Date,
+				entity.TotalAmount
+			};
+
+			var dbContext = (DbContext)Storage;
+			await dbContext.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
+		}
+	}
 }

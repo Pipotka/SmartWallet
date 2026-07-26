@@ -151,7 +151,6 @@ erDiagram
         Guid accountId FK
         Guid transactionId FK
         decimal amount
-        DateTime createdAt
         DateTime deletedAt "nullable"
     }
 
@@ -185,6 +184,12 @@ erDiagram
         string replacedByToken "nullable"
     }
 ```
+## Балансы конечных точек и агрегат ежедневных трат
+
+- **Баланс хранилищ (`TransactionEndpoint.IsStorage = true`)** рассчитывается **за всё время** — сумма всех постингов по счёту.
+- **Баланс категорий трат (`TransactionEndpoint.IsStorage = false`)** рассчитывается **за текущий месяц** (с 1-го числа по `UtcNow`) — это бизнес-правило ограничивает перерасчёт рамками месяца.
+- При удалении транзакции балансы эндпоинтов получаются **двумя запросами к БД**: один для хранилищ (`GetStorageBalancesAsync`), второй для категорий (`GetCategoryBalancesAsync`). Это вызвано разными временными диапазонами (всё время vs текущий месяц) — единый запрос с общим диапазоном неприменим.
+- Агрегат `DailyExpenseCategorie` (составной ключ `CategorieId + Day`) пересчитывается фоновой задачей `Hangfire` (`IDailyExpenseCategorieRecalculationService`) после создания/удаления транзакции. Запись пишется в БД атомарно через `UPSERT` (`INSERT … ON CONFLICT DO UPDATE`), без предварительного чтения строки. При удалении транзакции пакет затронутых категорий пересчитывается одним вызовом `RecalculateManyAsync`.
 ## Возможные улучшения
  - Добавить под области трат, которые находятся в областях трат, а также могут иметь в себе свои под области;
  - Добавить интеграцию с банками;
