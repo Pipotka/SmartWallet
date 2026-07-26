@@ -27,20 +27,24 @@ public class ServiceModelMapper : Profile
 		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
 		CreateMap<CreateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
 
-		CreateMap<Transaction, TransactionModel>(MemberList.Destination);
+		CreateMap<Transaction, TransactionModel>(MemberList.Destination)
+			.ForMember(dest => dest.Postings, opt => opt.MapFrom(src => src.Postings));
+		CreateMap<Posting, PostingModel>(MemberList.Destination);
+		CreateMap<PostingData, PostingModel>(MemberList.Destination);
 		CreateMap<CreateTransactionModel, Transaction>(MemberList.Destination)
 			.ForMember(dest => dest.Id, opt => opt.Ignore())
 			.ForMember(dest => dest.Type, opt => opt.Ignore())
 			.ForMember(dest => dest.User, opt => opt.Ignore())
-			.ForMember(dest => dest.SourceAccount, opt => opt.Ignore())
-			.ForMember(dest => dest.DestinationAccount, opt => opt.Ignore())
 			.ForMember(dest => dest.MadeAt, opt => opt.Ignore())
-			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+			.ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+			.ForMember(dest => dest.Postings, opt => opt.Ignore());
 
 		CreateMap<CategorySpendingItem, CategorySpendingItemModel>(MemberList.Destination);
 		CreateMap<CategorizedSpendingResult, SpendingCategoryModel>(MemberList.Destination);
 
+		CreateMap<TransactionData, TransactionModel>(MemberList.Destination)
+			.ForMember(dest => dest.Postings, opt => opt.MapFrom(src => src.Postings));
 		CreateMap<TransactionQueryModel, TransactionQuery>(MemberList.Destination);
-		CreateMap<PagedResult<Transaction>, PagedResultModel<TransactionModel>>(MemberList.Destination);
+		CreateMap<PagedResult<TransactionData>, PagedResultModel<TransactionModel>>(MemberList.Destination);
 	}
 }

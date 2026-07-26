@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Service.Exceptions\Service.Exceptions.csproj" />
     <ProjectReference Include="..\Service.Infrastructure.Contracts\Service.Infrastructure.Contracts.csproj" />
     <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
+    <ProjectReference Include="..\BackgroundTaskSystem\BackgroundTaskSystem.Contracts\BackgroundTaskSystem.Contracts.csproj" />
     <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
     <ProjectReference Include="..\SmartWallet.Options\SmartWallet.Options.csproj" />
   </ItemGroup>

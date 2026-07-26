@@ -22,22 +22,71 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.DailyExpenseCategorie", b =>
+                {
+                    b.Property<Guid>("CategorieId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Day")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CategorieId", "Day");
+
+                    b.HasIndex("UserId", "Day", "CategorieId", "TotalAmount")
+                        .HasDatabaseName("IX_DailyExpenseCategorie_UserId_Day_Covering");
+
+                    b.ToTable("DailyExpenseCategorie", (string)null);
+                });
+
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.Posting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("Posting", (string)null);
+                });
+
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReplacedByToken")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("RevokedAt")
+                    b.Property<DateTimeOffset?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Token")
@@ -63,20 +112,11 @@ namespace Nasurino.SmartWallet.Context.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
-
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("DestinationAccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("MadeAt")
+                    b.Property<DateTimeOffset>("MadeAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("SourceAccountId")
-                        .HasColumnType("uuid");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -85,10 +125,6 @@ namespace Nasurino.SmartWallet.Context.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DestinationAccountId");
-
-                    b.HasIndex("SourceAccountId");
 
                     b.HasIndex("UserId");
 
@@ -101,14 +137,14 @@ namespace Nasurino.SmartWallet.Context.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsStorage")
                         .HasColumnType("boolean");
 
-                    b.Property<double?>("Limitation")
-                        .HasColumnType("double precision");
+                    b.Property<decimal?>("Limitation")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -117,8 +153,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
@@ -133,7 +169,7 @@ namespace Nasurino.SmartWallet.Context.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
@@ -161,6 +197,44 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.ToTable("User", (string)null);
                 });
 
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.DailyExpenseCategorie", b =>
+                {
+                    b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "Category")
+                        .WithMany("DailyExpenseCategories")
+                        .HasForeignKey("CategorieId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Nasurino.SmartWallet.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.Posting", b =>
+                {
+                    b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "Account")
+                        .WithMany("Postings")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Nasurino.SmartWallet.Entities.Transaction", "Transaction")
+                        .WithMany("Postings")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Nasurino.SmartWallet.Entities.User", "User")
@@ -174,25 +248,11 @@ namespace Nasurino.SmartWallet.Context.Migrations
 
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.Transaction", b =>
                 {
-                    b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "DestinationAccount")
-                        .WithMany("IncomingTransactions")
-                        .HasForeignKey("DestinationAccountId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("Nasurino.SmartWallet.Entities.TransactionEndpoint", "SourceAccount")
-                        .WithMany("OutgoingTransactions")
-                        .HasForeignKey("SourceAccountId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("Nasurino.SmartWallet.Entities.User", "User")
                         .WithMany("Transactions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("DestinationAccount");
-
-                    b.Navigation("SourceAccount");
 
                     b.Navigation("User");
                 });
@@ -208,11 +268,16 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Nasurino.SmartWallet.Entities.Transaction", b =>
+                {
+                    b.Navigation("Postings");
+                });
+
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.TransactionEndpoint", b =>
                 {
-                    b.Navigation("IncomingTransactions");
+                    b.Navigation("DailyExpenseCategories");
 
-                    b.Navigation("OutgoingTransactions");
+                    b.Navigation("Postings");
                 });
 
             modelBuilder.Entity("Nasurino.SmartWallet.Entities.User", b =>

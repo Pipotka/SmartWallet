@@ -32,6 +32,8 @@
     <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
     <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
+    <ProjectReference Include="..\BackgroundTaskSystem\BackgroundTaskSystem.Hangfire\BackgroundTaskSystem.Hangfire.csproj" />
+    <ProjectReference Include="..\BackgroundTaskSystem\BackgroundTaskSystem.Contracts\BackgroundTaskSystem.Contracts.csproj" />
     <ProjectReference Include="..\SmartWallet.Options\SmartWallet.Options.csproj" />
   </ItemGroup>
 </Project>

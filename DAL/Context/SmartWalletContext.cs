@@ -11,11 +11,6 @@ namespace Nasurino.SmartWallet.Context;
 public class SmartWalletContext : DbContext, IDataStorageContext
 {
 	/// <summary>
-	/// Рефреш-токены
-	/// </summary>
-	public DbSet<RefreshToken> RefreshTokens { get; set; }
-
-	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletContext"/>
 	/// </summary>
 	public SmartWalletContext(DbContextOptions<SmartWalletContext> options)

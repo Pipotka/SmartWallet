@@ -23,25 +23,25 @@ public class TransactionEndpoint : SmartDeletedEntity
 	/// <summary>
 	/// Ограничение трат
 	/// </summary>
-	public double? Limitation { get; set; }
-	
+	public decimal? Limitation { get; set; }
+
 	/// <summary>
 	/// Флаг указывающий, что конечная точка является денежным хранилищем
 	/// </summary>
 	public bool IsStorage { get; set; }
-	
+
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public decimal Value { get; set; }
 
 	/// <summary>
-	/// Транзакции, где текущая точка выступает как источник средств
+	/// Записи движения средств по текущей точке
 	/// </summary>
-	public ICollection<Transaction> OutgoingTransactions { get; set; } = new List<Transaction>();
+	public ICollection<Posting> Postings { get; set; } = new List<Posting>();
 
 	/// <summary>
-	/// Транзакции, где текущая точка выступает как получатель средств
+	/// Агрегаты дневных трат по текущей области трат
 	/// </summary>
-	public ICollection<Transaction> IncomingTransactions { get; set; } = new List<Transaction>();
+	public ICollection<DailyExpenseCategorie> DailyExpenseCategories { get; set; } = new List<DailyExpenseCategorie>();
 }

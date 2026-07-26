@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 
 namespace Nasurino.SmartWallet.Services.Validators.CreateModelValidators;
@@ -19,9 +18,9 @@ public class CreateTransactionModelValidator : AbstractValidator<CreateTransacti
 			.WithMessage($"По крайней мере одно из свойств ({nameof(CreateTransactionModel.SourceAccountId)} или {nameof(CreateTransactionModel.DestinationAccountId)}) должно иметь значение.");
 		RuleFor(x => x.DestinationAccountId)
 			.NotEqual(x => x.SourceAccountId)
-			.WithMessage($"Нельзя создать {nameof(Transaction)}, где {nameof(Transaction.SourceAccountId)} и {nameof(Transaction.DestinationAccountId)} имеют одинаковые значения");
+			.WithMessage($"Нельзя создать {nameof(CreateTransactionModel)}, где {nameof(CreateTransactionModel.SourceAccountId)} и {nameof(CreateTransactionModel.DestinationAccountId)} имеют одинаковые значения");
 		RuleFor(x => x.Amount)
-			.GreaterThan(0.0)
+			.GreaterThan(0.0m)
 			.WithMessage("Значение должно быть больше нуля");
 	}
 }

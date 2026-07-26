@@ -12,8 +12,8 @@ public sealed class CategoryComparativeAnalysisModel
     public string CategoryName { get; set; } = string.Empty;
 
     /// <summary>Сумма во втором периоде</summary>
-    public double SecondPeriodAmount { get; set; }
+    public decimal SecondPeriodAmount { get; set; }
 
     /// <summary>Сумма в первом периоде</summary>
-    public double FirstPeriodAmount { get; set; }
+    public decimal FirstPeriodAmount { get; set; }
 }

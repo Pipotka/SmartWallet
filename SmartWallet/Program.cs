@@ -22,6 +22,8 @@ using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Services.Contracts;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
+using Nasurino.SmartWallet.BackgroundTaskSystem.Hangfire;
 using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 using Nasurino.SmartWallet.Services.BackgroundJobs;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -153,6 +155,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITransactionEndpointRepository, TransactionEndpointRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IDailyExpenseCategorieRepository, DailyExpenseCategorieRepository>();
+builder.Services.AddScoped<IBackgroundTaskSystemProvider, HangfireBackgroundTaskSystemProvider>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 builder.Services.AddScoped<ITransactionEndpointService, TransactionEndpointService>();
@@ -165,6 +169,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddScoped<ISmartWalletValidateService, SmartWalletValidateService>();
 builder.Services.AddScoped<IClearCategoryCacheService, ClearCategoryCacheService>();
+builder.Services.AddScoped<IDailyExpenseCategorieRecalculationService, DailyExpenseCategorieRecalculationService>();
 #endregion
 
 builder.Services.AddHttpContextAccessor();

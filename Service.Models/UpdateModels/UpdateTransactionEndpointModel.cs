@@ -23,5 +23,5 @@ public class UpdateTransactionEndpointModel
 	/// <summary>
 	/// Ограничение трат
 	/// </summary>
-	public double? Limitation { get; set; }
+	public decimal? Limitation { get; set; }
 }

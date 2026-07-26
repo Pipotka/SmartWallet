@@ -49,7 +49,7 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="userId">Идентификатор пользователя</param>
 	/// <param name="query">Параметры запроса с пагинацией и фильтрацией</param>
 	/// <param name="cancellationToken">Токен отмены</param>
-	Task<PagedResult<Transaction>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
+	Task<PagedResult<TransactionData>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Возвращает список транзакций пользователя по типу транзакции, созданных в указанный временной диапазон
@@ -70,39 +70,29 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	/// <param name="accountId">Идентификатор аккаунта</param>
 	/// <param name="startDate">Начало временного диапазона</param>
 	/// <param name="endDate">Конец временного диапазона</param>
-	Task<double> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
+	Task<decimal> GetBalanceByAccountIdAndDateRangeAsync(Guid accountId, CancellationToken cancellationToken,
 		DateTimeOffset startDate = default,
 		DateTimeOffset endDate = default);
-	
+
 	/// <summary>
-	/// Возвращает категоризированные расходы пользователя за указанный период
+	/// Возвращает балансы (суммы постингов) для коллекции хранилищ за всё время
+	/// единственным запросом к БД.
 	/// </summary>
-	/// <param name="userId">Идентификатор пользователя</param>
-	/// <param name="startDate">Начало периода (включительно)</param>
-	/// <param name="endDate">Конец периода (исключительно)</param>
+	/// <param name="storageIds">Коллекция идентификаторов хранилищ</param>
 	/// <param name="cancellationToken">Токен отмены</param>
-	/// <returns>
-	/// Результат категоризации трат, содержащий общую сумму и коллекцию категорий с суммами расходов,
-	/// отсортированную по убыванию суммы. Категории без трат за период не возвращаются.
-	/// </returns>
-	Task<CategorizedSpendingResult> GetCategorizedSpendingByUserIdAndDateRangeAsync(
-		Guid userId, 
-		DateTimeOffset startDate, 
-		DateTimeOffset endDate, 
+	/// <returns>Словарь: идентификатор хранилища -> баланс</returns>
+	Task<Dictionary<Guid, decimal>> GetStorageBalancesAsync(
+		IReadOnlyCollection<Guid> storageIds,
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Возвращает данные линейного графика трат по категориям за серию периодов
+	/// Возвращает балансы (суммы постингов) для коллекции категорий трат за текущий месяц
+	/// единственным запросом к БД.
 	/// </summary>
-	/// <param name="userId">Идентификатор пользователя</param>
-	/// <param name="periods">Коллекция временных диапазонов с метками</param>
+	/// <param name="categoryIds">Коллекция идентификаторов категорий трат</param>
 	/// <param name="cancellationToken">Токен отмены</param>
-	/// <returns>
-	/// Результат, содержащий метки периодов и категории с суммами трат за каждый период.
-	/// Категории без трат в конкретном периоде не содержат элемента для этого периода.
-	/// </returns>
-	Task<SpendingTrendLineResult> GetSpendingTrendLineAsync(
-		Guid userId,
-		IReadOnlyCollection<DateRangeInfo> periods,
+	/// <returns>Словарь: идентификатор категории -> баланс</returns>
+	Task<Dictionary<Guid, decimal>> GetCategoryBalancesAsync(
+		IReadOnlyCollection<Guid> categoryIds,
 		CancellationToken cancellationToken);
 }

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Nasurino.SmartWallet.BackgroundTaskSystem.Hangfire</RootNamespace>
+    <AssemblyName>SmartWallet.BackgroundTaskSystem.Hangfire</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.Core" />
+    <PackageReference Include="Hangfire.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundTaskSystem.Contracts\BackgroundTaskSystem.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

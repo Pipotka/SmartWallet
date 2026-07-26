@@ -35,4 +35,19 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.Where(x => x.IsStorage == false && x.Value > 0)
 			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, 0));
+
+	async Task<List<TransactionEndpoint>> ITransactionEndpointRepository.GetListByIdsAndUserIdAsync(
+		Guid userId,
+		IReadOnlyCollection<Guid> ids,
+		CancellationToken cancellationToken)
+	{
+		if (ids is null || ids.Count == 0)
+		{
+			return new List<TransactionEndpoint>();
+		}
+
+		return await Storage.Read<TransactionEndpoint>().NotDeleted()
+			.Where(x => x.UserId == userId && ids.Contains(x.Id))
+			.ToListAsync(cancellationToken);
+	}
 }

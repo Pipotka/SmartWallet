@@ -11,11 +11,17 @@
 		/// <inheritdoc cref="ITransactionRepository"/>
 		ITransactionRepository TransactionRepository { get; }
 
+		/// <inheritdoc cref="IDailyExpenseCategorieRepository"/>
+		IDailyExpenseCategorieRepository DailyExpenseCategorieRepository { get; }
+
 		/// <inheritdoc cref="IUserRepository"/>
 		IUserRepository UserRepository { get; }
 
 		/// <inheritdoc cref="IRefreshTokenRepository"/>
 		IRefreshTokenRepository RefreshTokenRepository { get; }
+
+		/// <inheritdoc cref="IPostingRepository"/>
+		IPostingRepository PostingRepository { get; }
 
 		/// <summary>
 		/// Сохраняет изменения

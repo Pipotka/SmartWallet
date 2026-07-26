@@ -23,5 +23,5 @@ public sealed class SpendingTrendPeriodItem
     /// <summary>
     /// Сумма трат по категории за период
     /// </summary>
-    public double TotalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
 }

@@ -33,6 +33,7 @@ public class ApiModelMapper : Profile
 
 		CreateMap<ChangePasswordApiModel, ChangePasswordModel>(MemberList.Source);
 
+		CreateMap<PostingModel, PostingApiModel>(MemberList.Destination);
 		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
 		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());

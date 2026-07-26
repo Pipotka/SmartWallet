@@ -18,12 +18,12 @@ public class TransactionEndpointApiModel
 	/// <summary>
 	/// Значение
 	/// </summary>
-	public double Value { get; set; } = 0.0;
+	public decimal Value { get; set; } = 0.0m;
 
 	/// <summary>
 	/// Ограничение трат
 	/// </summary>
-	public double? Limitation { get; set; }
+	public decimal? Limitation { get; set; }
 	
 	/// <summary>
 	/// Флаг указывающий, что конечная точка является денежным хранилищем

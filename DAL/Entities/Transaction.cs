@@ -16,37 +16,18 @@ public sealed class Transaction : SmartDeletedEntity
 	public User? User { get; set; }
 
 	/// <summary>
-	/// Идентификатор аккаунта-источника 
-	/// </summary>
-	public Guid? SourceAccountId { get; set; }
-
-	/// <summary>
-	/// Навигационное свойство
-	/// </summary>
-	public TransactionEndpoint? SourceAccount { get; set; }
-
-	/// <summary>
-	/// Идентификатор аккаунта назначения
-	/// </summary>
-	public Guid? DestinationAccountId { get; set; }
-
-	/// <summary>
-	/// Навигационное свойство
-	/// </summary>
-	public TransactionEndpoint? DestinationAccount { get; set; }
-	
-	/// <summary>
 	/// Тип транзакции
 	/// </summary>
 	public TransactionType Type { get; set; }
 
 	/// <summary>
-	/// Значение
-	/// </summary>
-	public double Amount { get; set; } = 0.0;
-
-	/// <summary>
 	/// Дата и время создания
 	/// </summary>
 	public DateTimeOffset MadeAt { get; set; }
+
+	/// <summary>
+	/// Записи движения средств по счетам, входящие в транзакцию.
+	/// Сумма <see cref="Posting.Amount"/> всех постингов транзакции равна нулю.
+	/// </summary>
+	public ICollection<Posting> Postings { get; set; } = new List<Posting>();
 }

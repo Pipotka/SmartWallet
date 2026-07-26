@@ -8,7 +8,7 @@ public sealed class CategorizedSpendingResult
 		/// <summary>
 		/// Общая сумма всех трат по категориям
 		/// </summary>
-		public double TotalSpending { get; set; }
+		public decimal TotalSpending { get; set; }
 	
 		/// <summary>
 		/// Категории с суммами трат

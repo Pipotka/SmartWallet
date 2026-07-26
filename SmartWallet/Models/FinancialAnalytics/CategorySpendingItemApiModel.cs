@@ -18,5 +18,5 @@ public sealed class CategorySpendingItemApiModel
     /// <summary>
     /// Сумма трат по категории
     /// </summary>
-    public double TotalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
 }

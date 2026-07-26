@@ -6,5 +6,5 @@
 /// <param name="TotalSpending">Сумма трат</param>
 /// <param name="Categories">Категоризированные траты</param>
 public record CategorizingSpendingApiResponse(
-    double TotalSpending,
+    decimal TotalSpending,
     IReadOnlyCollection<CategorySpendingItemApiModel> Categories);
