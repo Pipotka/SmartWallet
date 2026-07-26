@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nasurino.SmartWallet.Context.Migrations
 {
     [DbContext(typeof(SmartWalletContext))]
-    [Migration("20260726123629_DbSchemaUpdate")]
+    [Migration("20260726154746_DbSchemaUpdate")]
     partial class DbSchemaUpdate
     {
         /// <inheritdoc />
