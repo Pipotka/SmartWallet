@@ -7,8 +7,8 @@ services:
             - db-data:/var/lib/postgresql/data
         environment:
             POSTGRES_DB: SmartWalletDb
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: mysecretpassword
+            POSTGRES_USER: ${API_DB_USER}
+            POSTGRES_PASSWORD: ${API_DB_PASSWORD}
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s      
@@ -25,8 +25,8 @@ services:
             - hangfire-db-data:/var/lib/postgresql/data
         environment:
             POSTGRES_DB: SmartWalletHangfireDb
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: mysecretpassword
+            POSTGRES_USER: ${HANGFIRE_DB_USER}
+            POSTGRES_PASSWORD: ${HANGFIRE_DB_PASSWORD}
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s      
@@ -37,30 +37,30 @@ services:
 
     smartwallet-migrations:
         image: nasurino/smart-wallet:latest
+        environment:
+            ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT}
         command: 
             - "-m"
-            - "Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=postgres;Password=mysecretpassword"
+            - "Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=${API_DB_USER};Password=${API_DB_PASSWORD}"
         depends_on:
             smartwallet-db: { condition: service_healthy }
         networks: [app-net]
         restart: "no"
 
     smartwallet-api:
-        ports:
-            - "8443:443"
         image: nasurino/smart-wallet:latest
         container_name: smartwallet-api
+        env_file:
+            - api_allowed_origins.env
         depends_on:
             smartwallet-migrations: { condition: service_completed_successfully }
             smartwallet-hangfire-db: { condition: service_healthy }
         environment:
-            ASPNETCORE_ENVIRONMENT: Production
-            ConnectionStrings__SmartWalletConnectionString: Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=postgres;Password=mysecretpassword
-            ConnectionStrings__HangfireConnection: Host=smartwallet-hangfire-db;Port=5432;Database=SmartWalletHangfireDb;Username=postgres;Password=mysecretpassword
-        volumes:
-            - ./certs:/certs:ro
+            ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT}
+            ConnectionStrings__SmartWalletConnectionString: Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=${API_DB_USER};Password=${API_DB_PASSWORD}
+            ConnectionStrings__HangfireConnection: Host=smartwallet-hangfire-db;Port=5432;Database=SmartWalletHangfireDb;Username=${HANGFIRE_DB_USER};Password=${HANGFIRE_DB_PASSWORD}
         healthcheck:
-            test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/80'"]
+            test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
             interval: 30s
             timeout: 5s
             retries: 3
@@ -72,7 +72,7 @@ services:
         image: nasurino/smart-wallet-client:latest
         container_name: smartwallet-client
         environment:
-            API_BASE_URL: ""
+            API_BASE_URL: ${API_BASE_URL}
         healthcheck:
             test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz || exit 1"]
             interval: 30s
