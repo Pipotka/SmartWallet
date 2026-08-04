@@ -6,7 +6,6 @@
 	  <AssemblyName>SmartWallet</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>f40677a5-eea0-4e17-91ae-3d81d9d7c502</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
