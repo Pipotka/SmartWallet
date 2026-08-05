@@ -59,6 +59,9 @@ services:
             ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT}
             ConnectionStrings__SmartWalletConnectionString: Host=smartwallet-db;Port=5432;Database=SmartWalletDb;Username=${API_DB_USER};Password=${API_DB_PASSWORD}
             ConnectionStrings__HangfireConnection: Host=smartwallet-hangfire-db;Port=5432;Database=SmartWalletHangfireDb;Username=${HANGFIRE_DB_USER};Password=${HANGFIRE_DB_PASSWORD}
+            ApiSettings__JwtSettings__Key: ${API_JWT_KEY}
+            ApiSettings__JwtSettings__ExpiresMinutes: ${API_JWT_EXPIRES_MINUTES}
+            ApiSettings__JwtSettings__RefreshExpiresDays: ${API_JWT_REFRESH_EXPIRES_DAYS}
         healthcheck:
             test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
             interval: 30s
