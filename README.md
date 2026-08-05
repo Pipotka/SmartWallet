@@ -138,15 +138,17 @@ smartwallet-db (healthy)
 
 ##### 6. Проверить работоспособность
 
+> **Примечание для пользователей Windows PowerShell:** далее используется `curl.exe` вместо `curl`. PowerShell сопоставляет `curl` с `Invoke-WebRequest`, который не поддерживает флаги вроде `-k`. Использование `curl.exe` вызывает настоящий curl (поставляется с Windows 10+). На Linux/macOS `curl` и `curl.exe` эквивалентны.
+
 ```bash
 # Статус всех контейнеров
 docker compose ps
 
 # Health check API
-curl -k https://localhost/api/health
+curl.exe -k https://localhost/api/health
 
 # Фронтенд
-curl -k https://localhost/
+curl.exe -k https://localhost/
 ```
 
 ##### 7. Остановка сервисов
@@ -271,7 +273,7 @@ API запустится в режиме `Development` (по умолчанию 
 
 ```bash
 # Health check
-curl http://localhost:5079/health
+curl.exe http://localhost:5079/health
 
 # Swagger UI
 # Откройте в браузере: http://localhost:5079/swagger
