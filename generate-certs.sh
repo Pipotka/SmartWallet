@@ -13,7 +13,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CERT_DIR="${SCRIPT_DIR}/certs/nginx"
 KEY_FILE="${CERT_DIR}/server.key"
 CRT_FILE="${CERT_DIR}/server.crt"
-GITIGNORE_FILE="${CERT_DIR}/.gitignore"
 
 # ---------------------------------------------------------------------------
 # Certificate parameters
@@ -39,21 +38,6 @@ fi
 # Create output directory
 # ---------------------------------------------------------------------------
 mkdir -p "${CERT_DIR}"
-
-# ---------------------------------------------------------------------------
-# Generate .gitignore (always refresh to ensure it is present)
-# ---------------------------------------------------------------------------
-cat > "${GITIGNORE_FILE}" <<'EOF'
-# Auto-generated SSL certificate files — do not commit
-*.key
-*.crt
-*.pem
-*.pfx
-*.csr
-*.srl
-EOF
-
-echo "[INFO] .gitignore written to ${GITIGNORE_FILE}"
 
 # ---------------------------------------------------------------------------
 # Generate self-signed certificate with SAN via a temporary OpenSSL config

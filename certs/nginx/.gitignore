@@ -1,7 +1,0 @@
-# Auto-generated SSL certificate files — do not commit
-*.key
-*.crt
-*.pem
-*.pfx
-*.csr
-*.srl
