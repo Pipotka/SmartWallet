@@ -62,6 +62,7 @@ services:
             ApiSettings__JwtSettings__Key: ${API_JWT_KEY}
             ApiSettings__JwtSettings__ExpiresMinutes: ${API_JWT_EXPIRES_MINUTES}
             ApiSettings__JwtSettings__RefreshExpiresDays: ${API_JWT_REFRESH_EXPIRES_DAYS}
+            ApiSettings__BCryptSettings__WorkFactor: ${API_BCRYPT_WORK_FACTOR}
         healthcheck:
             test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
             interval: 30s
