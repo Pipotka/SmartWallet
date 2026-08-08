@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11822.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartWallet", "SmartWallet\SmartWallet.csproj", "{BBC65908-14DD-409C-97EA-949D45F24D3C}"
 EndProject
@@ -13,13 +13,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entity.Configuration", "DAL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository", "DAL\Context.Repository\Context.Repository.csproj", "{1FDE51CB-BADA-4EA1-A5DC-89C6F6DC3FB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{BC62F774-B856-4623-852D-F91ED4E23B4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services\Services.csproj", "{BC62F774-B856-4623-852D-F91ED4E23B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Models", "Service.Models\Service.Models.csproj", "{061879E0-67E3-4703-A1C2-E87E3AB7FB28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Models", "Services\Services.Models\Services.Models.csproj", "{061879E0-67E3-4703-A1C2-E87E3AB7FB28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Infrastructure", "Services.Infrastructure\Service.Infrastructure.csproj", "{2F461BA1-0DF8-4F27-B618-B4904DC43032}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Infrastructure", "Services\Services.Infrastructure\Services.Infrastructure.csproj", "{2F461BA1-0DF8-4F27-B618-B4904DC43032}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Exceptions", "Service.Exceptions\Service.Exceptions.csproj", "{ADD928B1-B60F-42E3-9284-09817E58212E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Exceptions", "Services\Services.Exceptions\Services.Exceptions.csproj", "{ADD928B1-B60F-42E3-9284-09817E58212E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartWallet.Options", "SmartWallet.Options\SmartWallet.Options.csproj", "{2A4BD7F0-43F7-4F04-A771-08897D6EF99C}"
 EndProject
@@ -33,19 +33,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Contracts", "DAL\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Contracts", "DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj", "{E031FB5A-588F-43E5-BEA8-47AD634C08CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Infrastructure.Contracts", "Service.Infrastructure.Contracts\Service.Infrastructure.Contracts.csproj", "{35641AD9-B692-4C2F-9CA6-743A6BB7A3BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Infrastructure.Contracts", "Services\Services.Infrastructure.Contracts\Services.Infrastructure.Contracts.csproj", "{35641AD9-B692-4C2F-9CA6-743A6BB7A3BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Contracts", "Services.Contracts\Services.Contracts.csproj", "{9FD150E3-2C5A-4F72-AE9D-26AE16EC91B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Contracts", "Services\Services.Contracts\Services.Contracts.csproj", "{9FD150E3-2C5A-4F72-AE9D-26AE16EC91B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Tests", "Service.Tests\Service.Tests.csproj", "{727A7AB6-3D45-4266-9721-CB0F94599BB8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests.Services.Infrastructure", "UnitTests.Services.Infrastructure\UnitTests.Services.Infrastructure.csproj", "{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Tests", "Services\Services.Tests\Services.Tests.csproj", "{727A7AB6-3D45-4266-9721-CB0F94599BB8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Tests", "Context.Repository.Tests\Context.Repository.Tests.csproj", "{41C49892-3D8B-49CA-9975-9903FCD0D203}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Tests", "DAL\Context.Tests\Context.Tests.csproj", "{8CE4F429-24B5-424B-AF87-F440D7F83AF7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMapperTests", "AutoMapperTests\AutoMapperTests.csproj", "{389AAB71-D49A-454E-93B3-83B083DCD34E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{400909BB-AE2E-4274-914E-A7E893F506AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.UnitTests.Infrastructure", "Services\Services.UnitTests.Infrastructure\Services.UnitTests.Infrastructure.csproj", "{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "DAL\Entities\Entities.csproj", "{9E1E64C8-1D19-9F30-E336-8CDC346F06B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,10 +121,6 @@ Global
 		{727A7AB6-3D45-4266-9721-CB0F94599BB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{727A7AB6-3D45-4266-9721-CB0F94599BB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{727A7AB6-3D45-4266-9721-CB0F94599BB8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2A21D9D6-3A94-410B-AF15-3CE022B5AAB5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{41C49892-3D8B-49CA-9975-9903FCD0D203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{41C49892-3D8B-49CA-9975-9903FCD0D203}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C49892-3D8B-49CA-9975-9903FCD0D203}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -133,6 +133,14 @@ Global
 		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{389AAB71-D49A-454E-93B3-83B083DCD34E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E1E64C8-1D19-9F30-E336-8CDC346F06B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E1E64C8-1D19-9F30-E336-8CDC346F06B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E1E64C8-1D19-9F30-E336-8CDC346F06B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E1E64C8-1D19-9F30-E336-8CDC346F06B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,11 +149,23 @@ Global
 		{15411B5B-6B7C-4936-86AA-684A7A16B997} = {D7189091-B730-4BDB-A870-345CF1E6C302}
 		{F8B38BEB-3323-403F-9BC4-A774D1B6E9E5} = {D7189091-B730-4BDB-A870-345CF1E6C302}
 		{1FDE51CB-BADA-4EA1-A5DC-89C6F6DC3FB3} = {D7189091-B730-4BDB-A870-345CF1E6C302}
+		{BC62F774-B856-4623-852D-F91ED4E23B4E} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{061879E0-67E3-4703-A1C2-E87E3AB7FB28} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{2F461BA1-0DF8-4F27-B618-B4904DC43032} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{ADD928B1-B60F-42E3-9284-09817E58212E} = {400909BB-AE2E-4274-914E-A7E893F506AD}
 		{A3278167-7885-47A2-91DA-B1847FED9CD2} = {7162B905-6F26-4E0A-84C2-1CBFA9FF7EAB}
 		{6ABD411B-166B-47E0-AABD-6C486D74AB96} = {7162B905-6F26-4E0A-84C2-1CBFA9FF7EAB}
 		{E337990E-A0C5-4134-8AD3-30C2825FB74E} = {D7189091-B730-4BDB-A870-345CF1E6C302}
 		{E031FB5A-588F-43E5-BEA8-47AD634C08CE} = {D7189091-B730-4BDB-A870-345CF1E6C302}
+		{35641AD9-B692-4C2F-9CA6-743A6BB7A3BA} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{9FD150E3-2C5A-4F72-AE9D-26AE16EC91B3} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{727A7AB6-3D45-4266-9721-CB0F94599BB8} = {400909BB-AE2E-4274-914E-A7E893F506AD}
 		{41C49892-3D8B-49CA-9975-9903FCD0D203} = {D7189091-B730-4BDB-A870-345CF1E6C302}
 		{8CE4F429-24B5-424B-AF87-F440D7F83AF7} = {D7189091-B730-4BDB-A870-345CF1E6C302}
+		{74EAFDE5-6DFF-7E52-46C9-562CB44E9DB0} = {400909BB-AE2E-4274-914E-A7E893F506AD}
+		{9E1E64C8-1D19-9F30-E336-8CDC346F06B4} = {D7189091-B730-4BDB-A870-345CF1E6C302}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3998D645-6181-40EC-AA88-CD1C015D4D50}
 	EndGlobalSection
 EndGlobal

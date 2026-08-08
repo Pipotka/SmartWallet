@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models.CashVault;
-using Nasurino.SmartWallet.Service.Models.CreateModels;
-using Nasurino.SmartWallet.Service.Models.DeleteModels;
-using Nasurino.SmartWallet.Service.Models.UpdateModels;
-using Services.Contracts;
+using Nasurino.SmartWallet.Services.Contracts;
+using Nasurino.SmartWallet.Services.Models.CreateModels;
+using Nasurino.SmartWallet.Services.Models.DeleteModels;
+using Nasurino.SmartWallet.Services.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.Controllers;
 

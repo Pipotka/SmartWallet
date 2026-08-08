@@ -1,0 +1,27 @@
+﻿namespace Nasurino.SmartWallet.Services.Models.UpdateModels;
+
+/// <summary>
+/// Модель обновления конечной точки транзакции
+/// </summary>
+public class UpdateTransactionEndpointModel
+{
+	/// <summary>
+	/// Идентификатор
+	/// </summary>
+	public Guid Id { get; set; }
+
+	/// <summary>
+	/// Идентификатор пользователя
+	/// </summary>
+	public Guid UserId { get; set; }
+
+	/// <summary>
+	/// Название
+	/// </summary>
+	public string Name { get; set; } = string.Empty;
+	
+	/// <summary>
+	/// Ограничение трат
+	/// </summary>
+	public double? Limitation { get; set; }
+}

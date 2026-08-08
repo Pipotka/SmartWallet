@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	  <RootNamespace>Nasurino.SmartWallet.Services.Models</RootNamespace>
+	  <AssemblyName>SmartWallet.Services.Models</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DAL\Entities\Entities.csproj" />
+  </ItemGroup>
+
+</Project>

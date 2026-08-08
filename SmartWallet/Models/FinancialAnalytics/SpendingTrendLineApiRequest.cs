@@ -1,4 +1,4 @@
-using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Services.Models.Models.FinancialAnalytics;
 
 namespace Nasurino.SmartWallet.Models.FinancialAnalytics;
 

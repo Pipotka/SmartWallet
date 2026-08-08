@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	  <RootNamespace>Nasurino.SmartWallet.Services</RootNamespace>
+	  <AssemblyName>SmartWallet.Services</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj" />
+    <ProjectReference Include="..\..\SmartWallet.Options\SmartWallet.Options.csproj" />
+    <ProjectReference Include="..\Services.Exceptions\Services.Exceptions.csproj" />
+    <ProjectReference Include="..\Services.Infrastructure.Contracts\Services.Infrastructure.Contracts.csproj" />
+    <ProjectReference Include="..\Services.Models\Services.Models.csproj" />
+    <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

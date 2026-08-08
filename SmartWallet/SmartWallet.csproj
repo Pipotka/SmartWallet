@@ -28,9 +28,10 @@
     <ProjectReference Include="..\Common\Common.Infrastructure\Common.Infrastructure.csproj" />
     <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
     <ProjectReference Include="..\DAL\Context\Context.csproj" />
-    <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
-    <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
-    <ProjectReference Include="..\Services\Services.csproj" />
+    <ProjectReference Include="..\Services\Services.Contracts\Services.Contracts.csproj" />
+    <ProjectReference Include="..\Services\Services.Infrastructure.Contracts\Services.Infrastructure.Contracts.csproj" />
+    <ProjectReference Include="..\Services\Services.Infrastructure\Services.Infrastructure.csproj" />
+    <ProjectReference Include="..\Services\Services\Services.csproj" />
     <ProjectReference Include="..\SmartWallet.Options\SmartWallet.Options.csproj" />
   </ItemGroup>
 </Project>

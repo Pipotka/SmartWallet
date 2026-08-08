@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Nasurino.SmartWallet.Service.Exceptions;
+using Nasurino.SmartWallet.Services.Exceptions;
 
 namespace Nasurino.SmartWallet.Infrastructure;
 

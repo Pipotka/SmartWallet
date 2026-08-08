@@ -19,7 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Services\Services.csproj" />
       <ProjectReference Include="..\SmartWallet\SmartWallet.csproj" />
     </ItemGroup>
 

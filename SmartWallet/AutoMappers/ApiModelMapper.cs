@@ -4,12 +4,12 @@ using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Models.CashVault;
 using Nasurino.SmartWallet.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Models.Transaction;
-using Nasurino.SmartWallet.Service.Models;
-using Nasurino.SmartWallet.Service.Models.CreateModels;
-using Nasurino.SmartWallet.Service.Models.DeleteModels;
-using Nasurino.SmartWallet.Service.Models.Models;
-using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
-using Nasurino.SmartWallet.Service.Models.UpdateModels;
+using Nasurino.SmartWallet.Services.Models;
+using Nasurino.SmartWallet.Services.Models.CreateModels;
+using Nasurino.SmartWallet.Services.Models.DeleteModels;
+using Nasurino.SmartWallet.Services.Models.Models;
+using Nasurino.SmartWallet.Services.Models.Models.FinancialAnalytics;
+using Nasurino.SmartWallet.Services.Models.UpdateModels;
 
 namespace Nasurino.SmartWallet.AutoMappers;
 

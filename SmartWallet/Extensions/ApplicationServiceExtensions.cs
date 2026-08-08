@@ -5,15 +5,14 @@ using Nasurino.SmartWallet.Context;
 using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
-using Nasurino.SmartWallet.Service.Infrastructure;
 using Nasurino.SmartWallet.Services;
 using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.Services.BackgroundJobs;
 using Nasurino.SmartWallet.Services.Contracts;
 using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
+using Nasurino.SmartWallet.Services.Infrastructure;
+using Nasurino.SmartWallet.Services.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Services.Validators;
-using Service.Infrastructure.Contracts;
-using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Extensions;
 

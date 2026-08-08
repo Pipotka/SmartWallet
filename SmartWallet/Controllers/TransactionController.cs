@@ -5,10 +5,10 @@ using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Transaction;
-using Nasurino.SmartWallet.Service.Models;
-using Nasurino.SmartWallet.Service.Models.CreateModels;
-using Nasurino.SmartWallet.Service.Models.DeleteModels;
-using Services.Contracts;
+using Nasurino.SmartWallet.Services.Contracts;
+using Nasurino.SmartWallet.Services.Models;
+using Nasurino.SmartWallet.Services.Models.CreateModels;
+using Nasurino.SmartWallet.Services.Models.DeleteModels;
 
 namespace Nasurino.SmartWallet.Controllers;
 

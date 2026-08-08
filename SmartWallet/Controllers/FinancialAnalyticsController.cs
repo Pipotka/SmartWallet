@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models.FinancialAnalytics;
-using Nasurino.SmartWallet.Service.Models.Models.FinancialAnalytics;
 using Nasurino.SmartWallet.Services.Contracts;
+using Nasurino.SmartWallet.Services.Models.Models.FinancialAnalytics;
 
 namespace Nasurino.SmartWallet.Controllers;
 

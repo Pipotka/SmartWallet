@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Nasurino.SmartWallet.Services.UnitTests.Infrastructure</RootNamespace>
+        <AssemblyName>SmartWallet.Services.UnitTests.Infrastructure</AssemblyName>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentAssertions" />
+      <PackageReference Include="Moq" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Mock\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj" />
+      <ProjectReference Include="..\Services.Exceptions\Services.Exceptions.csproj" />
+    </ItemGroup>
+
+</Project>
