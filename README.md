@@ -90,6 +90,9 @@ API_JWT_KEY=ваш-секретный-ключ-минимум-32-символа
 API_JWT_EXPIRES_MINUTES=20
 API_JWT_REFRESH_EXPIRES_DAYS=7
 
+# BCrypt
+API_BCRYPT_WORK_FACTOR=12
+
 # URL API для фронтенда
 API_BASE_URL=https://localhost:443
 ```
@@ -248,7 +251,7 @@ CREATE DATABASE "SmartWalletHangfireDb";
 **Вариант A -- через EF Core CLI:**
 
 ```bash
-dotnet ef database update --project DAL/Context --startup-project SmartWallet
+dotnet ef database update --project DAL\Context\Context.csproj --startup-project SmartWallet\SmartWallet.csproj
 ```
 
 > EF Core CLI автоматически прочитает строку подключения из конфигурации.
@@ -256,7 +259,7 @@ dotnet ef database update --project DAL/Context --startup-project SmartWallet
 **Вариант B -- через встроенный режим миграций:**
 
 ```bash
-dotnet run --project SmartWallet -- -m "Host=localhost;Port=5432;Database=SmartWalletDb;Username=postgres;Password=postgres"
+dotnet run --project SmartWallet\SmartWallet.csproj -- -m "Host=localhost;Port=5432;Database=SmartWalletDb;Username=postgres;Password=postgres"
 ```
 
 Этот режим применяет миграции и завершает работу приложения.
@@ -264,7 +267,7 @@ dotnet run --project SmartWallet -- -m "Host=localhost;Port=5432;Database=SmartW
 ##### 6. Запустить API
 
 ```bash
-dotnet run --project SmartWallet
+dotnet run --project SmartWallet\SmartWallet.csproj
 ```
 
 API запустится в режиме `Development` (по умолчанию из `launchSettings.json`).
@@ -318,10 +321,10 @@ Host=localhost;Port=5435;Database=SmartWalletDb;Username=postgres;Password=mysec
 dotnet test SmartWallet.sln
 
 # Тесты конкретного проекта
-dotnet test Service.Tests/Service.Tests.csproj
-dotnet test AutoMapperTests/AutoMapperTests.csproj
-dotnet test UnitTests.Services.Infrastructure/UnitTests.Services.Infrastructure.csproj
-dotnet test Context.Repository.Tests/Context.Repository.Tests.csproj
+dotnet test Services/Services.Tests/Services.Tests.csproj
+dotnet test AutoMapper.Tests/AutoMapper.Tests.csproj
+dotnet test Services/Services.UnitTests.Infrastructure/Services.UnitTests.Infrastructure.csproj
+dotnet test DAL/Context.Repository.Tests/Context.Repository.Tests.csproj
 dotnet test DAL/Context.Tests/Context.Tests.csproj
 ```
 ## Диаграмма базы данных
