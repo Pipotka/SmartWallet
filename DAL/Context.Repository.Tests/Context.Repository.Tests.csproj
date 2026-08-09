@@ -6,13 +6,12 @@
         <AssemblyName>SmartWallet.Context.Repository.Tests</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DAL\Context.Repository\Context.Repository.csproj" />
-      <ProjectReference Include="..\DAL\Context.Tests\Context.Tests.csproj" />
+      <ProjectReference Include="..\Context.Repository\Context.Repository.csproj" />
+      <ProjectReference Include="..\Context.Tests\Context.Tests.csproj" />
     </ItemGroup>
 
 </Project>

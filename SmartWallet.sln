@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Contracts", "Servi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Tests", "Services\Services.Tests\Services.Tests.csproj", "{727A7AB6-3D45-4266-9721-CB0F94599BB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Tests", "Context.Repository.Tests\Context.Repository.Tests.csproj", "{41C49892-3D8B-49CA-9975-9903FCD0D203}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Tests", "DAL\Context.Repository.Tests\Context.Repository.Tests.csproj", "{41C49892-3D8B-49CA-9975-9903FCD0D203}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Tests", "DAL\Context.Tests\Context.Tests.csproj", "{8CE4F429-24B5-424B-AF87-F440D7F83AF7}"
 EndProject

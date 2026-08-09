@@ -8,7 +8,7 @@ using Xunit;
 namespace Nasurino.SmartWallet.Context.Repository.Tests;
 
 /// <summary>
-/// Тесты на <see cref="Nasurino.SmartWallet.Context.Repository.TransactionEndpointRepository"/>
+/// Тесты на <see cref="TransactionEndpointRepository"/>
 /// </summary>
 public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
 {
@@ -28,7 +28,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// GetById должен вернуть значение
     /// </summary>
     [Fact]
-    async Task GetByIdShouldReturnValue()
+    public async Task GetByIdShouldReturnValue()
     {
         // Arrange
         var targetId = Guid.NewGuid();
@@ -55,7 +55,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// GetListByUserId должен возвращать только не удаленные TransactionEndpoint
     /// </summary>
     [Fact]
-    async Task GetListByUserIdShouldReturnOnlyNotDeleted()
+    public async Task GetListByUserIdShouldReturnOnlyNotDeleted()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -91,7 +91,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// GetListByUserId должен возвращать только TransactionEndpoint пользователя
     /// </summary>
     [Fact]
-    async Task GetListByUserIdShouldReturnOnlyUsersTransactionEndpoints()
+    public async Task GetListByUserIdShouldReturnOnlyUsersTransactionEndpoints()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -129,7 +129,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// GetListByUserId должен возвращать TransactionEndpoint в отсортированном виде (сначала IsStorage = true, потом IsStorage = false)
     /// </summary>
     [Fact]
-    async Task GetListByUserIdShouldReturnInSortedOrder()
+    public async Task GetListByUserIdShouldReturnInSortedOrder()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -169,7 +169,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     /// GetListByUserId должен возвращать пустой список, если у пользователя нет TransactionEndpoint
     /// </summary>
     [Fact]
-    async Task GetListByUserIdShouldReturnEmptyListWhenNoTransactionEndpointsForUser()
+    public async Task GetListByUserIdShouldReturnEmptyListWhenNoTransactionEndpointsForUser()
     {
         // Arrange
         var userId = Guid.NewGuid();
