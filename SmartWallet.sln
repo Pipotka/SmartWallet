@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Repository.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Context.Tests", "DAL\Context.Tests\Context.Tests.csproj", "{8CE4F429-24B5-424B-AF87-F440D7F83AF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMapperTests", "AutoMapperTests\AutoMapperTests.csproj", "{389AAB71-D49A-454E-93B3-83B083DCD34E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoMapper.Tests", "AutoMapper.Tests\AutoMapper.Tests.csproj", "{389AAB71-D49A-454E-93B3-83B083DCD34E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{400909BB-AE2E-4274-914E-A7E893F506AD}"
 EndProject

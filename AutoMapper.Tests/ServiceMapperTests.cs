@@ -1,7 +1,7 @@
 using AutoMapper;
 using Nasurino.SmartWallet.Services.AutoMappers;
 
-namespace AutoMapperTests;
+namespace Nasurino.SmartWallet.AutoMapper.Tests;
 
 /// <summary>
 /// Тесты на маппер для сервисов
