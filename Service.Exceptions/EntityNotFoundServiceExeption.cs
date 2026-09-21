@@ -8,8 +8,8 @@ public class EntityNotFoundServiceException : EntityServiceException
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="EntityNotFoundServiceException"/>
 	/// </summary>
-	public EntityNotFoundServiceException(string message) 
-		: base(message)
+	public EntityNotFoundServiceException(string message)
+		: base(message, ErrorCodes.NotFound)
 	{
 	}
 }

@@ -27,7 +27,7 @@ public class SmartWalletExceptionFilterTests
 
         context.ExceptionHandled.Should().BeTrue();
         context.Result.Should().BeOfType<ObjectResult>()
-            .Which.Value.Should().BeEquivalentTo(new { Code = "internal_error", Message = "Внутренняя ошибка сервера" });
+            .Which.Value.Should().BeEquivalentTo(new { Code = ErrorCodes.InternalError, Message = "Внутренняя ошибка сервера" });
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class SmartWalletExceptionFilterTests
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>())
         {
-            Exception = new CodedServiceException("POSTINGS_EMPTY", "Список проводок пуст", StatusCodes.Status400BadRequest)
+            Exception = new CodedServiceException(ErrorCodes.PostingsEmpty, "Список проводок пуст")
         };
 
         filter.OnException(context);

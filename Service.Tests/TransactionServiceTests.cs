@@ -45,9 +45,9 @@ public class TransactionServiceTests
         _unitOfWorkMock.Setup(u => u.TransactionEndpointRepository).Returns(_transactionEndpointRepositoryMock.Object);
         _unitOfWorkMock.Setup(u => u.PostingRepository).Returns(_postingRepositoryMock.Object);
 
-        var apiSettings = Microsoft.Extensions.Options.Options.Create(new ApiSettings
+        var postingSettings = Microsoft.Extensions.Options.Options.Create(new PostingSettings
         {
-            PostingSettings = new PostingSettings { MaxPostingsPerTransaction = 100 }
+            MaxPostingsPerTransaction = 100
         });
 
         _transactionService = new TransactionService(
@@ -55,7 +55,7 @@ public class TransactionServiceTests
             _validateServiceMock.Object,
             mapper,
             _backgroundTaskSystemProviderMock.Object,
-            apiSettings);
+            postingSettings);
 
         _transactionEndpointRepositoryMock
             .Setup(r => r.GetSystemEndpointByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -212,8 +212,7 @@ public class TransactionServiceTests
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
         var ex = await act.Should().ThrowAsync<CodedServiceException>();
-        ex.Which.ErrorCode.Should().Be("ACCOUNT_NOT_FOUND");
-        ex.Which.StatusCode.Should().Be(404);
+        ex.Which.ErrorCode.Should().Be(ErrorCodes.AccountNotFound);
     }
 
     [Fact]
@@ -233,7 +232,7 @@ public class TransactionServiceTests
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
         var ex = await act.Should().ThrowAsync<CodedServiceException>();
-        ex.Which.ErrorCode.Should().Be("POSTINGS_LIMIT_EXCEEDED");
+        ex.Which.ErrorCode.Should().Be(ErrorCodes.PostingsLimitExceeded);
     }
 
     [Fact]
@@ -257,7 +256,7 @@ public class TransactionServiceTests
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
         var ex = await act.Should().ThrowAsync<CodedServiceException>();
-        ex.Which.ErrorCode.Should().Be("DUPLICATE_ACCOUNT_ID");
+        ex.Which.ErrorCode.Should().Be(ErrorCodes.DuplicateAccountId);
     }
 
     [Fact]
@@ -284,7 +283,7 @@ public class TransactionServiceTests
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
         var ex = await act.Should().ThrowAsync<CodedServiceException>();
-        ex.Which.ErrorCode.Should().Be("INVALID_POSTING_COMBINATION");
+        ex.Which.ErrorCode.Should().Be(ErrorCodes.InvalidPostingCombination);
     }
 
     private void AddEndpoint(Guid id, Guid userId, EndpointType type)

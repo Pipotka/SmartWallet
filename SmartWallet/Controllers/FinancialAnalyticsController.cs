@@ -39,9 +39,9 @@ public sealed class FinancialAnalyticsController : Controller
 	/// </summary>
 	[HttpPost("categorized-spending")]
 	[ProducesResponseType(typeof(CategorizingSpendingApiResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> GetCategorizingSpendingByDateRange([FromBody] CategorizingSpendingApiRequest request, CancellationToken token)
 	{
 		var model = _mapper.Map<CategorizingSpendingRequest>(request);
@@ -55,10 +55,10 @@ public sealed class FinancialAnalyticsController : Controller
 	/// </summary>
 	[HttpPost("category-comparative-analysis")]
 	[ProducesResponseType(typeof(CategoryComparativeAnalysisResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> GetCategoryComparativeAnalysis([FromBody] CategoryComparativeAnalysisApiRequest request, CancellationToken token)
 	{
 		var model = _mapper.Map<CategoryComparativeAnalysisRequest>(request);
@@ -72,10 +72,10 @@ public sealed class FinancialAnalyticsController : Controller
 	/// </summary>
 	[HttpPost("spending-trend-line")]
 	[ProducesResponseType(typeof(SpendingTrendLineApiResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> GetSpendingTrendLine([FromBody] SpendingTrendLineApiRequest request, CancellationToken token)
 	{
 		var model = _mapper.Map<SpendingTrendLineRequest>(request);

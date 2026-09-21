@@ -128,12 +128,10 @@ builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<J
 builder.Services.Configure<BCryptOptions>(builder.Configuration
     .GetSection("ApiSettings:BCryptSettings"));
 
-builder.Services.AddOptions<ApiSettings>()
-    .Bind(builder.Configuration.GetSection("ApiSettings"))
-    .Validate(settings => settings.PostingSettings.MaxPostingsPerTransaction >= 2,
+builder.Services.AddOptions<PostingSettings>()
+    .Bind(builder.Configuration.GetSection("ApiSettings:PostingSettings"))
+    .Validate(settings => settings.MaxPostingsPerTransaction >= 2,
         "ApiSettings:PostingSettings:MaxPostingsPerTransaction must be >= 2");
-
-builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<ApiSettings>>().Value);
 #endregion
 
 #region Регистрация сервисов

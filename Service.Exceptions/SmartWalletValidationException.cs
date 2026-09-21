@@ -12,18 +12,18 @@ public class SmartWalletValidationException : EntityServiceException
 	/// </summary>
 	/// <param name="validationResults">Результаты валидации</param>
 	public SmartWalletValidationException(ICollection<PropertyValidationError> validationResults)
-		: base(string.Join(';', validationResults.Select(x => $"{x.PropertyName} - {x.ErrorMessage}")))
+		: base(string.Join(';', validationResults.Select(x => $"{x.PropertyName} - {x.ErrorMessage}")),
+			ErrorCodes.ValidationError)
 	{
-
 	}
-	
+
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="SmartWalletValidationException"/>
 	/// </summary>
 	/// <param name="validationResult">Результат валидации</param>
 	public SmartWalletValidationException(PropertyValidationError validationResult)
-		: base($"{validationResult.PropertyName} - {validationResult.ErrorMessage}")
+		: base($"{validationResult.PropertyName} - {validationResult.ErrorMessage}",
+			ErrorCodes.ValidationError)
 	{
-
 	}
 }

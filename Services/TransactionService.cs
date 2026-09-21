@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
-using System.Net;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
@@ -16,20 +15,24 @@ using Services.Contracts;
 
 namespace Nasurino.SmartWallet.Services;
 
+/// <summary>
+/// Сервис для работы с транзакциями
+/// </summary>
 public sealed class TransactionService(
     IUnitOfWork unitOfWork,
     ISmartWalletValidateService validateService,
     IMapper mapper,
     IBackgroundTaskSystemProvider backgroundTaskSystemProvider,
-    IOptions<ApiSettings> apiSettings) : ITransactionService
+    IOptions<PostingSettings> postingSettings) : ITransactionService
 {
     private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
     private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
     private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
     private readonly IPostingRepository _postingRepository = unitOfWork.PostingRepository;
     private readonly IBackgroundTaskSystemProvider _backgroundTaskSystemProvider = backgroundTaskSystemProvider;
-    private readonly ApiSettings _apiSettings = apiSettings.Value;
+    private readonly PostingSettings _postingSettings = postingSettings.Value;
 
+    /// <inheritdoc/>
     async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(
         Guid userId,
         TransactionQueryModel query,
@@ -40,24 +43,16 @@ public sealed class TransactionService(
         _ = await _userRepository.GetUserByIdAsync(userId, token)
             ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-        var dalQuery = mapper.Map<TransactionQuery>(query);
-        var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
-
-        var systemEndpoint = await _transactionEndpointRepository.GetByNameAndUserIdAsync(userId, "System", token);
+        var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(userId, token);
         var systemId = systemEndpoint?.Id;
 
-        var result = mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
-        if (systemId.HasValue)
-        {
-            foreach (var item in result.Items)
-            {
-                item.Postings.RemoveAll(p => p.AccountId == systemId.Value);
-            }
-        }
+        var dalQuery = mapper.Map<TransactionQuery>(query);
+        var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, systemId, token);
 
-        return result;
+        return mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
     }
 
+    /// <inheritdoc/>
     async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)
     {
         await validateService.ValidateAsync(model, token);
@@ -65,7 +60,7 @@ public sealed class TransactionService(
         _ = await _userRepository.GetUserByIdAsync(model.UserId, token)
             ?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 
-        var maxPostings = Math.Max(2, _apiSettings.PostingSettings.MaxPostingsPerTransaction);
+        var maxPostings = _postingSettings.MaxPostingsPerTransaction;
 
         ValidatePostings(model.Postings, maxPostings);
 
@@ -75,10 +70,19 @@ public sealed class TransactionService(
 
         ValidateAccounts(model.Postings, endpointsById);
 
-        var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(model.UserId, token)
-            ?? throw new CodedServiceException("internal_error", "System endpoint not found", (int)HttpStatusCode.InternalServerError);
+        var type = ClassifyTransaction(model.Postings, endpointsById);
 
-        var (type, systemPosting) = ClassifyTransaction(model.Postings, endpointsById, systemEndpoint.Id);
+        Posting? systemPosting = null;
+        Guid? systemEndpointId = null;
+
+        if (type is TransactionType.AdjustmentIncrease or TransactionType.AdjustmentDecrease)
+        {
+            var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(model.UserId, token)
+                ?? throw new CodedServiceException(ErrorCodes.SystemEndpointNotFound, "System endpoint not found");
+
+            systemEndpointId = systemEndpoint.Id;
+            systemPosting = CreateSystemPostingIfNeeded(type, model.Postings, systemEndpoint.Id);
+        }
 
         var transactionId = Guid.NewGuid();
         var transaction = new Transaction
@@ -89,29 +93,29 @@ public sealed class TransactionService(
             Postings = BuildPostings(model.Postings, systemPosting, transactionId)
         };
 
-        await ApplyBalanceUpdatesAsync(transaction.Postings.ToList(), endpointsById, token);
+        var affectedCategoryIds = await ApplyBalanceUpdatesAsync(transaction.Postings.ToList(), endpointsById, token);
 
         _transactionRepository.Add(transaction);
         _postingRepository.AddRange(transaction.Postings);
         await unitOfWork.SaveChangesAsync(token);
 
-        var categoryIds = transaction.Postings
-            .Where(p => endpointsById.TryGetValue(p.AccountId, out var e) && e.EndpointType == EndpointType.Category)
-            .Select(p => p.AccountId)
-            .ToHashSet();
-
-        if (categoryIds.Count > 0)
+        if (affectedCategoryIds.Count > 0)
         {
             var day = DateTime.UtcNow.Date;
             _backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
-                s.RecalculateManyAsync(model.UserId, categoryIds, day, token));
+                s.RecalculateManyAsync(model.UserId, affectedCategoryIds, day, token));
         }
 
         var result = mapper.Map<TransactionModel>(transaction);
-        result.Postings.RemoveAll(p => p.AccountId == systemEndpoint.Id);
+        if (systemEndpointId.HasValue)
+        {
+            result.Postings.RemoveAll(p => p.AccountId == systemEndpointId.Value);
+        }
+
         return result;
     }
 
+    /// <inheritdoc/>
     async Task ITransactionService.DeleteAsync(DeleteTransactionModel model, CancellationToken token)
     {
         await validateService.ValidateAsync(model, token);
@@ -188,18 +192,20 @@ public sealed class TransactionService(
         }
     }
 
+    /// <summary>
+    /// Валидация проводок создаваемой транзакции
+    /// </summary>
     private static void ValidatePostings(List<CreateTransactionPostingModel> postings, int maxPostings)
     {
         if (postings == null || postings.Count == 0)
         {
-            throw new CodedServiceException("POSTINGS_EMPTY", "Список проводок пуст", (int)HttpStatusCode.BadRequest);
+            throw new CodedServiceException(ErrorCodes.PostingsEmpty, "Список проводок пуст");
         }
 
         if (postings.Count > maxPostings)
         {
-            throw new CodedServiceException("POSTINGS_LIMIT_EXCEEDED",
-                $"Превышен лимит проводок ({maxPostings})",
-                (int)HttpStatusCode.BadRequest);
+            throw new CodedServiceException(ErrorCodes.PostingsLimitExceeded,
+                $"Превышен лимит проводок ({maxPostings})");
         }
 
         var seenAccounts = new HashSet<Guid>();
@@ -208,27 +214,27 @@ public sealed class TransactionService(
         {
             if (posting.AccountId == Guid.Empty)
             {
-                throw new CodedServiceException("INVALID_ACCOUNT_ID",
-                    "Идентификатор счета не может быть пустым",
-                    (int)HttpStatusCode.BadRequest);
+                throw new CodedServiceException(ErrorCodes.InvalidAccountId,
+                    "Идентификатор счета не может быть пустым");
             }
 
             if (posting.Amount == 0)
             {
-                throw new CodedServiceException("ZERO_AMOUNT",
-                    "Сумма проводки не может быть равна нулю",
-                    (int)HttpStatusCode.BadRequest);
+                throw new CodedServiceException(ErrorCodes.ZeroAmount,
+                    "Сумма проводки не может быть равна нулю");
             }
 
             if (!seenAccounts.Add(posting.AccountId))
             {
-                throw new CodedServiceException("DUPLICATE_ACCOUNT_ID",
-                    $"Счет {posting.AccountId} указан более одного раза",
-                    (int)HttpStatusCode.BadRequest);
+                throw new CodedServiceException(ErrorCodes.DuplicateAccountId,
+                    $"Счет {posting.AccountId} указан более одного раза");
             }
         }
     }
 
+    /// <summary>
+    /// Валидация принадлежности счетов пользователю и их типа
+    /// </summary>
     private static void ValidateAccounts(
         List<CreateTransactionPostingModel> postings,
         Dictionary<Guid, TransactionEndpoint> endpointsById)
@@ -237,24 +243,24 @@ public sealed class TransactionService(
         {
             if (!endpointsById.TryGetValue(posting.AccountId, out var endpoint))
             {
-                throw new CodedServiceException("ACCOUNT_NOT_FOUND",
-                    $"Счет {posting.AccountId} не найден",
-                    (int)HttpStatusCode.NotFound);
+                throw new CodedServiceException(ErrorCodes.AccountNotFound,
+                    $"Счет {posting.AccountId} не найден");
             }
 
             if (endpoint.EndpointType == EndpointType.System)
             {
-                throw new CodedServiceException("ACCOUNT_NOT_FOUND",
-                    $"Счет {posting.AccountId} не найден",
-                    (int)HttpStatusCode.NotFound);
+                throw new CodedServiceException(ErrorCodes.AccountNotFound,
+                    $"Счет {posting.AccountId} не найден");
             }
         }
     }
 
-    private static (TransactionType Type, Posting? SystemPosting) ClassifyTransaction(
+    /// <summary>
+    /// Определяет тип транзакции по проводкам. Не создаёт системных проводок.
+    /// </summary>
+    private static TransactionType ClassifyTransaction(
         List<CreateTransactionPostingModel> postings,
-        Dictionary<Guid, TransactionEndpoint> endpointsById,
-        Guid systemEndpointId)
+        Dictionary<Guid, TransactionEndpoint> endpointsById)
     {
         var userSum = postings.Sum(p => p.Amount);
         var storagePostings = postings
@@ -272,12 +278,11 @@ public sealed class TransactionService(
                 && categoryPostings.All(p => p.Amount > 0)
                 && userSum == 0)
             {
-                return (TransactionType.Expense, null);
+                return TransactionType.Expense;
             }
 
-            throw new CodedServiceException("INVALID_POSTING_COMBINATION",
-                "Комбинация проводок не соответствует ни одному типу транзакции",
-                (int)HttpStatusCode.BadRequest);
+            throw new CodedServiceException(ErrorCodes.InvalidPostingCombination,
+                "Комбинация проводок не соответствует ни одному типу транзакции");
         }
 
         var signs = storagePostings
@@ -287,32 +292,52 @@ public sealed class TransactionService(
 
         if (signs.Count == 2 && userSum == 0)
         {
-            return (TransactionType.Transfer, null);
+            return TransactionType.Transfer;
         }
 
         if (signs.Count == 1 && signs.Contains(1) && userSum > 0)
         {
-            return (TransactionType.AdjustmentIncrease, new Posting
-            {
-                AccountId = systemEndpointId,
-                Amount = -userSum
-            });
+            return TransactionType.AdjustmentIncrease;
         }
 
         if (signs.Count == 1 && signs.Contains(-1) && userSum < 0)
         {
-            return (TransactionType.AdjustmentDecrease, new Posting
+            return TransactionType.AdjustmentDecrease;
+        }
+
+        throw new CodedServiceException(ErrorCodes.InvalidPostingCombination,
+            "Комбинация проводок не соответствует ни одному типу транзакции");
+    }
+
+    /// <summary>
+    /// Создаёт системную проводку для балансировки корректировки.
+    /// </summary>
+    private static Posting CreateSystemPostingIfNeeded(
+        TransactionType type,
+        List<CreateTransactionPostingModel> postings,
+        Guid systemEndpointId)
+    {
+        var userSum = postings.Sum(p => p.Amount);
+
+        return type switch
+        {
+            TransactionType.AdjustmentIncrease => new Posting
             {
                 AccountId = systemEndpointId,
                 Amount = -userSum
-            });
-        }
-
-        throw new CodedServiceException("INVALID_POSTING_COMBINATION",
-            "Комбинация проводок не соответствует ни одному типу транзакции",
-            (int)HttpStatusCode.BadRequest);
+            },
+            TransactionType.AdjustmentDecrease => new Posting
+            {
+                AccountId = systemEndpointId,
+                Amount = -userSum
+            },
+            _ => null!
+        };
     }
 
+    /// <summary>
+    /// Формирует итоговый список проводок, включая системную при наличии
+    /// </summary>
     private static List<Posting> BuildPostings(
         List<CreateTransactionPostingModel> userPostings,
         Posting? systemPosting,
@@ -338,7 +363,10 @@ public sealed class TransactionService(
         return postings;
     }
 
-    private async Task ApplyBalanceUpdatesAsync(
+    /// <summary>
+    /// Обновляет балансы конечных точек и возвращает идентификаторы затронутых категорий
+    /// </summary>
+    private async Task<HashSet<Guid>> ApplyBalanceUpdatesAsync(
         List<Posting> postings,
         Dictionary<Guid, TransactionEndpoint> endpointsById,
         CancellationToken token)
@@ -362,6 +390,8 @@ public sealed class TransactionService(
         var storageBalances = await _transactionRepository.GetStorageBalancesAsync(storageIds, token);
         var categoryBalances = await _transactionRepository.GetCategoryBalancesAsync(categoryIds, token);
 
+        var affectedCategoryIds = new HashSet<Guid>();
+
         foreach (var posting in nonSystemPostings)
         {
             var endpoint = endpointsById[posting.AccountId];
@@ -372,6 +402,13 @@ public sealed class TransactionService(
 
             endpoint.Value = currentBalance + posting.Amount;
             _transactionEndpointRepository.Update(endpoint);
+
+            if (endpoint.EndpointType == EndpointType.Category)
+            {
+                affectedCategoryIds.Add(endpoint.Id);
+            }
         }
+
+        return affectedCategoryIds;
     }
 }

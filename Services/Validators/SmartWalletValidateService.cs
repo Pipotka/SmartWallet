@@ -45,6 +45,7 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(SpendingTrendLineRequest), new SpendingTrendLineRequestValidator());
         _validators.Add(typeof(ChangePasswordModel), new ChangePasswordModelValidator());
 		_validators.Add(typeof(TransactionQueryModel), new TransactionQueryValidator());
+		_validators.Add(typeof(CreateTransactionModel), new CreateTransactionModelValidator());
         #endregion
 
     }

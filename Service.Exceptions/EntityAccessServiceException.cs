@@ -5,8 +5,11 @@
 /// </summary>
 public class EntityAccessServiceException : EntityServiceException
 {
-	public EntityAccessServiceException(string message) 
-		: base(message)
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="EntityAccessServiceException"/>
+	/// </summary>
+	public EntityAccessServiceException(string message)
+		: base(message, ErrorCodes.AccessDenied)
 	{
 	}
 }

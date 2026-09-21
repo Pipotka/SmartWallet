@@ -10,5 +10,8 @@ public class CreateTransactionModel
 	/// </summary>
 	public Guid UserId { get; set; }
 
+	/// <summary>
+	/// Список проводок транзакции
+	/// </summary>
 	public List<CreateTransactionPostingModel> Postings { get; set; } = [];
 }

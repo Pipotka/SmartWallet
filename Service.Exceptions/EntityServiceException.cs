@@ -5,9 +5,8 @@
 /// </summary>
 public abstract class EntityServiceException : ServiceException
 {
-	protected EntityServiceException(string message)
-		: base(message)
+	protected EntityServiceException(string message, string errorCode)
+		: base(message, errorCode)
 	{
-
 	}
 }

@@ -41,7 +41,7 @@ public sealed class TransactionEndpointController : Controller
 	/// </summary>
 	[HttpGet("list")]
 	[ProducesResponseType(typeof(ICollection<TransactionEndpointApiModel>), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList(CancellationToken token)
 	{
@@ -54,8 +54,8 @@ public sealed class TransactionEndpointController : Controller
 	/// </summary>
 	[HttpPost]
 	[ProducesResponseType(typeof(TransactionEndpointApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Create([FromBody] CreateTransactionEndpointApiModel request, CancellationToken token)
 	{
@@ -70,8 +70,8 @@ public sealed class TransactionEndpointController : Controller
 	/// </summary>
 	[HttpPut]
 	[ProducesResponseType(typeof(TransactionEndpointApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Update([FromBody] UpdateTransactionEndpointApiModel request, CancellationToken token)
 	{
@@ -86,8 +86,8 @@ public sealed class TransactionEndpointController : Controller
 	/// </summary>
 	[HttpDelete]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteTransactionEndpointApiModel request, CancellationToken token)
 	{
