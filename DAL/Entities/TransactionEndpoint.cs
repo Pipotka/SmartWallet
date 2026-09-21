@@ -26,9 +26,9 @@ public class TransactionEndpoint : SmartDeletedEntity
 	public decimal? Limitation { get; set; }
 
 	/// <summary>
-	/// Флаг указывающий, что конечная точка является денежным хранилищем
+	/// Тип конечной точки (Storage / Category / System)
 	/// </summary>
-	public bool IsStorage { get; set; }
+	public EndpointType EndpointType { get; set; }
 
 	/// <summary>
 	/// Значение
