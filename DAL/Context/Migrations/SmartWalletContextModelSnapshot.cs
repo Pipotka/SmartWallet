@@ -140,8 +140,8 @@ namespace Nasurino.SmartWallet.Context.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsStorage")
-                        .HasColumnType("boolean");
+                    b.Property<int>("EndpointType")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("Limitation")
                         .HasColumnType("numeric");

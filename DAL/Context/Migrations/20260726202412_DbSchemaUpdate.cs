@@ -56,6 +56,17 @@ namespace Nasurino.SmartWallet.Context.Migrations
                 oldType: "double precision",
                 oldNullable: true);
 
+            migrationBuilder.DropColumn(
+                name: "IsStorage",
+                table: "TransactionEndpoint");
+
+            migrationBuilder.AddColumn<int>(
+                name: "EndpointType",
+                table: "TransactionEndpoint",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
+
             migrationBuilder.CreateTable(
                 name: "DailyExpenseCategorie",
                 columns: table => new
@@ -150,6 +161,17 @@ namespace Nasurino.SmartWallet.Context.Migrations
                 oldClrType: typeof(decimal),
                 oldType: "numeric",
                 oldNullable: true);
+
+            migrationBuilder.DropColumn(
+                name: "EndpointType",
+                table: "TransactionEndpoint");
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsStorage",
+                table: "TransactionEndpoint",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<double>(
                 name: "Amount",
