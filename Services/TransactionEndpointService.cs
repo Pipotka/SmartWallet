@@ -72,7 +72,7 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
 			?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
 
-		if (!transactionEndpoint.IsStorage)
+		if (transactionEndpoint.EndpointType == EndpointType.Category)
 		{
 			_transactionRepository.DeleteTransactionsByTransactionEndpointIdAndDateRange(transactionEndpoint.Id);
 		}
