@@ -43,15 +43,16 @@ public sealed class TransactionService(
         var dalQuery = mapper.Map<TransactionQuery>(query);
         var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
 
-        var systemIds = (await _transactionEndpointRepository.GetListByUserIdAsync(userId, token))
-            .Where(e => e.EndpointType == EndpointType.System)
-            .Select(e => e.Id)
-            .ToHashSet();
+        var systemEndpoint = await _transactionEndpointRepository.GetByNameAndUserIdAsync(userId, "System", token);
+        var systemId = systemEndpoint?.Id;
 
         var result = mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
-        foreach (var item in result.Items)
+        if (systemId.HasValue)
         {
-            item.Postings.RemoveAll(p => systemIds.Contains(p.AccountId));
+            foreach (var item in result.Items)
+            {
+                item.Postings.RemoveAll(p => p.AccountId == systemId.Value);
+            }
         }
 
         return result;

@@ -15,6 +15,7 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.NotDeleted()
 			.Where(x => x.UserId == userId)
+			.Where(x => x.EndpointType != EndpointType.System)
 			.OrderByDescending(x => x.EndpointType)
 			.ToListAsync(cancellationToken);
 
