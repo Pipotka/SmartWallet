@@ -56,7 +56,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 					UserId = user.Id,
 					Name = spendingAreaName,
 					Value = 0.0m,
-					IsStorage = false
+					EndpointType = EndpointType.Category
 				});
 		}
 
@@ -67,7 +67,7 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 				UserId = user.Id,
 				Name = cashVaultName,
 				Value = 0.0m,
-				IsStorage = true
+				EndpointType = EndpointType.Storage
 			});
 		}
 		await unitOfWork.SaveChangesAsync(token);

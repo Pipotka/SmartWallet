@@ -110,7 +110,7 @@ public class TransactionServiceTests
 		var destinationAccount = new TransactionEndpoint
 		{
 			Id = destinationAccountId,
-			IsStorage = true, // Это обычный счет/кошелек
+			EndpointType = EndpointType.Storage, // Это обычный счет/кошелек
 			Value = 0.0m
 		};
 
@@ -156,7 +156,7 @@ public class TransactionServiceTests
 		var destinationAccount = new TransactionEndpoint
 		{
 			Id = destinationAccountId,
-			IsStorage = false, // Это область трат
+			EndpointType = EndpointType.Category, // Это область трат
 			Value = 0.0m
 		};
 
@@ -196,7 +196,7 @@ public class TransactionServiceTests
 		var sourceAccount = new TransactionEndpoint
 		{
 			Id = sourceAccountId,
-			IsStorage = false, // Это область трат
+			EndpointType = EndpointType.Category, // Это область трат
 			Value = 0.0m
 		};
 
@@ -236,7 +236,7 @@ public class TransactionServiceTests
 		var sourceAccount = new TransactionEndpoint
 		{
 			Id = sourceAccountId,
-			IsStorage = true, // Это денежное хранилище
+			EndpointType = EndpointType.Storage, // Это денежное хранилище
 			Value = 1000.0m
 		};
 
@@ -283,13 +283,13 @@ public class TransactionServiceTests
 		var sourceAccount = new TransactionEndpoint
 		{
 			Id = sourceAccountId,
-			IsStorage = true, // Это денежное хранилище
+			EndpointType = EndpointType.Storage, // Это денежное хранилище
 			Value = 1000.0m
 		};
 		var destinationAccount = new TransactionEndpoint
 		{
 			Id = destinationAccountId,
-			IsStorage = true, // Это обычный счет
+			EndpointType = EndpointType.Storage, // Это обычный счет
 			Value = 0.0m
 		};
 
@@ -341,13 +341,13 @@ public class TransactionServiceTests
 		var sourceAccount = new TransactionEndpoint
 		{
 			Id = sourceAccountId,
-			IsStorage = true, // Это денежное хранилище
+			EndpointType = EndpointType.Storage, // Это денежное хранилище
 			Value = 1000.0m
 		};
 		var destinationAccount = new TransactionEndpoint
 		{
 			Id = destinationAccountId,
-			IsStorage = false, // Это область трат
+			EndpointType = EndpointType.Category, // Это область трат
 			Value = 0.0m
 		};
 

@@ -72,7 +72,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 
 		if (sourceAccount != null)
 		{
-			if (!sourceAccount.IsStorage)
+			if (sourceAccount.EndpointType != EndpointType.Storage)
 			{
 				throw new SmartWalletValidationException(new PropertyValidationError(
 					nameof(CreateTransactionModel.SourceAccountId),
@@ -85,7 +85,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 
 			if (sourceAccount.Limitation != null
 				&& sourceAccount.Limitation > balanceResult
-				&& destinationAccount is { IsStorage: false })
+				&& destinationAccount is { EndpointType: EndpointType.Category })
 			{
 				throw new AccountBalanceLimitViolationException(
 					nameof(CreateTransactionModel.SourceAccountId),
@@ -98,19 +98,19 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 
 		if (destinationAccount != null)
 		{
-			if (!model.SourceAccountId.HasValue && !destinationAccount.IsStorage)
+			if (!model.SourceAccountId.HasValue && destinationAccount.EndpointType != EndpointType.Storage)
 			{
 				throw new SmartWalletValidationException(new PropertyValidationError(
 					nameof(CreateTransactionModel.DestinationAccountId),
 					"Нельзя скорректировать баланс области трат"));
 			}
 
-			var currentBalance = await GetBalanceForAccountAsync(destinationAccount.Id, destinationAccount.IsStorage, token);
+			var currentBalance = await GetBalanceForAccountAsync(destinationAccount.Id, destinationAccount.EndpointType == EndpointType.Storage, token);
 
 			var balanceResult = currentBalance + amount;
 			if (destinationAccount.Limitation != null
 				&& destinationAccount.Limitation < balanceResult
-				&& destinationAccount is { IsStorage: false })
+				&& destinationAccount is { EndpointType: EndpointType.Category })
 			{
 				throw new AccountBalanceLimitViolationException(
 					nameof(CreateTransactionModel.DestinationAccountId),
@@ -134,7 +134,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		_postingRepository.AddRange(transaction.Postings);
 		await unitOfWork.SaveChangesAsync(token);
 
-		if (destinationAccount is { IsStorage: false })
+		if (destinationAccount is { EndpointType: EndpointType.Category })
 		{
 			var categoryId = destinationAccount.Id;
 			var day = DateTime.UtcNow.Date;
@@ -171,11 +171,11 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 		if (endpoints.Count > 0)
 		{
 			var storageIds = endpoints
-				.Where(e => e.IsStorage)
+				.Where(e => e.EndpointType == EndpointType.Storage)
 				.Select(e => e.Id)
 				.ToList();
 			var categoryIds = endpoints
-				.Where(e => !e.IsStorage)
+				.Where(e => e.EndpointType == EndpointType.Category)
 				.Select(e => e.Id)
 				.ToList();
 
@@ -191,7 +191,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 					continue;
 				}
 
-				var currentBalance = account.IsStorage
+				var currentBalance = account.EndpointType == EndpointType.Storage
 					? storageBalances.TryGetValue(account.Id, out var sb) ? sb : 0m
 					: categoryBalances.TryGetValue(account.Id, out var cb) ? cb : 0m;
 				account.Value = currentBalance - posting.Amount;
@@ -200,7 +200,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 				posting.DeletedAt = DateTimeOffset.UtcNow;
 				_postingRepository.Update(posting);
 
-				if (account is { IsStorage: false })
+				if (account.EndpointType == EndpointType.Category)
 				{
 					affectedCategories.Add(account.Id);
 				}
@@ -245,19 +245,19 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 
 	private static TransactionType ResolveType(TransactionEndpoint? source, TransactionEndpoint? destination)
 	{
-		if (source is { IsStorage: true })
+		if (source is { EndpointType: EndpointType.Storage })
 		{
 			if (destination is null)
 			{
 				return TransactionType.AdjustmentDecrease;
 			}
 
-			return destination is { IsStorage: true }
+			return destination.EndpointType == EndpointType.Storage
 				? TransactionType.Transfer
 				: TransactionType.Expense;
 		}
 
-		return destination is { IsStorage: true }
+		return destination is { EndpointType: EndpointType.Storage }
 			? TransactionType.AdjustmentIncrease
 			: TransactionType.Expense;
 	}
@@ -270,7 +270,7 @@ public sealed class TransactionService(IUnitOfWork unitOfWork,
 	{
 		var postings = new List<Posting>();
 
-		if (source is { IsStorage: true })
+		if (source is { EndpointType: EndpointType.Storage })
 		{
 			postings.Add(new Posting
 			{
