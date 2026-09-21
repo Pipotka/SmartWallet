@@ -70,6 +70,16 @@ public sealed class UserService(IUnitOfWork unitOfWork,
 				EndpointType = EndpointType.Storage
 			});
 		}
+
+		_transactionEndpointRepository.Add(new()
+		{
+			UserId = user.Id,
+			Name = "System",
+			Value = 0.0m,
+			EndpointType = EndpointType.System,
+			Limitation = null
+		});
+
 		await unitOfWork.SaveChangesAsync(token);
 
 		return mapper.Map<UserModel>(user);
