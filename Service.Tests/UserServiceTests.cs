@@ -6,6 +6,7 @@ using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Infrastructure;
+using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.UnitTests.Services.Infrastructure.Mock.Extensions;
@@ -28,6 +29,8 @@ public class UserServiceTests
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
+    private readonly Mock<ITransactionEndpointRepository> _transactionEndpointRepositoryMock;
+    private readonly Mock<ITransactionRepository> _transactionRepositoryMock;
     private readonly JwtOptions _jwtOptions;
     private readonly IUserService _userService;
 
@@ -40,10 +43,14 @@ public class UserServiceTests
         _mapperMock = new Mock<IMapper>();
         _userRepositoryMock = new Mock<IUserRepository>();
         _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
+        _transactionEndpointRepositoryMock = new Mock<ITransactionEndpointRepository>();
+        _transactionRepositoryMock = new Mock<ITransactionRepository>();
         _jwtOptions = new JwtOptions { Key = "test-key-for-unit-tests-min-16-chars", ExpiresMinutes = 15, RefreshExpiresDays = 7 };
 
         _unitOfWorkMock.Setup(u => u.UserRepository).Returns(_userRepositoryMock.Object);
         _unitOfWorkMock.Setup(u => u.RefreshTokenRepository).Returns(_refreshTokenRepositoryMock.Object);
+        _unitOfWorkMock.Setup(u => u.TransactionEndpointRepository).Returns(_transactionEndpointRepositoryMock.Object);
+        _unitOfWorkMock.Setup(u => u.TransactionRepository).Returns(_transactionRepositoryMock.Object);
 
         _userService = new UserService(
             _unitOfWorkMock.Object,
@@ -457,5 +464,47 @@ public class UserServiceTests
 
         // Assert
         await action.Should().ThrowAsync<AuthenticationServiceException>();
+    }
+
+    /// <summary>
+    /// RegistrationAsync Should Create System Endpoint Along With Default Categories And Storages
+    /// </summary>
+    [Fact]
+    public async Task RegistrationShouldCreateSystemEndpointAlongWithDefaults()
+    {
+        // Arrange
+        var model = new CreateUserModel
+        {
+            Email = "test@test.com",
+            Password = "password",
+            FirstName = "A",
+            LastName = "B",
+            Patronymic = "C"
+        };
+
+        User? capturedUser = null;
+        var addedEndpoints = new List<TransactionEndpoint>();
+
+        _validateServiceMock.Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _passwordHasherMock.Setup(p => p.Generate(model.Password)).Returns("hash");
+        _userRepositoryMock.Setup(r => r.Add(It.IsAny<User>())).Callback<User>(u => capturedUser = u);
+        _transactionEndpointRepositoryMock.Setup(r => r.Add(It.IsAny<TransactionEndpoint>())).Callback<TransactionEndpoint>(e => addedEndpoints.Add(e));
+        _mapperMock.Setup(m => m.Map<User>(model)).Returns(new User());
+        _mapperMock.Setup(m => m.Map<UserModel>(It.IsAny<User>())).Returns(new UserModel());
+
+        // Act
+        await _userService.RegistrationAsync(model, CancellationToken.None);
+
+        // Assert
+        capturedUser.Should().NotBeNull();
+        addedEndpoints.Should().ContainSingle(e =>
+            e.EndpointType == EndpointType.System &&
+            e.Name == "System" &&
+            e.Value == 0m &&
+            e.Limitation == null &&
+            e.UserId == capturedUser!.Id);
+
+        addedEndpoints.Count(e => e.EndpointType == EndpointType.Category).Should().Be(10);
+        addedEndpoints.Count(e => e.EndpointType == EndpointType.Storage).Should().Be(2);
     }
 }
