@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Models.CashVault;
+﻿using Nasurino.SmartWallet.Entities;
+
+namespace Nasurino.SmartWallet.Models.CashVault;
 
 /// <summary>
 /// Модель Api денежного хранилища
@@ -26,7 +28,7 @@ public class TransactionEndpointApiModel
 	public decimal? Limitation { get; set; }
 	
 	/// <summary>
-	/// Флаг указывающий, что конечная точка является денежным хранилищем
+	/// Тип конечной точки
 	/// </summary>
-	public bool IsStorage { get; set; }	
+	public EndpointType EndpointType { get; set; }	
 }
