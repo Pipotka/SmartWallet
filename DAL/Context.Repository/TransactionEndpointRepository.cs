@@ -15,7 +15,7 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.NotDeleted()
 			.Where(x => x.UserId == userId)
-			.OrderByDescending(x => x.IsStorage)
+			.OrderByDescending(x => x.EndpointType)
 			.ToListAsync(cancellationToken);
 
 	Task<TransactionEndpoint?> ITransactionEndpointRepository.GetByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 
 	Task ITransactionEndpointRepository.ClearCategoryValueCacheAsync(CancellationToken cancellationToken)
 		=> Storage.Read<TransactionEndpoint>()
-			.Where(x => x.IsStorage == false && x.Value > 0)
+			.Where(x => x.EndpointType == EndpointType.Category && x.Value > 0)
 			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, 0));
 
 	async Task<List<TransactionEndpoint>> ITransactionEndpointRepository.GetListByIdsAndUserIdAsync(
