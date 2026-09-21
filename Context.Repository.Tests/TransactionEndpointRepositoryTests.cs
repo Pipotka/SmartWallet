@@ -126,7 +126,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
     }
 
     /// <summary>
-    /// GetListByUserId должен возвращать TransactionEndpoint в отсортированном виде (сначала IsStorage = true, потом IsStorage = false)
+    /// GetListByUserId должен возвращать TransactionEndpoint в отсортированном виде (сначала Storage, потом Category)
     /// </summary>
     [Fact]
     async Task GetListByUserIdShouldReturnInSortedOrder()
@@ -138,19 +138,19 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
         {
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
-                x.IsStorage = false;
+                x.EndpointType = EndpointType.Category;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
-                x.IsStorage = true;
+                x.EndpointType = EndpointType.Storage;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
-                x.IsStorage = false;
+                x.EndpointType = EndpointType.Category;
             }),
             _entityProvider.Create<TransactionEndpoint>(x => {
                 x.UserId = userId;
-                x.IsStorage = true;
+                x.EndpointType = EndpointType.Storage;
             })
         };
 
@@ -162,7 +162,7 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
 
         // Assert
         result.Should().HaveCount(4)
-            .And.BeInDescendingOrder(x => x.IsStorage);
+            .And.BeInDescendingOrder(x => x.EndpointType);
     }
 
     /// <summary>
