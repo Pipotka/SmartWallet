@@ -58,8 +58,8 @@ public class TransactionServiceTests
             apiSettings);
 
         _transactionEndpointRepositoryMock
-            .Setup(r => r.GetByNameAndUserIdAsync(It.IsAny<Guid>(), "System", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid userId, string _, CancellationToken _) => new TransactionEndpoint
+            .Setup(r => r.GetSystemEndpointByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid userId, CancellationToken _) => new TransactionEndpoint
             {
                 Id = _systemEndpointId,
                 UserId = userId,

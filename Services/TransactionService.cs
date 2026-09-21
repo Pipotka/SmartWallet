@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using System.Net;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
@@ -75,8 +75,8 @@ public sealed class TransactionService(
 
         ValidateAccounts(model.Postings, endpointsById);
 
-        var systemEndpoint = await _transactionEndpointRepository.GetByNameAndUserIdAsync(model.UserId, "System", token)
-            ?? throw new CodedServiceException("internal_error", "System endpoint not found", StatusCodes.Status500InternalServerError);
+        var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(model.UserId, token)
+            ?? throw new CodedServiceException("internal_error", "System endpoint not found", (int)HttpStatusCode.InternalServerError);
 
         var (type, systemPosting) = ClassifyTransaction(model.Postings, endpointsById, systemEndpoint.Id);
 
@@ -192,14 +192,14 @@ public sealed class TransactionService(
     {
         if (postings == null || postings.Count == 0)
         {
-            throw new CodedServiceException("POSTINGS_EMPTY", "Список проводок пуст", StatusCodes.Status400BadRequest);
+            throw new CodedServiceException("POSTINGS_EMPTY", "Список проводок пуст", (int)HttpStatusCode.BadRequest);
         }
 
         if (postings.Count > maxPostings)
         {
             throw new CodedServiceException("POSTINGS_LIMIT_EXCEEDED",
                 $"Превышен лимит проводок ({maxPostings})",
-                StatusCodes.Status400BadRequest);
+                (int)HttpStatusCode.BadRequest);
         }
 
         var seenAccounts = new HashSet<Guid>();
@@ -210,21 +210,21 @@ public sealed class TransactionService(
             {
                 throw new CodedServiceException("INVALID_ACCOUNT_ID",
                     "Идентификатор счета не может быть пустым",
-                    StatusCodes.Status400BadRequest);
+                    (int)HttpStatusCode.BadRequest);
             }
 
             if (posting.Amount == 0)
             {
                 throw new CodedServiceException("ZERO_AMOUNT",
                     "Сумма проводки не может быть равна нулю",
-                    StatusCodes.Status400BadRequest);
+                    (int)HttpStatusCode.BadRequest);
             }
 
             if (!seenAccounts.Add(posting.AccountId))
             {
                 throw new CodedServiceException("DUPLICATE_ACCOUNT_ID",
                     $"Счет {posting.AccountId} указан более одного раза",
-                    StatusCodes.Status400BadRequest);
+                    (int)HttpStatusCode.BadRequest);
             }
         }
     }
@@ -239,14 +239,14 @@ public sealed class TransactionService(
             {
                 throw new CodedServiceException("ACCOUNT_NOT_FOUND",
                     $"Счет {posting.AccountId} не найден",
-                    StatusCodes.Status404NotFound);
+                    (int)HttpStatusCode.NotFound);
             }
 
             if (endpoint.EndpointType == EndpointType.System)
             {
                 throw new CodedServiceException("ACCOUNT_NOT_FOUND",
                     $"Счет {posting.AccountId} не найден",
-                    StatusCodes.Status404NotFound);
+                    (int)HttpStatusCode.NotFound);
             }
         }
     }
@@ -277,7 +277,7 @@ public sealed class TransactionService(
 
             throw new CodedServiceException("INVALID_POSTING_COMBINATION",
                 "Комбинация проводок не соответствует ни одному типу транзакции",
-                StatusCodes.Status400BadRequest);
+                (int)HttpStatusCode.BadRequest);
         }
 
         var signs = storagePostings
@@ -310,7 +310,7 @@ public sealed class TransactionService(
 
         throw new CodedServiceException("INVALID_POSTING_COMBINATION",
             "Комбинация проводок не соответствует ни одному типу транзакции",
-            StatusCodes.Status400BadRequest);
+            (int)HttpStatusCode.BadRequest);
     }
 
     private static List<Posting> BuildPostings(

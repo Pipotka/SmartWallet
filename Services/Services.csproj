@@ -13,9 +13,6 @@
     <PackageReference Include="FluentValidation" />
   </ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\DAL\Context.Repository.Contracts\Context.Repository.Contracts.csproj" />

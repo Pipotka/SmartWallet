@@ -35,7 +35,7 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 
             case AuthenticationServiceException:
             case AuthorizationServiceException:
-                SetResult(context, StatusCodes.Status401Unauthorized, "unauthorized", context.Exception.Message);
+                SetResult(context, StatusCodes.Status401Unauthorized, "UNAUTHORIZED", context.Exception.Message);
                 return;
 
             case EntityAccessServiceException ex:

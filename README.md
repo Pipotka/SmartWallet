@@ -130,7 +130,7 @@ erDiagram
         Guid userId FK
         string name
         decimal limitation "nullable"
-        bool isStorage
+        EndpointType endpointType "Storage / Category / System"
         decimal value
         DateTime deletedAt "nullable"
     }
@@ -186,8 +186,9 @@ erDiagram
 ```
 ## Балансы конечных точек и агрегат ежедневных трат
 
-- **Баланс хранилищ (`TransactionEndpoint.IsStorage = true`)** рассчитывается **за всё время** — сумма всех постингов по счёту.
-- **Баланс категорий трат (`TransactionEndpoint.IsStorage = false`)** рассчитывается **за текущий месяц** (с 1-го числа по `UtcNow`) — это бизнес-правило ограничивает перерасчёт рамками месяца.
+- **Баланс хранилищ (`TransactionEndpoint.EndpointType = Storage`)** рассчитывается **за всё время** — сумма всех постингов по счёту.
+- **Баланс категорий трат (`TransactionEndpoint.EndpointType = Category`)** рассчитывается **за текущий месяц** (с 1-го числа по `UtcNow`) — это бизнес-правило ограничивает перерасчёт рамками месяца.
+- **Системный эндпоинт (`TransactionEndpoint.EndpointType = System`)** создаётся автоматически при регистрации пользователя и используется как скрытый счёт для внутренних операций (например, корректировки). Он не возвращается публичным API и недоступен для создания/изменения/удаления через клиентские эндпоинты.
 - При удалении транзакции балансы эндпоинтов получаются **двумя запросами к БД**: один для хранилищ (`GetStorageBalancesAsync`), второй для категорий (`GetCategoryBalancesAsync`). Это вызвано разными временными диапазонами (всё время vs текущий месяц) — единый запрос с общим диапазоном неприменим.
 - Агрегат `DailyExpenseCategorie` (составной ключ `CategorieId + Day`) пересчитывается фоновой задачей `Hangfire` (`IDailyExpenseCategorieRecalculationService`) после создания/удаления транзакции. Запись пишется в БД атомарно через `UPSERT` (`INSERT … ON CONFLICT DO UPDATE`), без предварительного чтения строки. При удалении транзакции пакет затронутых категорий пересчитывается одним вызовом `RecalculateManyAsync`.
 ## Возможные улучшения

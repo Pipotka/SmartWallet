@@ -54,7 +54,12 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 				?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
-		    ?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+	    	?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+
+		if (transactionEndpoint.EndpointType == EndpointType.System)
+		{
+			throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+		}
 
 		mapper.Map(model, transactionEndpoint);
 		_transactionEndpointRepository.Update(transactionEndpoint);
@@ -71,6 +76,11 @@ public sealed class TransactionEndpointService(IUnitOfWork unitOfWork,
 		
 		var transactionEndpoint = await _transactionEndpointRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
 			?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+
+		if (transactionEndpoint.EndpointType == EndpointType.System)
+		{
+			throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.Id);
+		}
 
 		if (transactionEndpoint.EndpointType == EndpointType.Category)
 		{

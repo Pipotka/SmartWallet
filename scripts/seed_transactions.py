@@ -99,7 +99,7 @@ VALUES %s
 
 # SQL-запрос для загрузки конечных точек транзакций из БД
 FETCH_ENDPOINTS_SQL = """\
-SELECT "Id", "Name", "IsStorage", "Value"
+SELECT "Id", "Name", "EndpointType", "Value"
 FROM "TransactionEndpoint"
 WHERE "UserId" = %s AND "DeletedAt" IS NULL
 """
