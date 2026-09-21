@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Service.Models.CreateModels;
+﻿using Nasurino.SmartWallet.Entities;
+
+namespace Nasurino.SmartWallet.Service.Models.CreateModels;
 
 /// <summary>
 /// Модель создания конечной точки транзакции
@@ -21,7 +23,7 @@ public class CreateTransactionEndpointModel
 	public decimal? Limitation { get; set; }
 	
 	/// <summary>
-	/// Флаг указывающий, что конечная точка является денежным хранилищем
+	/// Тип конечной точки
 	/// </summary>
-	public bool IsStorage { get; set; }
+	public EndpointType EndpointType { get; set; }
 }
