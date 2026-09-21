@@ -41,8 +41,8 @@ public sealed class TransactionController : Controller
 	/// </summary>
 	[HttpGet]
 	[ProducesResponseType(typeof(PagedResultApiModel<TransactionApiModel>), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList([FromQuery] TransactionQueryApiModel request, CancellationToken token)
 	{
@@ -56,8 +56,8 @@ public sealed class TransactionController : Controller
 	/// </summary>
 	[HttpPost]
 	[ProducesResponseType(typeof(TransactionApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Create([FromBody] CreateTransactionApiModel request, CancellationToken token)
 	{
@@ -72,8 +72,8 @@ public sealed class TransactionController : Controller
 	/// </summary>
 	[HttpDelete]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteTransactionApiModel request, CancellationToken token)
 	{

@@ -5,18 +5,5 @@
 /// </summary>
 public sealed class CreateTransactionApiModel
 {
-	/// <summary>
-	/// Идентификатор аккаунта-источника
-	/// </summary>
-	public Guid? SourceAccountId { get; set; }
-
-	/// <summary>
-	/// Идентификатор аккаунта назначения
-	/// </summary>
-	public Guid? DestinationAccountId { get; set; }
-
-	/// <summary>
-	/// Значение
-	/// </summary>
-	public decimal Amount { get; set; } = 0.0m;
+	public List<CreateTransactionPostingApiModel> Postings { get; set; } = [];
 }

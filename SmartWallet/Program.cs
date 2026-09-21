@@ -5,6 +5,7 @@ using Nasurino.SmartWallet.Services;
 using Nasurino.SmartWallet.Services.AutoMappers;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Common.Infrastructure;
@@ -67,6 +68,9 @@ builder.Services.AddHangfireServer();
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add(typeof(SmartWalletExceptionFilter));
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -123,6 +127,13 @@ builder.Services.Configure<JwtOptions>(builder.Configuration
 builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtOptions>>().Value);
 builder.Services.Configure<BCryptOptions>(builder.Configuration
     .GetSection("ApiSettings:BCryptSettings"));
+
+builder.Services.AddOptions<ApiSettings>()
+    .Bind(builder.Configuration.GetSection("ApiSettings"))
+    .Validate(settings => settings.PostingSettings.MaxPostingsPerTransaction >= 2,
+        "ApiSettings:PostingSettings:MaxPostingsPerTransaction must be >= 2");
+
+builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<ApiSettings>>().Value);
 #endregion
 
 #region Регистрация сервисов

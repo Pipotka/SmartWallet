@@ -1,102 +1,66 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Service.Exceptions;
 
 namespace Nasurino.SmartWallet.Infrastructure;
 
-/// <summary>
-/// Фильтр обработки исключительных событий
-/// </summary>
 public sealed class SmartWalletExceptionFilter : IExceptionFilter
 {
-	/// <summary>
-	/// <inheritdoc cref="IExceptionFilter.OnException(ExceptionContext)" path="/summary"/>
-	/// </summary>
-	public void OnException(ExceptionContext context)
-	{
-		var exception = context.Exception as ServiceException;
-		if (exception == null)
-		{
-			return;
-		}
+    public void OnException(ExceptionContext context)
+    {
+        switch (context.Exception)
+        {
+            case CodedServiceException coded:
+                SetResult(context, coded.StatusCode, coded.ErrorCode, coded.Message);
+                return;
 
-		switch (exception)
-		{
-			case AuthenticationServiceException ex:
-				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 401
-				})
-				{
-					StatusCode = StatusCodes.Status401Unauthorized
-				}, context);
-				break;
+            case EntityNotFoundByIdServiceException<TransactionEndpoint> ex:
+                SetResult(context, StatusCodes.Status404NotFound, "ACCOUNT_NOT_FOUND", ex.Message);
+                return;
 
-			case AuthorizationServiceException ex:
-				SetExceptionContext(new UnauthorizedObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 401
-				})
-				{
-					StatusCode = StatusCodes.Status401Unauthorized
-				}, context);
-				break;
-			
-			case EntityNotFoundServiceException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 404
-				})
-				{
-					StatusCode = StatusCodes.Status404NotFound
-				}, context);
-				break;
+            case EntityNotFoundByIdServiceException<Transaction> ex:
+                SetResult(context, StatusCodes.Status404NotFound, "TRANSACTION_NOT_FOUND", ex.Message);
+                return;
 
-			case SmartWalletValidationException ex:
-				SetExceptionContext(new UnprocessableEntityObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 422
-				})
-				{
-					StatusCode = StatusCodes.Status422UnprocessableEntity
-				}, context);
-				break;
-			
-			case EntityAccessServiceException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 403
-				})
-				{
-					StatusCode = StatusCodes.Status403Forbidden
-				}, context);
-				break;
-			
-			case AccountBalanceLimitViolationException ex:
-				SetExceptionContext(new BadRequestObjectResult(new ApiExceptionDetails
-				{
-					Message = ex.Message,
-					StatusCode = 409
-				})
-				{
-					StatusCode = StatusCodes.Status409Conflict
-				}, context);
-				break;
-		}
+            case EntityNotFoundServiceException ex:
+                SetResult(context, StatusCodes.Status404NotFound, "not_found", ex.Message);
+                return;
 
-		return;
+            case SmartWalletValidationException ex:
+                SetResult(context, StatusCodes.Status400BadRequest, "VALIDATION_ERROR", ex.Message);
+                return;
 
-		static void SetExceptionContext(ObjectResult result, ExceptionContext context)
-		{
-			context.ExceptionHandled = true;
-			var response = context.HttpContext.Response;
-			response.StatusCode = result.StatusCode ?? StatusCodes.Status400BadRequest;
-			context.Result = result;
-		}
-	}
+            case AuthenticationServiceException:
+            case AuthorizationServiceException:
+                SetResult(context, StatusCodes.Status401Unauthorized, "unauthorized", context.Exception.Message);
+                return;
+
+            case EntityAccessServiceException ex:
+                SetResult(context, StatusCodes.Status403Forbidden, "access_denied", ex.Message);
+                return;
+
+            case AccountBalanceLimitViolationException ex:
+                SetResult(context, StatusCodes.Status409Conflict, "limit_violation", ex.Message);
+                return;
+        }
+
+        SetResult(context, StatusCodes.Status500InternalServerError, "internal_error", "Внутренняя ошибка сервера");
+    }
+
+    private static void SetResult(ExceptionContext context, int statusCode, string code, string message)
+    {
+        context.ExceptionHandled = true;
+        context.HttpContext.Response.StatusCode = statusCode;
+        context.Result = new ObjectResult(new ApiErrorApiModel
+        {
+            Code = code,
+            Message = message
+        })
+        {
+            StatusCode = statusCode
+        };
+    }
 }

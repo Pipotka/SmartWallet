@@ -1,297 +1,376 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
 using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Service.Exceptions;
 using Nasurino.SmartWallet.Service.Models;
 using Nasurino.SmartWallet.Service.Models.CreateModels;
 using Nasurino.SmartWallet.Service.Models.DeleteModels;
 using Nasurino.SmartWallet.Service.Models.Models;
 using Services.Contracts;
-using Services.Contracts.Models.Exceptions;
 
 namespace Nasurino.SmartWallet.Services;
 
-/// <summary>
-/// Сервис для работы с транзакциями
-/// </summary>
-public sealed class TransactionService(IUnitOfWork unitOfWork,
-	ISmartWalletValidateService validateService,
-	IMapper mapper,
-	IBackgroundTaskSystemProvider backgroundTaskSystemProvider) : ITransactionService
+public sealed class TransactionService(
+    IUnitOfWork unitOfWork,
+    ISmartWalletValidateService validateService,
+    IMapper mapper,
+    IBackgroundTaskSystemProvider backgroundTaskSystemProvider,
+    IOptions<ApiSettings> apiSettings) : ITransactionService
 {
-	private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
-	private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
-	private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
-	private readonly IPostingRepository _postingRepository = unitOfWork.PostingRepository;
-	private readonly IBackgroundTaskSystemProvider _backgroundTaskSystemProvider = backgroundTaskSystemProvider;
+    private readonly IUserRepository _userRepository = unitOfWork.UserRepository;
+    private readonly ITransactionRepository _transactionRepository = unitOfWork.TransactionRepository;
+    private readonly ITransactionEndpointRepository _transactionEndpointRepository = unitOfWork.TransactionEndpointRepository;
+    private readonly IPostingRepository _postingRepository = unitOfWork.PostingRepository;
+    private readonly IBackgroundTaskSystemProvider _backgroundTaskSystemProvider = backgroundTaskSystemProvider;
+    private readonly ApiSettings _apiSettings = apiSettings.Value;
 
-	async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(Guid userId, TransactionQueryModel query, CancellationToken token)
-	{
-		await validateService.ValidateAsync(query, token);
+    async Task<PagedResultModel<TransactionModel>> ITransactionService.GetPagedListByUserIdAsync(
+        Guid userId,
+        TransactionQueryModel query,
+        CancellationToken token)
+    {
+        await validateService.ValidateAsync(query, token);
 
-		_ = await _userRepository.GetUserByIdAsync(userId, token)
-			?? throw new EntityNotFoundByIdServiceException<User>(userId);
+        _ = await _userRepository.GetUserByIdAsync(userId, token)
+            ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-		var dalQuery = mapper.Map<TransactionQuery>(query);
-		var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
+        var dalQuery = mapper.Map<TransactionQuery>(query);
+        var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
 
-		return mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
-	}
+        var systemIds = (await _transactionEndpointRepository.GetListByUserIdAsync(userId, token))
+            .Where(e => e.EndpointType == EndpointType.System)
+            .Select(e => e.Id)
+            .ToHashSet();
 
-	async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)
-	{
-		await validateService.ValidateAsync(model, token);
-		_ = await _userRepository.GetUserByIdAsync(model.UserId, token)
-			?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+        var result = mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
+        foreach (var item in result.Items)
+        {
+            item.Postings.RemoveAll(p => systemIds.Contains(p.AccountId));
+        }
 
-		TransactionEndpoint? sourceAccount = null;
-		TransactionEndpoint? destinationAccount = null;
+        return result;
+    }
 
-		if (model.SourceAccountId.HasValue)
-		{
-			sourceAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(
-				model.SourceAccountId.Value,
-				model.UserId,
-				token)
-				?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.SourceAccountId.Value);
-		}
+    async Task<TransactionModel> ITransactionService.CreateAsync(CreateTransactionModel model, CancellationToken token)
+    {
+        await validateService.ValidateAsync(model, token);
 
-		if (model.DestinationAccountId.HasValue)
-		{
-			destinationAccount = await _transactionEndpointRepository.GetByIdAndUserIdAsync(
-				model.DestinationAccountId.Value,
-				model.UserId,
-				token)
-				?? throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(model.DestinationAccountId.Value);
-		}
+        _ = await _userRepository.GetUserByIdAsync(model.UserId, token)
+            ?? throw new EntityNotFoundByIdServiceException<User>(model.UserId);
 
-		var amount = model.Amount;
+        var maxPostings = Math.Max(2, _apiSettings.PostingSettings.MaxPostingsPerTransaction);
 
-		if (sourceAccount != null)
-		{
-			if (sourceAccount.EndpointType != EndpointType.Storage)
-			{
-				throw new SmartWalletValidationException(new PropertyValidationError(
-					nameof(CreateTransactionModel.SourceAccountId),
-					"Область трат не может быть указана как SourceAccount"));
-			}
+        ValidatePostings(model.Postings, maxPostings);
 
-			var balanceResult = await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(
-				sourceAccount.Id,
-				token) - amount;
+        var accountIds = model.Postings.Select(p => p.AccountId).ToList();
+        var endpoints = await _transactionEndpointRepository.GetListByIdsAndUserIdAsync(model.UserId, accountIds, token);
+        var endpointsById = endpoints.ToDictionary(e => e.Id);
 
-			if (sourceAccount.Limitation != null
-				&& sourceAccount.Limitation > balanceResult
-				&& destinationAccount is { EndpointType: EndpointType.Category })
-			{
-				throw new AccountBalanceLimitViolationException(
-					nameof(CreateTransactionModel.SourceAccountId),
-					sourceAccount.Name);
-			}
+        ValidateAccounts(model.Postings, endpointsById);
 
-			sourceAccount.Value = balanceResult;
-			_transactionEndpointRepository.Update(sourceAccount);
-		}
+        var systemEndpoint = await _transactionEndpointRepository.GetByNameAndUserIdAsync(model.UserId, "System", token)
+            ?? throw new CodedServiceException("internal_error", "System endpoint not found", StatusCodes.Status500InternalServerError);
 
-		if (destinationAccount != null)
-		{
-			if (!model.SourceAccountId.HasValue && destinationAccount.EndpointType != EndpointType.Storage)
-			{
-				throw new SmartWalletValidationException(new PropertyValidationError(
-					nameof(CreateTransactionModel.DestinationAccountId),
-					"Нельзя скорректировать баланс области трат"));
-			}
+        var (type, systemPosting) = ClassifyTransaction(model.Postings, endpointsById, systemEndpoint.Id);
 
-			var currentBalance = await GetBalanceForAccountAsync(destinationAccount.Id, destinationAccount.EndpointType == EndpointType.Storage, token);
+        var transactionId = Guid.NewGuid();
+        var transaction = new Transaction
+        {
+            Id = transactionId,
+            UserId = model.UserId,
+            Type = type,
+            Postings = BuildPostings(model.Postings, systemPosting, transactionId)
+        };
 
-			var balanceResult = currentBalance + amount;
-			if (destinationAccount.Limitation != null
-				&& destinationAccount.Limitation < balanceResult
-				&& destinationAccount is { EndpointType: EndpointType.Category })
-			{
-				throw new AccountBalanceLimitViolationException(
-					nameof(CreateTransactionModel.DestinationAccountId),
-					destinationAccount.Name);
-			}
+        await ApplyBalanceUpdatesAsync(transaction.Postings.ToList(), endpointsById, token);
 
-			destinationAccount.Value = balanceResult;
-			_transactionEndpointRepository.Update(destinationAccount);
-		}
+        _transactionRepository.Add(transaction);
+        _postingRepository.AddRange(transaction.Postings);
+        await unitOfWork.SaveChangesAsync(token);
 
-		var transactionId = Guid.NewGuid();
-		var transaction = new Transaction
-		{
-			Id = transactionId,
-			UserId = model.UserId,
-			Type = ResolveType(sourceAccount, destinationAccount),
-			Postings = BuildPostings(sourceAccount, destinationAccount, amount, transactionId)
-		};
+        var categoryIds = transaction.Postings
+            .Where(p => endpointsById.TryGetValue(p.AccountId, out var e) && e.EndpointType == EndpointType.Category)
+            .Select(p => p.AccountId)
+            .ToHashSet();
 
-		_transactionRepository.Add(transaction);
-		_postingRepository.AddRange(transaction.Postings);
-		await unitOfWork.SaveChangesAsync(token);
+        if (categoryIds.Count > 0)
+        {
+            var day = DateTime.UtcNow.Date;
+            _backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
+                s.RecalculateManyAsync(model.UserId, categoryIds, day, token));
+        }
 
-		if (destinationAccount is { EndpointType: EndpointType.Category })
-		{
-			var categoryId = destinationAccount.Id;
-			var day = DateTime.UtcNow.Date;
-			_backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
-				s.RecalculateAsync(model.UserId, categoryId, day, token));
-		}
+        var result = mapper.Map<TransactionModel>(transaction);
+        result.Postings.RemoveAll(p => p.AccountId == systemEndpoint.Id);
+        return result;
+    }
 
-		return mapper.Map<TransactionModel>(transaction);
-	}
+    async Task ITransactionService.DeleteAsync(DeleteTransactionModel model, CancellationToken token)
+    {
+        await validateService.ValidateAsync(model, token);
 
-	async Task ITransactionService.DeleteAsync(DeleteTransactionModel model, CancellationToken token)
-	{
-		await validateService.ValidateAsync(model, token);
-		if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
-		{
-			throw new EntityNotFoundByIdServiceException<User>(model.UserId);
-		}
+        if (await _userRepository.GetUserByIdAsync(model.UserId, token) is null)
+        {
+            throw new EntityNotFoundByIdServiceException<User>(model.UserId);
+        }
 
-		var transaction = await _transactionRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
-			?? throw new EntityNotFoundByIdServiceException<Transaction>(model.Id);
+        var transaction = await _transactionRepository.GetByIdAndUserIdAsync(model.Id, model.UserId, token)
+            ?? throw new EntityNotFoundByIdServiceException<Transaction>(model.Id);
 
-		var affectedCategories = new HashSet<Guid>();
+        var accountIds = transaction.Postings
+            .Select(p => p.AccountId)
+            .Distinct()
+            .ToList();
 
-		var accountIds = transaction.Postings
-			.Select(p => p.AccountId)
-			.Distinct()
-			.ToList();
+        var endpoints = await _transactionEndpointRepository.GetListByIdsAndUserIdAsync(model.UserId, accountIds, token);
+        var endpointById = endpoints.ToDictionary(e => e.Id);
 
-		var endpoints = await _transactionEndpointRepository.GetListByIdsAndUserIdAsync(
-			model.UserId,
-			accountIds,
-			token);
+        var affectedCategories = new HashSet<Guid>();
 
-		if (endpoints.Count > 0)
-		{
-			var storageIds = endpoints
-				.Where(e => e.EndpointType == EndpointType.Storage)
-				.Select(e => e.Id)
-				.ToList();
-			var categoryIds = endpoints
-				.Where(e => e.EndpointType == EndpointType.Category)
-				.Select(e => e.Id)
-				.ToList();
+        var storageIds = endpoints
+            .Where(e => e.EndpointType == EndpointType.Storage)
+            .Select(e => e.Id)
+            .ToList();
 
-			var storageBalances = await _transactionRepository.GetStorageBalancesAsync(storageIds, token);
-			var categoryBalances = await _transactionRepository.GetCategoryBalancesAsync(categoryIds, token);
+        var categoryIds = endpoints
+            .Where(e => e.EndpointType == EndpointType.Category)
+            .Select(e => e.Id)
+            .ToList();
 
-			var endpointById = endpoints.ToDictionary(e => e.Id);
+        var storageBalances = await _transactionRepository.GetStorageBalancesAsync(storageIds, token);
+        var categoryBalances = await _transactionRepository.GetCategoryBalancesAsync(categoryIds, token);
 
-			foreach (var posting in transaction.Postings)
-			{
-				if (!endpointById.TryGetValue(posting.AccountId, out var account))
-				{
-					continue;
-				}
+        foreach (var posting in transaction.Postings)
+        {
+            if (!endpointById.TryGetValue(posting.AccountId, out var account))
+            {
+                continue;
+            }
 
-				var currentBalance = account.EndpointType == EndpointType.Storage
-					? storageBalances.TryGetValue(account.Id, out var sb) ? sb : 0m
-					: categoryBalances.TryGetValue(account.Id, out var cb) ? cb : 0m;
-				account.Value = currentBalance - posting.Amount;
-				_transactionEndpointRepository.Update(account);
+            if (account.EndpointType == EndpointType.System)
+            {
+                posting.DeletedAt = DateTimeOffset.UtcNow;
+                _postingRepository.Update(posting);
+                continue;
+            }
 
-				posting.DeletedAt = DateTimeOffset.UtcNow;
-				_postingRepository.Update(posting);
+            var currentBalance = account.EndpointType == EndpointType.Storage
+                ? storageBalances.TryGetValue(account.Id, out var sb) ? sb : 0m
+                : categoryBalances.TryGetValue(account.Id, out var cb) ? cb : 0m;
 
-				if (account.EndpointType == EndpointType.Category)
-				{
-					affectedCategories.Add(account.Id);
-				}
-			}
-		}
+            account.Value = currentBalance - posting.Amount;
+            _transactionEndpointRepository.Update(account);
 
-		_transactionRepository.Delete(transaction);
-		await unitOfWork.SaveChangesAsync(token);
+            posting.DeletedAt = DateTimeOffset.UtcNow;
+            _postingRepository.Update(posting);
 
-		if (affectedCategories.Count > 0)
-		{
-			var day = transaction.MadeAt.Date;
+            if (account.EndpointType == EndpointType.Category)
+            {
+                affectedCategories.Add(account.Id);
+            }
+        }
 
-			_backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
-				s.RecalculateManyAsync(model.UserId, affectedCategories, day, token));
-		}
-	}
+        _transactionRepository.Delete(transaction);
+        await unitOfWork.SaveChangesAsync(token);
 
-	private async Task<decimal> GetBalanceForAccountAsync(
-		Guid accountId,
-		bool isStorage,
-		CancellationToken token)
-	{
-		if (isStorage)
-		{
-			return await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(accountId, token);
-		}
+        if (affectedCategories.Count > 0)
+        {
+            var day = transaction.MadeAt.Date;
+            _backgroundTaskSystemProvider.FireAndForget<IDailyExpenseCategorieRecalculationService>(s =>
+                s.RecalculateManyAsync(model.UserId, affectedCategories, day, token));
+        }
+    }
 
-		var startOfMonth = new DateTimeOffset(
-			DateTimeOffset.UtcNow.Year,
-			DateTimeOffset.UtcNow.Month,
-			1,
-			0, 0, 0,
-			TimeSpan.Zero);
+    private static void ValidatePostings(List<CreateTransactionPostingModel> postings, int maxPostings)
+    {
+        if (postings == null || postings.Count == 0)
+        {
+            throw new CodedServiceException("POSTINGS_EMPTY", "Список проводок пуст", StatusCodes.Status400BadRequest);
+        }
 
-		return await _transactionRepository.GetBalanceByAccountIdAndDateRangeAsync(
-			accountId,
-			token,
-			startOfMonth,
-			DateTimeOffset.UtcNow);
-	}
+        if (postings.Count > maxPostings)
+        {
+            throw new CodedServiceException("POSTINGS_LIMIT_EXCEEDED",
+                $"Превышен лимит проводок ({maxPostings})",
+                StatusCodes.Status400BadRequest);
+        }
 
-	private static TransactionType ResolveType(TransactionEndpoint? source, TransactionEndpoint? destination)
-	{
-		if (source is { EndpointType: EndpointType.Storage })
-		{
-			if (destination is null)
-			{
-				return TransactionType.AdjustmentDecrease;
-			}
+        var seenAccounts = new HashSet<Guid>();
 
-			return destination.EndpointType == EndpointType.Storage
-				? TransactionType.Transfer
-				: TransactionType.Expense;
-		}
+        foreach (var posting in postings)
+        {
+            if (posting.AccountId == Guid.Empty)
+            {
+                throw new CodedServiceException("INVALID_ACCOUNT_ID",
+                    "Идентификатор счета не может быть пустым",
+                    StatusCodes.Status400BadRequest);
+            }
 
-		return destination is { EndpointType: EndpointType.Storage }
-			? TransactionType.AdjustmentIncrease
-			: TransactionType.Expense;
-	}
+            if (posting.Amount == 0)
+            {
+                throw new CodedServiceException("ZERO_AMOUNT",
+                    "Сумма проводки не может быть равна нулю",
+                    StatusCodes.Status400BadRequest);
+            }
 
-	private static List<Posting> BuildPostings(
-		TransactionEndpoint? source,
-		TransactionEndpoint? destination,
-		decimal amount,
-		Guid transactionId)
-	{
-		var postings = new List<Posting>();
+            if (!seenAccounts.Add(posting.AccountId))
+            {
+                throw new CodedServiceException("DUPLICATE_ACCOUNT_ID",
+                    $"Счет {posting.AccountId} указан более одного раза",
+                    StatusCodes.Status400BadRequest);
+            }
+        }
+    }
 
-		if (source is { EndpointType: EndpointType.Storage })
-		{
-			postings.Add(new Posting
-			{
-				TransactionId = transactionId,
-				Transaction = null,
-				AccountId = source.Id,
-				Amount = -amount
-			});
-		}
+    private static void ValidateAccounts(
+        List<CreateTransactionPostingModel> postings,
+        Dictionary<Guid, TransactionEndpoint> endpointsById)
+    {
+        foreach (var posting in postings)
+        {
+            if (!endpointsById.TryGetValue(posting.AccountId, out var endpoint))
+            {
+                throw new CodedServiceException("ACCOUNT_NOT_FOUND",
+                    $"Счет {posting.AccountId} не найден",
+                    StatusCodes.Status404NotFound);
+            }
 
-		if (destination != null)
-		{
-			postings.Add(new Posting
-			{
-				TransactionId = transactionId,
-				Transaction = null,
-				AccountId = destination.Id,
-				Amount = amount
-			});
-		}
+            if (endpoint.EndpointType == EndpointType.System)
+            {
+                throw new CodedServiceException("ACCOUNT_NOT_FOUND",
+                    $"Счет {posting.AccountId} не найден",
+                    StatusCodes.Status404NotFound);
+            }
+        }
+    }
 
-		return postings;
-	}
+    private static (TransactionType Type, Posting? SystemPosting) ClassifyTransaction(
+        List<CreateTransactionPostingModel> postings,
+        Dictionary<Guid, TransactionEndpoint> endpointsById,
+        Guid systemEndpointId)
+    {
+        var userSum = postings.Sum(p => p.Amount);
+        var storagePostings = postings
+            .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Storage)
+            .ToList();
+
+        var categoryPostings = postings
+            .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Category)
+            .ToList();
+
+        if (categoryPostings.Count > 0)
+        {
+            if (storagePostings.Count > 0
+                && storagePostings.All(p => p.Amount < 0)
+                && categoryPostings.All(p => p.Amount > 0)
+                && userSum == 0)
+            {
+                return (TransactionType.Expense, null);
+            }
+
+            throw new CodedServiceException("INVALID_POSTING_COMBINATION",
+                "Комбинация проводок не соответствует ни одному типу транзакции",
+                StatusCodes.Status400BadRequest);
+        }
+
+        var signs = storagePostings
+            .Select(p => Math.Sign(p.Amount))
+            .Distinct()
+            .ToHashSet();
+
+        if (signs.Count == 2 && userSum == 0)
+        {
+            return (TransactionType.Transfer, null);
+        }
+
+        if (signs.Count == 1 && signs.Contains(1) && userSum > 0)
+        {
+            return (TransactionType.AdjustmentIncrease, new Posting
+            {
+                AccountId = systemEndpointId,
+                Amount = -userSum
+            });
+        }
+
+        if (signs.Count == 1 && signs.Contains(-1) && userSum < 0)
+        {
+            return (TransactionType.AdjustmentDecrease, new Posting
+            {
+                AccountId = systemEndpointId,
+                Amount = -userSum
+            });
+        }
+
+        throw new CodedServiceException("INVALID_POSTING_COMBINATION",
+            "Комбинация проводок не соответствует ни одному типу транзакции",
+            StatusCodes.Status400BadRequest);
+    }
+
+    private static List<Posting> BuildPostings(
+        List<CreateTransactionPostingModel> userPostings,
+        Posting? systemPosting,
+        Guid transactionId)
+    {
+        var postings = userPostings
+            .Select(p => new Posting
+            {
+                Id = Guid.NewGuid(),
+                TransactionId = transactionId,
+                AccountId = p.AccountId,
+                Amount = p.Amount
+            })
+            .ToList();
+
+        if (systemPosting != null)
+        {
+            systemPosting.Id = Guid.NewGuid();
+            systemPosting.TransactionId = transactionId;
+            postings.Add(systemPosting);
+        }
+
+        return postings;
+    }
+
+    private async Task ApplyBalanceUpdatesAsync(
+        List<Posting> postings,
+        Dictionary<Guid, TransactionEndpoint> endpointsById,
+        CancellationToken token)
+    {
+        var nonSystemPostings = postings
+            .Where(p => endpointsById.TryGetValue(p.AccountId, out var e) && e.EndpointType != EndpointType.System)
+            .ToList();
+
+        var storageIds = nonSystemPostings
+            .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Storage)
+            .Select(p => p.AccountId)
+            .Distinct()
+            .ToList();
+
+        var categoryIds = nonSystemPostings
+            .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Category)
+            .Select(p => p.AccountId)
+            .Distinct()
+            .ToList();
+
+        var storageBalances = await _transactionRepository.GetStorageBalancesAsync(storageIds, token);
+        var categoryBalances = await _transactionRepository.GetCategoryBalancesAsync(categoryIds, token);
+
+        foreach (var posting in nonSystemPostings)
+        {
+            var endpoint = endpointsById[posting.AccountId];
+
+            var currentBalance = endpoint.EndpointType == EndpointType.Storage
+                ? storageBalances.TryGetValue(endpoint.Id, out var sb) ? sb : 0m
+                : categoryBalances.TryGetValue(endpoint.Id, out var cb) ? cb : 0m;
+
+            endpoint.Value = currentBalance + posting.Amount;
+            _transactionEndpointRepository.Update(endpoint);
+        }
+    }
 }

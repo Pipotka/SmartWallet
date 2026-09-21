@@ -35,6 +35,7 @@ public class ApiModelMapper : Profile
 
 		CreateMap<PostingModel, PostingApiModel>(MemberList.Destination);
 		CreateMap<TransactionModel, TransactionApiModel>(MemberList.Destination);
+		CreateMap<CreateTransactionPostingApiModel, CreateTransactionPostingModel>(MemberList.Destination);
 		CreateMap<CreateTransactionApiModel, CreateTransactionModel>(MemberList.Destination)
 			.ForMember(x => x.UserId, opt => opt.Ignore());
 		CreateMap<DeleteTransactionApiModel, DeleteTransactionModel>(MemberList.Destination)

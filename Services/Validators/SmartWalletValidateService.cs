@@ -36,7 +36,6 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 		_validators.Add(typeof(UserModel), new UserModelValidator());
 		_validators.Add(typeof(UpdateUserModel), new UpdateUserModelValidator());
 		_validators.Add(typeof(CreateTransactionEndpointModel), new CreateTransactionEndpointValidator(transactionEndpointRepository));
-		_validators.Add(typeof(CreateTransactionModel), new CreateTransactionModelValidator());
 		_validators.Add(typeof(DeleteTransactionEndpointModel), new DeleteTransactionEndpointModelValidator());
 		_validators.Add(typeof(DeleteTransactionModel), new DeleteTransactionModelValidator());
 		_validators.Add(typeof(DeleteUserModel), new DeleteUserModelValidator());
@@ -52,17 +51,16 @@ public sealed class SmartWalletValidateService : ISmartWalletValidateService
 
     async Task ISmartWalletValidateService.ValidateAsync<TModel>(TModel model, CancellationToken token)
 	{
-		_validators.TryGetValue(typeof(TModel), out var validator);
-
-		if (validator == null)
+		if (!_validators.TryGetValue(typeof(TModel), out var validator) || validator is null)
 		{
-			throw new InvalidOperationException($"Валидатор для {model.GetType().Name} не найден");
+			return;
 		}
 
 		var validationResult = await validator.ValidateAsync(new ValidationContext<TModel>(model), token);
 		if (!validationResult.IsValid)
 		{
-			throw new SmartWalletValidationException(validationResult.Errors.Select(x => new PropertyValidationError(x.PropertyName, x.ErrorMessage)).ToList());
+			throw new SmartWalletValidationException(validationResult.Errors
+				.Select(x => new PropertyValidationError(x.PropertyName, x.ErrorMessage)).ToList());
 		}
 	}
 }

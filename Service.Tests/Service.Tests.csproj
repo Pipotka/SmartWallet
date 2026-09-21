@@ -15,9 +15,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Service.Models\Service.Models.csproj" />
       <ProjectReference Include="..\Services.Infrastructure\Service.Infrastructure.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
+      <ProjectReference Include="..\SmartWallet\SmartWallet.csproj" />
       <ProjectReference Include="..\UnitTests.Services.Infrastructure\UnitTests.Services.Infrastructure.csproj" />
     </ItemGroup>
 

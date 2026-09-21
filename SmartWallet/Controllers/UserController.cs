@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
+using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Service.Exceptions;
@@ -49,7 +50,7 @@ public sealed class UserController : Controller
 	[HttpGet]
 	[Authorize]
 	[ProducesResponseType(typeof(UserApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Get(CancellationToken token)
 	{
@@ -63,7 +64,7 @@ public sealed class UserController : Controller
 	[HttpPost]
 	[AllowAnonymous]
 	[ProducesResponseType(typeof(UserApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
 	public async Task<IActionResult> SignIn([FromBody] CreateUserApiModel request, CancellationToken token)
 	{
 		var response = await _userService.RegistrationAsync(_mapper.Map<CreateUserModel>(request), token);
@@ -76,9 +77,9 @@ public sealed class UserController : Controller
 	[HttpPost("login")]
 	[AllowAnonymous]
 	[ProducesResponseType(typeof(ResponseLogInApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> LogIn([FromBody] RequestLogInApiModel request, CancellationToken token)
 	{
 		var (accessToken, refreshToken) = await _userService.LogInAsync(_mapper.Map<LogInModel>(request), token);
@@ -93,7 +94,7 @@ public sealed class UserController : Controller
 	[HttpPost("refresh")]
 	[AllowAnonymous]
 	[ProducesResponseType(typeof(ResponseRefreshApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Refresh(CancellationToken token)
 	{
 		var refreshToken = Request.Cookies["refresh_token"];
@@ -140,8 +141,8 @@ public sealed class UserController : Controller
 	[HttpPut]
 	[Authorize]
 	[ProducesResponseType(typeof(UserApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Update([FromBody] UpdateUserApiModel request, CancellationToken token)
 	{
@@ -157,9 +158,9 @@ public sealed class UserController : Controller
 	[HttpDelete]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteUserApiModel request, CancellationToken token)
 	{
 		var updateModel = _mapper.Map<DeleteUserModel>(request);
@@ -174,7 +175,7 @@ public sealed class UserController : Controller
 	[HttpPatch("password")]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordApiModel request, CancellationToken token)
 	{
