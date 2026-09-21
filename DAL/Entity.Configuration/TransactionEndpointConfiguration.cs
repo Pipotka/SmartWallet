@@ -20,5 +20,8 @@ public class TransactionEndpointConfiguration : IEntityTypeConfiguration<Transac
 			.WithMany(x => x.TransactionEndpoints)
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.NoAction);
+
+		builder.Property(x => x.EndpointType)
+			.HasConversion<int>();
 	}
 }
