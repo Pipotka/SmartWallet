@@ -55,8 +55,8 @@ public sealed class TransactionController : Controller
 	/// Создаёт новую транзакцию
 	/// </summary>
 	[HttpPost]
-	[ProducesResponseType(typeof(TransactionApiModel), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(TransactionApiModel), StatusCodes.Status201Created)]
+	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ApiErrorApiModel), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Create([FromBody] CreateTransactionApiModel request, CancellationToken token)
@@ -64,7 +64,8 @@ public sealed class TransactionController : Controller
 		var model = _mapper.Map<CreateTransactionModel>(request);
 		model.UserId = _identityProvider.Id;
 		var response = await _transactionService.CreateAsync(model, token);
-		return Ok(_mapper.Map<TransactionApiModel>(response));
+		var apiModel = _mapper.Map<TransactionApiModel>(response);
+		return StatusCode(StatusCodes.Status201Created, apiModel);
 	}
 
 	/// <summary>
