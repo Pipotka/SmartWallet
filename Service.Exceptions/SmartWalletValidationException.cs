@@ -1,4 +1,5 @@
-﻿using Services.Contracts.Models.Exceptions;
+﻿using Microsoft.AspNetCore.Http;
+using Services.Contracts.Models.Exceptions;
 
 namespace Nasurino.SmartWallet.Service.Exceptions;
 
@@ -13,7 +14,7 @@ public class SmartWalletValidationException : EntityServiceException
 	/// <param name="validationResults">Результаты валидации</param>
 	public SmartWalletValidationException(ICollection<PropertyValidationError> validationResults)
 		: base(string.Join(';', validationResults.Select(x => $"{x.PropertyName} - {x.ErrorMessage}")),
-			ErrorCodes.ValidationError)
+			ErrorCodes.ValidationError, StatusCodes.Status400BadRequest)
 	{
 	}
 
@@ -23,7 +24,7 @@ public class SmartWalletValidationException : EntityServiceException
 	/// <param name="validationResult">Результат валидации</param>
 	public SmartWalletValidationException(PropertyValidationError validationResult)
 		: base($"{validationResult.PropertyName} - {validationResult.ErrorMessage}",
-			ErrorCodes.ValidationError)
+			ErrorCodes.ValidationError, StatusCodes.Status400BadRequest)
 	{
 	}
 }

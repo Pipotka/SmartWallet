@@ -2,7 +2,7 @@ using FluentAssertions;
 using Nasurino.SmartWallet.Entities;
 using Xunit;
 
-namespace Nasurino.SmartWallet.Services.Tests;
+namespace Nasurino.SmartWallet.Entities.Tests;
 
 public class EndpointTypeTests
 {

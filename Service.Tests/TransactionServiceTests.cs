@@ -194,7 +194,7 @@ public class TransactionServiceTests
 
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
-        var ex = await act.Should().ThrowAsync<CodedServiceException>();
+        var ex = await act.Should().ThrowAsync<PostingsValidationException>();
         ex.Which.ErrorCode.Should().Be(ErrorCodes.PostingsLimitExceeded);
     }
 
@@ -218,7 +218,7 @@ public class TransactionServiceTests
 
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
-        var ex = await act.Should().ThrowAsync<CodedServiceException>();
+        var ex = await act.Should().ThrowAsync<PostingsValidationException>();
         ex.Which.ErrorCode.Should().Be(ErrorCodes.DuplicateAccountId);
     }
 
@@ -245,7 +245,7 @@ public class TransactionServiceTests
 
         var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
 
-        var ex = await act.Should().ThrowAsync<CodedServiceException>();
+        var ex = await act.Should().ThrowAsync<PostingsValidationException>();
         ex.Which.ErrorCode.Should().Be(ErrorCodes.InvalidPostingCombination);
     }
 

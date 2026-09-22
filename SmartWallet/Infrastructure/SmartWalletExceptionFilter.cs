@@ -8,8 +8,8 @@ using Nasurino.SmartWallet.Service.Exceptions;
 namespace Nasurino.SmartWallet.Infrastructure;
 
 /// <summary>
-/// Глобальный фильтр исключений. Маппит типы исключений на HTTP-статусы,
-/// коды ошибок берутся из <see cref="ServiceException.ErrorCode"/>.
+/// Глобальный фильтр исключений. Маппит конкретные типы исключений на HTTP-статусы,
+/// коды и сообщения берутся из свойств <see cref="ServiceException"/>.
 /// </summary>
 public sealed class SmartWalletExceptionFilter : IExceptionFilter
 {
@@ -17,8 +17,12 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 	{
 		switch (context.Exception)
 		{
-			case CodedServiceException coded:
-				SetResult(context, MapCodedExceptionToStatusCode(coded), coded.ErrorCode, coded.Message);
+			case PostingsValidationException ex:
+				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+				return;
+
+			case AccountNotFoundException ex:
+				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
 				return;
 
 			case EntityNotFoundByIdServiceException<TransactionEndpoint>:
@@ -30,11 +34,11 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 				return;
 
 			case EntityNotFoundServiceException ex:
-				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
+				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
 				return;
 
 			case SmartWalletValidationException ex:
-				SetResult(context, StatusCodes.Status400BadRequest, ex.ErrorCode, ex.Message);
+				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
 				return;
 
 			case AuthenticationServiceException:
@@ -43,32 +47,12 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 				return;
 
 			case EntityAccessServiceException ex:
-				SetResult(context, StatusCodes.Status403Forbidden, ex.ErrorCode, ex.Message);
-				return;
-
-			case AccountBalanceLimitViolationException ex:
-				SetResult(context, StatusCodes.Status409Conflict, ex.ErrorCode, ex.Message);
-				return;
-
-			case ServiceException svc:
-				SetResult(context, StatusCodes.Status500InternalServerError, svc.ErrorCode, svc.Message);
+				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
 				return;
 		}
 
 		SetResult(context, StatusCodes.Status500InternalServerError, ErrorCodes.InternalError, "Внутренняя ошибка сервера");
 	}
-
-	private static int MapCodedExceptionToStatusCode(CodedServiceException ex) => ex.ErrorCode switch
-	{
-		ErrorCodes.PostingsEmpty => StatusCodes.Status400BadRequest,
-		ErrorCodes.PostingsLimitExceeded => StatusCodes.Status400BadRequest,
-		ErrorCodes.InvalidAccountId => StatusCodes.Status400BadRequest,
-		ErrorCodes.ZeroAmount => StatusCodes.Status400BadRequest,
-		ErrorCodes.DuplicateAccountId => StatusCodes.Status400BadRequest,
-		ErrorCodes.InvalidPostingCombination => StatusCodes.Status400BadRequest,
-		ErrorCodes.AccountNotFound => StatusCodes.Status404NotFound,
-		_ => StatusCodes.Status500InternalServerError
-	};
 
 	private static void SetResult(ExceptionContext context, int statusCode, string code, string message)
 	{

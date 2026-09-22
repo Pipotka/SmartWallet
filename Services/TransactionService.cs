@@ -171,12 +171,12 @@ public sealed class TransactionService(
     {
         if (postings == null || postings.Count == 0)
         {
-            throw new CodedServiceException(ErrorCodes.PostingsEmpty, "Список проводок пуст");
+            throw new PostingsValidationException(ErrorCodes.PostingsEmpty, "Список проводок пуст");
         }
 
         if (postings.Count > maxPostings)
         {
-            throw new CodedServiceException(ErrorCodes.PostingsLimitExceeded,
+            throw new PostingsValidationException(ErrorCodes.PostingsLimitExceeded,
                 $"Превышен лимит проводок ({maxPostings})");
         }
 
@@ -186,19 +186,19 @@ public sealed class TransactionService(
         {
             if (posting.AccountId == Guid.Empty)
             {
-                throw new CodedServiceException(ErrorCodes.InvalidAccountId,
+                throw new PostingsValidationException(ErrorCodes.InvalidAccountId,
                     "Идентификатор счета не может быть пустым");
             }
 
             if (posting.Amount == 0)
             {
-                throw new CodedServiceException(ErrorCodes.ZeroAmount,
+                throw new PostingsValidationException(ErrorCodes.ZeroAmount,
                     "Сумма проводки не может быть равна нулю");
             }
 
             if (!seenAccounts.Add(posting.AccountId))
             {
-                throw new CodedServiceException(ErrorCodes.DuplicateAccountId,
+                throw new PostingsValidationException(ErrorCodes.DuplicateAccountId,
                     $"Счет {posting.AccountId} указан более одного раза");
             }
         }
@@ -215,8 +215,7 @@ public sealed class TransactionService(
         {
             if (!endpointsById.TryGetValue(posting.AccountId, out _))
             {
-                throw new CodedServiceException(ErrorCodes.AccountNotFound,
-                    $"Счет {posting.AccountId} не найден");
+                throw new AccountNotFoundException(posting.AccountId);
             }
         }
     }
@@ -247,7 +246,7 @@ public sealed class TransactionService(
                 return TransactionType.Expense;
             }
 
-            throw new CodedServiceException(ErrorCodes.InvalidPostingCombination,
+            throw new PostingsValidationException(ErrorCodes.InvalidPostingCombination,
                 "Комбинация проводок не соответствует ни одному типу транзакции");
         }
 
@@ -271,7 +270,7 @@ public sealed class TransactionService(
             return TransactionType.AdjustmentDecrease;
         }
 
-        throw new CodedServiceException(ErrorCodes.InvalidPostingCombination,
+        throw new PostingsValidationException(ErrorCodes.InvalidPostingCombination,
             "Комбинация проводок не соответствует ни одному типу транзакции");
     }
 
