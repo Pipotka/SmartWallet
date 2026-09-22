@@ -67,7 +67,6 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 		ErrorCodes.DuplicateAccountId => StatusCodes.Status400BadRequest,
 		ErrorCodes.InvalidPostingCombination => StatusCodes.Status400BadRequest,
 		ErrorCodes.AccountNotFound => StatusCodes.Status404NotFound,
-		ErrorCodes.SystemEndpointNotFound => StatusCodes.Status500InternalServerError,
 		_ => StatusCodes.Status500InternalServerError
 	};
 

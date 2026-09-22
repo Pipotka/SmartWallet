@@ -196,36 +196,4 @@ public class TransactionEndpointRepositoryTests : SmartWalletContextInMemory
         result.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// GetListByUserId не должен возвращать System-конечные точки
-    /// </summary>
-    [Fact]
-    async Task GetListByUserIdShouldNotReturnSystemEndpoint()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-
-        var transactionEndpoints = new List<TransactionEndpoint>
-        {
-            _entityProvider.Create<TransactionEndpoint>(x => {
-                x.UserId = userId;
-                x.EndpointType = EndpointType.System;
-                x.Name = "System";
-            }),
-            _entityProvider.Create<TransactionEndpoint>(x => {
-                x.UserId = userId;
-                x.EndpointType = EndpointType.Storage;
-            })
-        };
-
-        await Context.AddRangeAsync(transactionEndpoints);
-        await Context.SaveChangesAsync();
-
-        // Act
-        var result = await _transactionEndpointRepository.GetListByUserIdAsync(userId, CancellationToken.None);
-
-        // Assert
-        result.Should().HaveCount(1);
-        result.Should().ContainSingle(x => x.EndpointType == EndpointType.Storage);
-    }
 }

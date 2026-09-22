@@ -15,7 +15,6 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.NotDeleted()
 			.Where(x => x.UserId == userId)
-			.Where(x => x.EndpointType != EndpointType.System)
 			.OrderByDescending(x => x.EndpointType)
 			.ToListAsync(cancellationToken);
 
@@ -36,11 +35,6 @@ public class TransactionEndpointRepository(IDataStorageContext storage) : BaseWr
 		=> Storage.Read<TransactionEndpoint>()
 			.Where(x => x.EndpointType == EndpointType.Category && x.Value > 0)
 			.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.Value, 0));
-
-	Task<TransactionEndpoint?> ITransactionEndpointRepository.GetSystemEndpointByUserIdAsync(Guid userId, CancellationToken cancellationToken)
-		=> Storage.Read<TransactionEndpoint>()
-			.NotDeleted()
-			.FirstOrDefaultAsync(x => x.UserId == userId && x.EndpointType == EndpointType.System, cancellationToken);
 
 	async Task<List<TransactionEndpoint>> ITransactionEndpointRepository.GetListByIdsAndUserIdAsync(
 		Guid userId,

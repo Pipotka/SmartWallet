@@ -27,10 +27,7 @@ public class ServiceModelMapper : Profile
 		CreateMap<UpdateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
 		CreateMap<CreateTransactionEndpointModel, TransactionEndpoint>(MemberList.Source);
 
-		CreateMap<Transaction, TransactionModel>(MemberList.Destination)
-			.ForMember(dest => dest.Postings, opt => opt.MapFrom(src => src.Postings
-				.Where(p => p.Account == null || p.Account.EndpointType != EndpointType.System)
-				.ToList()));
+		CreateMap<Transaction, TransactionModel>(MemberList.Destination);
 		CreateMap<Posting, PostingModel>(MemberList.Destination);
 		CreateMap<PostingData, PostingModel>(MemberList.Destination);
 		CreateMap<CreateTransactionModel, Transaction>(MemberList.Destination)

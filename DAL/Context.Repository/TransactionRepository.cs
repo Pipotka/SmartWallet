@@ -20,16 +20,9 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 	{
 	}
 
-	Task<PagedResult<TransactionData>> ITransactionRepository.GetPagedListByUserIdAsync(
-		Guid userId,
-		TransactionQuery query,
-		CancellationToken cancellationToken)
-		=> ((ITransactionRepository)this).GetPagedListByUserIdAsync(userId, query, null, cancellationToken);
-
 	async Task<PagedResult<TransactionData>> ITransactionRepository.GetPagedListByUserIdAsync(
 		Guid userId,
 		TransactionQuery query,
-		Guid? systemEndpointId,
 		CancellationToken cancellationToken)
 	{
 		var queryable = Storage.Read<Transaction>()
@@ -61,7 +54,6 @@ public sealed class TransactionRepository : BaseWriteRepository<Transaction>, IT
 				Type = x.Type,
 				MadeAt = x.MadeAt,
 				Postings = x.Postings
-					.Where(p => !systemEndpointId.HasValue || p.AccountId != systemEndpointId.Value)
 					.Select(p => new PostingData
 					{
 						Id = p.Id,

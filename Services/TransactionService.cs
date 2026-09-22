@@ -43,11 +43,8 @@ public sealed class TransactionService(
         _ = await _userRepository.GetUserByIdAsync(userId, token)
             ?? throw new EntityNotFoundByIdServiceException<User>(userId);
 
-        var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(userId, token);
-        var systemId = systemEndpoint?.Id;
-
         var dalQuery = mapper.Map<TransactionQuery>(query);
-        var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, systemId, token);
+        var pagedResult = await _transactionRepository.GetPagedListByUserIdAsync(userId, dalQuery, token);
 
         return mapper.Map<PagedResultModel<TransactionModel>>(pagedResult);
     }
@@ -72,25 +69,13 @@ public sealed class TransactionService(
 
         var type = ClassifyTransaction(model.Postings, endpointsById);
 
-        Posting? systemPosting = null;
-        Guid? systemEndpointId = null;
-
-        if (type is TransactionType.AdjustmentIncrease or TransactionType.AdjustmentDecrease)
-        {
-            var systemEndpoint = await _transactionEndpointRepository.GetSystemEndpointByUserIdAsync(model.UserId, token)
-                ?? throw new CodedServiceException(ErrorCodes.SystemEndpointNotFound, "System endpoint not found");
-
-            systemEndpointId = systemEndpoint.Id;
-            systemPosting = CreateSystemPostingIfNeeded(type, model.Postings, systemEndpoint.Id);
-        }
-
         var transactionId = Guid.NewGuid();
         var transaction = new Transaction
         {
             Id = transactionId,
             UserId = model.UserId,
             Type = type,
-            Postings = BuildPostings(model.Postings, systemPosting, transactionId)
+            Postings = BuildPostings(model.Postings, transactionId)
         };
 
         var affectedCategoryIds = await ApplyBalanceUpdatesAsync(transaction.Postings.ToList(), endpointsById, token);
@@ -106,13 +91,7 @@ public sealed class TransactionService(
                 s.RecalculateManyAsync(model.UserId, affectedCategoryIds, day, token));
         }
 
-        var result = mapper.Map<TransactionModel>(transaction);
-        if (systemEndpointId.HasValue)
-        {
-            result.Postings.RemoveAll(p => p.AccountId == systemEndpointId.Value);
-        }
-
-        return result;
+        return mapper.Map<TransactionModel>(transaction);
     }
 
     /// <inheritdoc/>
@@ -155,13 +134,6 @@ public sealed class TransactionService(
         {
             if (!endpointById.TryGetValue(posting.AccountId, out var account))
             {
-                continue;
-            }
-
-            if (account.EndpointType == EndpointType.System)
-            {
-                posting.DeletedAt = DateTimeOffset.UtcNow;
-                _postingRepository.Update(posting);
                 continue;
             }
 
@@ -233,7 +205,7 @@ public sealed class TransactionService(
     }
 
     /// <summary>
-    /// Валидация принадлежности счетов пользователю и их типа
+    /// Валидация принадлежности счетов пользователю
     /// </summary>
     private static void ValidateAccounts(
         List<CreateTransactionPostingModel> postings,
@@ -241,13 +213,7 @@ public sealed class TransactionService(
     {
         foreach (var posting in postings)
         {
-            if (!endpointsById.TryGetValue(posting.AccountId, out var endpoint))
-            {
-                throw new CodedServiceException(ErrorCodes.AccountNotFound,
-                    $"Счет {posting.AccountId} не найден");
-            }
-
-            if (endpoint.EndpointType == EndpointType.System)
+            if (!endpointsById.TryGetValue(posting.AccountId, out _))
             {
                 throw new CodedServiceException(ErrorCodes.AccountNotFound,
                     $"Счет {posting.AccountId} не найден");
@@ -310,40 +276,13 @@ public sealed class TransactionService(
     }
 
     /// <summary>
-    /// Создаёт системную проводку для балансировки корректировки.
-    /// </summary>
-    private static Posting CreateSystemPostingIfNeeded(
-        TransactionType type,
-        List<CreateTransactionPostingModel> postings,
-        Guid systemEndpointId)
-    {
-        var userSum = postings.Sum(p => p.Amount);
-
-        return type switch
-        {
-            TransactionType.AdjustmentIncrease => new Posting
-            {
-                AccountId = systemEndpointId,
-                Amount = -userSum
-            },
-            TransactionType.AdjustmentDecrease => new Posting
-            {
-                AccountId = systemEndpointId,
-                Amount = -userSum
-            },
-            _ => null!
-        };
-    }
-
-    /// <summary>
-    /// Формирует итоговый список проводок, включая системную при наличии
+    /// Формирует итоговый список проводок
     /// </summary>
     private static List<Posting> BuildPostings(
         List<CreateTransactionPostingModel> userPostings,
-        Posting? systemPosting,
         Guid transactionId)
     {
-        var postings = userPostings
+        return userPostings
             .Select(p => new Posting
             {
                 Id = Guid.NewGuid(),
@@ -352,15 +291,6 @@ public sealed class TransactionService(
                 Amount = p.Amount
             })
             .ToList();
-
-        if (systemPosting != null)
-        {
-            systemPosting.Id = Guid.NewGuid();
-            systemPosting.TransactionId = transactionId;
-            postings.Add(systemPosting);
-        }
-
-        return postings;
     }
 
     /// <summary>
@@ -371,17 +301,13 @@ public sealed class TransactionService(
         Dictionary<Guid, TransactionEndpoint> endpointsById,
         CancellationToken token)
     {
-        var nonSystemPostings = postings
-            .Where(p => endpointsById.TryGetValue(p.AccountId, out var e) && e.EndpointType != EndpointType.System)
-            .ToList();
-
-        var storageIds = nonSystemPostings
+        var storageIds = postings
             .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Storage)
             .Select(p => p.AccountId)
             .Distinct()
             .ToList();
 
-        var categoryIds = nonSystemPostings
+        var categoryIds = postings
             .Where(p => endpointsById[p.AccountId].EndpointType == EndpointType.Category)
             .Select(p => p.AccountId)
             .Distinct()
@@ -392,7 +318,7 @@ public sealed class TransactionService(
 
         var affectedCategoryIds = new HashSet<Guid>();
 
-        foreach (var posting in nonSystemPostings)
+        foreach (var posting in postings)
         {
             var endpoint = endpointsById[posting.AccountId];
 

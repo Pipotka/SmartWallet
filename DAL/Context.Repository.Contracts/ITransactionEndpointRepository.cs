@@ -39,11 +39,6 @@ namespace Nasurino.SmartWallet.Context.Repository.Contracts
 		Task ClearCategoryValueCacheAsync(CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Возвращает системную конечную точку пользователя
-		/// </summary>
-		Task<TransactionEndpoint?> GetSystemEndpointByUserIdAsync(Guid userId, CancellationToken cancellationToken);
-
-		/// <summary>
 		/// Возвращает конечные точки транзакций пользователя по коллекции идентификаторов
 		/// </summary>
 		/// <param name="userId">Идентификатор пользователя</param>

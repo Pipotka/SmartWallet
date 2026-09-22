@@ -46,7 +46,4 @@ public static class ErrorCodes
 
 	/// <summary>Недопустимая комбинация проводок</summary>
 	public const string InvalidPostingCombination = "invalid_posting_combination";
-
-	/// <summary>Системная конечная точка не найдена</summary>
-	public const string SystemEndpointNotFound = "system_endpoint_not_found";
 }

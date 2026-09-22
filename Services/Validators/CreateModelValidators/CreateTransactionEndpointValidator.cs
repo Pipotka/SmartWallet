@@ -43,8 +43,5 @@ public class CreateTransactionEndpointValidator : AbstractValidator<CreateTransa
 				return limitation > 0;
 			})
 			.WithMessage("Лимит должен быть больше нуля");
-		RuleFor(x => x.EndpointType)
-			.NotEqual(EndpointType.System)
-			.WithMessage("Создание системного счета запрещено");
 	}
 }

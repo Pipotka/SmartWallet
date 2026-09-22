@@ -25,7 +25,6 @@ public class TransactionServiceTests
     private readonly Mock<IPostingRepository> _postingRepositoryMock;
     private readonly Mock<IBackgroundTaskSystemProvider> _backgroundTaskSystemProviderMock;
     private readonly ITransactionService _transactionService;
-    private readonly Guid _systemEndpointId = Guid.NewGuid();
     private readonly Dictionary<Guid, TransactionEndpoint> _endpoints = new();
 
     public TransactionServiceTests()
@@ -56,17 +55,6 @@ public class TransactionServiceTests
             mapper,
             _backgroundTaskSystemProviderMock.Object,
             postingSettings);
-
-        _transactionEndpointRepositoryMock
-            .Setup(r => r.GetSystemEndpointByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid userId, CancellationToken _) => new TransactionEndpoint
-            {
-                Id = _systemEndpointId,
-                UserId = userId,
-                Name = "System",
-                EndpointType = EndpointType.System,
-                Value = 0m
-            });
 
         _transactionEndpointRepositoryMock
             .Setup(r => r.GetListByIdsAndUserIdAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
@@ -143,7 +131,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
-    public async Task CreateShouldCreateAdjustmentIncreaseAndHideSystemPosting()
+    public async Task CreateShouldCreateAdjustmentIncreaseWithOnlyUserPostings()
     {
         var userId = Guid.NewGuid();
         var storage = Guid.NewGuid();
@@ -164,7 +152,6 @@ public class TransactionServiceTests
 
         result.Type.Should().Be(TransactionType.AdjustmentIncrease);
         result.Postings.Should().ContainSingle(p => p.AccountId == storage && p.Amount == 1000m);
-        result.Postings.Should().NotContain(p => p.AccountId == _systemEndpointId);
     }
 
     [Fact]
@@ -189,30 +176,6 @@ public class TransactionServiceTests
 
         result.Type.Should().Be(TransactionType.AdjustmentDecrease);
         result.Postings.Should().ContainSingle(p => p.AccountId == storage && p.Amount == -500m);
-    }
-
-    [Fact]
-    public async Task CreateShouldReturnAccountNotFoundForSystemAccount()
-    {
-        var userId = Guid.NewGuid();
-        var systemId = Guid.NewGuid();
-        AddEndpoint(systemId, userId, EndpointType.System);
-
-        var model = new CreateTransactionModel
-        {
-            UserId = userId,
-            Postings =
-            [
-                new CreateTransactionPostingModel { AccountId = systemId, Amount = 100m }
-            ]
-        };
-
-        SetupUser(userId);
-
-        var act = () => _transactionService.CreateAsync(model, CancellationToken.None);
-
-        var ex = await act.Should().ThrowAsync<CodedServiceException>();
-        ex.Which.ErrorCode.Should().Be(ErrorCodes.AccountNotFound);
     }
 
     [Fact]

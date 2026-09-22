@@ -466,45 +466,4 @@ public class UserServiceTests
         await action.Should().ThrowAsync<AuthenticationServiceException>();
     }
 
-    /// <summary>
-    /// RegistrationAsync Should Create System Endpoint Along With Default Categories And Storages
-    /// </summary>
-    [Fact]
-    public async Task RegistrationShouldCreateSystemEndpointAlongWithDefaults()
-    {
-        // Arrange
-        var model = new CreateUserModel
-        {
-            Email = "test@test.com",
-            Password = "password",
-            FirstName = "A",
-            LastName = "B",
-            Patronymic = "C"
-        };
-
-        User? capturedUser = null;
-        var addedEndpoints = new List<TransactionEndpoint>();
-
-        _validateServiceMock.Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        _passwordHasherMock.Setup(p => p.Generate(model.Password)).Returns("hash");
-        _userRepositoryMock.Setup(r => r.Add(It.IsAny<User>())).Callback<User>(u => capturedUser = u);
-        _transactionEndpointRepositoryMock.Setup(r => r.Add(It.IsAny<TransactionEndpoint>())).Callback<TransactionEndpoint>(e => addedEndpoints.Add(e));
-        _mapperMock.Setup(m => m.Map<User>(model)).Returns(new User());
-        _mapperMock.Setup(m => m.Map<UserModel>(It.IsAny<User>())).Returns(new UserModel());
-
-        // Act
-        await _userService.RegistrationAsync(model, CancellationToken.None);
-
-        // Assert
-        capturedUser.Should().NotBeNull();
-        addedEndpoints.Should().ContainSingle(e =>
-            e.EndpointType == EndpointType.System &&
-            e.Name == "System" &&
-            e.Value == 0m &&
-            e.Limitation == null &&
-            e.UserId == capturedUser!.Id);
-
-        addedEndpoints.Count(e => e.EndpointType == EndpointType.Category).Should().Be(10);
-        addedEndpoints.Count(e => e.EndpointType == EndpointType.Storage).Should().Be(2);
-    }
 }

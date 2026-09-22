@@ -52,16 +52,6 @@ public interface ITransactionRepository : IBaseWriteRepository<Transaction>
 	Task<PagedResult<TransactionData>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Возвращает постраничный список транзакций пользователя с фильтрацией,
-	/// исключая проводки системной конечной точки на уровне БД
-	/// </summary>
-	/// <param name="userId">Идентификатор пользователя</param>
-	/// <param name="query">Параметры запроса с пагинацией и фильтрацией</param>
-	/// <param name="systemEndpointId">Идентификатор системной конечной точки (null — не исключать)</param>
-	/// <param name="cancellationToken">Токен отмены</param>
-	Task<PagedResult<TransactionData>> GetPagedListByUserIdAsync(Guid userId, TransactionQuery query, Guid? systemEndpointId, CancellationToken cancellationToken);
-
-	/// <summary>
 	/// Возвращает список транзакций пользователя по типу транзакции, созданных в указанный временной диапазон
 	/// </summary>
 	/// <param name="transactionType">Тип транзакции</param>

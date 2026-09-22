@@ -27,7 +27,8 @@ public sealed class Transaction : SmartDeletedEntity
 
 	/// <summary>
 	/// Записи движения средств по счетам, входящие в транзакцию.
-	/// Сумма <see cref="Posting.Amount"/> всех постингов транзакции равна нулю.
+	/// Для Transfer и Expense сумма <see cref="Posting.Amount"/> всех постингов равна нулю.
+	/// Для AdjustmentIncrease/AdjustmentDecrease сумма может быть ненулевой.
 	/// </summary>
 	public ICollection<Posting> Postings { get; set; } = new List<Posting>();
 }

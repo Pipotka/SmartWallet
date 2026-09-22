@@ -22,15 +22,14 @@
 
 Необходимо перейти к **postings-based** модели: клиент передаёт список
 `Postings(accountId, amount)`, сервер классифицирует тип транзакции
-автоматически на основе знаков сумм и типов счетов (Storage / Category / System).
+автоматически на основе знаков сумм и типов счетов (Storage / Category).
 
 ### Цели
 
 1. Гибкий API, принимающий N проводок в одной транзакции.
 2. Серверная классификация типа транзакции по инвариантам проводок.
-3. Скрытый System-счёт для балансировки Adjustment-операций.
-4. Сохранение атомарности через существующий EF Core UnitOfWork.
-5. Стабильные коды ошибок для клиентского парсинга.
+3. Сохранение атомарности через существующий EF Core UnitOfWork.
+4. Стабильные коды ошибок для клиентского парсинга.
 
 ### Не-цели
 
@@ -48,9 +47,6 @@
 | **Posting** | Движение средств по одному счёту в рамках транзакции: `(AccountId, Amount)`. Знак Amount кодирует направление. |
 | **Storage** | Денежное хранилище (кошелёк, карта). `EndpointType = Storage`. |
 | **Category** | Область трат (продукты, транспорт). `EndpointType = Category`. |
-| **System** | Скрытый счёт для балансировки Adjustment. `EndpointType = System`. Создаётся при регистрации, не виден в API-списках. |
-| **User posting** | Проводка, переданная клиентом. Не относится к System. |
-| **System posting** | Проводка, автоматически добавленная сервером для System-счёта. |
 
 ---
 
@@ -59,13 +55,12 @@
 ### 3.1 Enum
 
 ```csharp
-// DB: integer (0, 1, 2)
-// API: string ("Storage", "Category", "System")
+// DB: integer (0, 1)
+// API: string ("Storage", "Category")
 public enum EndpointType
 {
     Storage  = 0,
     Category = 1,
-    System   = 2,
 }
 ```
 
@@ -75,7 +70,6 @@ public enum EndpointType
 |---|---|---|
 | `"Storage"` | `0` | Денежное хранилище |
 | `"Category"` | `1` | Область трат |
-| `"System"` | `2` | Скрытый системный счёт |
 
 ### 3.3 Миграция с `IsStorage: bool`
 
@@ -86,8 +80,6 @@ public enum EndpointType
 |---|---|
 | `true` | `Storage (0)` |
 | `false` | `Category (1)` |
-
-Новые записи `System (2)` создаются только сервером при регистрации.
 
 ---
 
@@ -158,8 +150,7 @@ POST /api/v1/transactions
 }
 ```
 
-**System-постинги исключены из публичного ответа.** Клиент видит только
-user postings.
+Клиент видит только user postings.
 
 ### 5.3 Response (Error)
 
@@ -218,12 +209,11 @@ Category Y: +100
 | Все user postings | Только на Storage-счетах |
 | Знаки | Все положительные |
 | Сумма user postings | `> 0` |
-| System posting | Сервер добавляет одну: `System: -sum` |
+| Балансирующая проводка | Не добавляется. Сумма постингов может быть ненулевой. |
 
 Пример:
 ```
 Storage A: +1000
-System:    -1000  (добавлен сервером)
 → AdjustmentIncrease
 ```
 
@@ -234,12 +224,11 @@ System:    -1000  (добавлен сервером)
 | Все user postings | Только на Storage-счетах |
 | Знаки | Все отрицательные |
 | Сумма user postings | `< 0` |
-| System posting | Сервер добавляет одну: `System: -sum` (положительное значение) |
+| Балансирующая проводка | Не добавляется. Сумма постингов может быть ненулевой. |
 
 Пример:
 ```
 Storage A: -500
-System:    +500  (добавлен сервером)
 → AdjustmentDecrease
 ```
 
@@ -267,52 +256,19 @@ System:    +500  (добавлен сервером)
      → Transfer
 
      Если storageSigns == {Positive} И userSum > 0
-     → AdjustmentIncrease (добавить System posting: -userSum)
+     → AdjustmentIncrease
 
      Если storageSigns == {Negative} И userSum < 0
-     → AdjustmentDecrease (добавить System posting: -userSum)
+     → AdjustmentDecrease
 
      Иначе → ошибка INVALID_POSTING_COMBINATION
 ```
 
 ---
 
-## 7. System-счёт
+## 7. Валидация
 
-### 7.1 Создание
-
-При регистрации пользователя (`UserService.RegistrationAsync`) создаётся
-один TransactionEndpoint с:
-
-| Поле | Значение |
-|---|---|
-| `UserId` | `user.Id` |
-| `Name` | `"System"` |
-| `EndpointType` | `System (2)` |
-| `Value` | `0.0m` |
-| `Limitation` | `null` |
-
-### 7.2 Видимость
-
-| Контекст | System виден? |
-|---|---|
-| `GET /api/v1/accounts` (список счетов) | Нет |
-| `GET /api/v1/accounts/{id}` (детали) | Нет (404 если id = System) |
-| `POST /api/v1/transactions` response | Нет (System postings исключены) |
-| `GET /api/v1/transactions/{id}` response | Нет (System postings исключены) |
-| Внутренняя логика (баланс, проводки) | Да |
-
-### 7.3 Ограничения
-
-- Клиент **не может** указать System accountId в postings (ошибка
-  `SYSTEM_ACCOUNT_NOT_ALLOWED`).
-- Сервер использует System accountId только для Adjustment-балансировки.
-
----
-
-## 8. Валидация
-
-### 8.1 Структурная (до классификации)
+### 7.1 Структурная (до классификации)
 
 | Правило | Код ошибки | HTTP |
 |---|---|---|
@@ -322,15 +278,14 @@ System:    +500  (добавлен сервером)
 | `amount != 0` для каждой проводки | `ZERO_AMOUNT` | 400 |
 | Нет дубликатов `accountId` внутри postings | `DUPLICATE_ACCOUNT_ID` | 400 |
 | Все accountId существуют, принадлежат пользователю, не soft-deleted | `ACCOUNT_NOT_FOUND` | 404 |
-| accountId не ссылается на System-счёт | `SYSTEM_ACCOUNT_NOT_ALLOWED` | 400 |
 
-### 8.2 Семантическая (классификация)
+### 7.2 Семантическая (классификация)
 
 | Правило | Код ошибки | HTTP |
 |---|---|---|
 | Комбинация типов и знаков не соответствует ни одному типу | `INVALID_POSTING_COMBINATION` | 400 |
 
-### 8.3 MaxPostingsPerTransaction
+### 7.3 MaxPostingsPerTransaction
 
 - Источник: `ApiSettings:PostingSettings:MaxPostingsPerTransaction`
 - Значение по умолчанию: `100`
@@ -360,7 +315,7 @@ public sealed class PostingSettings
 }
 ```
 
-### 8.4 Что НЕ валидируется
+### 7.4 Что НЕ валидируется
 
 | Проверка | Обоснование |
 |---|---|
@@ -372,7 +327,7 @@ public sealed class PostingSettings
 
 ---
 
-## 9. Валюты
+## 8. Валюты
 
 - Одна валюта на всю систему (рубли / единицы).
 - Поле `currency` отсутствует на всех уровнях (API, DB, domain).
@@ -380,7 +335,7 @@ public sealed class PostingSettings
 
 ---
 
-## 10. Атомарность и сохранение
+## 9. Атомарность и сохранение
 
 - Используется существующий `IUnitOfWork.SaveChangesAsync(token)`.
 - Транзакция БД открывается EF Core автоматически при `SaveChanges`.
@@ -391,9 +346,9 @@ public sealed class PostingSettings
 
 ---
 
-## 11. Обработка ошибок
+## 10. Обработка ошибок
 
-### 11.1 Формат
+### 10.1 Формат
 
 Все ошибки возвращаются в едином формате:
 
@@ -404,7 +359,7 @@ public sealed class PostingSettings
 }
 ```
 
-### 11.2 Таблица стабильных кодов
+### 10.2 Таблица стабильных кодов
 
 | Код | HTTP | Описание |
 |---|---|---|
@@ -414,7 +369,6 @@ public sealed class PostingSettings
 | `ZERO_AMOUNT` | 400 | Проводка с amount = 0 |
 | `DUPLICATE_ACCOUNT_ID` | 400 | Дублирующийся accountId в postings |
 | `ACCOUNT_NOT_FOUND` | 404 | Счёт не найден, не принадлежит пользователю или soft-deleted |
-| `SYSTEM_ACCOUNT_NOT_ALLOWED` | 400 | Клиент указал System-счёт в postings |
 | `INVALID_POSTING_COMBINATION` | 400 | Комбинация не соответствует ни одному типу |
 | `TRANSACTION_NOT_FOUND` | 404 | Транзакция не найдена |
 | `UNAUTHORIZED` | 401 | Неавторизованный запрос |
@@ -424,9 +378,9 @@ public sealed class PostingSettings
 
 ---
 
-## 12. Миграция данных
+## 11. Миграция данных
 
-### 12.1 TransactionEndpoint
+### 11.1 TransactionEndpoint
 
 ```sql
 -- Добавить колонку
@@ -440,23 +394,11 @@ UPDATE "TransactionEndpoints"
     ELSE 1                            -- Category
   END;
 
--- Создать System-счета для существующих пользователей
-INSERT INTO "TransactionEndpoints" ("Id", "UserId", "Name", "EndpointType", "Value", "Limitation", "CreatedAt")
-SELECT
-  gen_random_uuid(),
-  u."Id",
-  'System',
-  2,  -- System
-  0.0,
-  NULL,
-  NOW()
-FROM "Users" u;
-
 -- Удалить старую колонку
 ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 ```
 
-### 12.2 TransactionType
+### 11.2 TransactionType
 
 Существующие значения `Income (4)` и `ForTest (5)` удаляются.
 Если в БД есть записи с этими типами — требуется предварительный анализ
@@ -464,14 +406,14 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 
 ---
 
-## 13. Acceptance Criteria
+## 12. Acceptance Criteria
 
 ### AC-1: Transfer
 
 - [ ] Даны два Storage-счёта. Клиент отправляет postings: `[{A, -500}, {B, +500}]`.
 - [ ] Сервер создаёт Transaction с `Type = Transfer`.
-- [ ] Создаются 2 Posting. System posting не создаётся.
-- [ ] Response содержит 2 postings (без System).
+- [ ] Создаются 2 Posting.
+- [ ] Response содержит 2 postings.
 - [ ] Баланс A уменьшен на 500, баланс B увеличен на 500.
 - [ ] Limitation не проверяется.
 
@@ -479,7 +421,7 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 
 - [ ] Даны Storage + два Category. Клиент отправляет: `[{S, -300}, {C1, +200}, {C2, +100}]`.
 - [ ] Сервер создаёт Transaction с `Type = Expense`.
-- [ ] Создаются 3 Posting. System posting не создаётся.
+- [ ] Создаются 3 Posting.
 - [ ] Response содержит 3 postings.
 - [ ] Баланс S уменьшен на 300, балансы C1/C2 увеличены.
 
@@ -487,16 +429,16 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 
 - [ ] Дан один Storage. Клиент отправляет: `[{S, +1000}]`.
 - [ ] Сервер создаёт Transaction с `Type = AdjustmentIncrease`.
-- [ ] Создаются 2 Posting: user `{S, +1000}` + system `{System, -1000}`.
-- [ ] Response содержит 1 posting (только user, без System).
+- [ ] Создаётся 1 Posting: `{S, +1000}`. Балансирующая проводка не добавляется.
+- [ ] Response содержит 1 posting.
 - [ ] Баланс S увеличен на 1000.
 
 ### AC-4: AdjustmentDecrease
 
 - [ ] Дан один Storage. Клиент отправляет: `[{S, -500}]`.
 - [ ] Сервер создаёт Transaction с `Type = AdjustmentDecrease`.
-- [ ] Создаются 2 Posting: user `{S, -500}` + system `{System, +500}`.
-- [ ] Response содержит 1 posting (только user, без System).
+- [ ] Создаётся 1 Posting: `{S, -500}`. Балансирующая проводка не добавляется.
+- [ ] Response содержит 1 posting.
 - [ ] Баланс S уменьшен на 500.
 
 ### AC-5: Валидация — дубликат accountId
@@ -519,54 +461,39 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 - [ ] AccountId принадлежит другому пользователю.
 - [ ] Ответ: 404, `code = "ACCOUNT_NOT_FOUND"`.
 
-### AC-9: Валидация — System accountId от клиента
-
-- [ ] Клиент указывает System-счёт в postings.
-- [ ] Ответ: 400, `code = "SYSTEM_ACCOUNT_NOT_ALLOWED"`.
-
-### AC-10: Отрицательный баланс разрешён
+### AC-9: Отрицательный баланс разрешён
 
 - [ ] Storage с балансом 100. Клиент отправляет `[{S, -500}]` (AdjustmentDecrease).
 - [ ] Транзакция создаётся успешно. Баланс S = -400.
 
-### AC-11: Публичный response исключает System postings
-
-- [ ] AdjustmentIncrease с 1 user posting.
-- [ ] Response содержит ровно 1 posting (без System).
-
-### AC-12: Атомарность
+### AC-10: Атомарность
 
 - [ ] При ошибке валидации после частичной обработки — ни одна сущность не сохранена.
 - [ ] `SaveChangesAsync` вызывается один раз, после полной валидации.
 
-### AC-13: System-счёт не виден в списках
-
-- [ ] `GET /api/v1/accounts` не возвращает System-счёт.
-- [ ] `GET /api/v1/accounts/{systemId}` возвращает 404.
-
-### AC-14: decimal без scale валидации
+### AC-11: decimal без scale валидации
 
 - [ ] Клиент отправляет `amount = 0.123456789`.
 - [ ] Значение сохраняется как есть, без округления.
 
 ---
 
-## 14. Test Matrix
+## 13. Test Matrix
 
-### 14.1 Классификация
+### 13.1 Классификация
 
-| # | Postings | Ожидаемый тип | System posting |
-|---|---|---|---|
-| T01 | `[Storage A: -100, Storage B: +100]` | Transfer | Нет |
-| T02 | `[Storage A: -50, Storage B: -50, Storage C: +100]` | Transfer | Нет |
-| T03 | `[Storage A: -300, Category X: +300]` | Expense | Нет |
-| T04 | `[Storage A: -300, Category X: +200, Category Y: +100]` | Expense | Нет |
-| T05 | `[Storage A: +1000]` | AdjustmentIncrease | `System: -1000` |
-| T06 | `[Storage A: +500, Storage B: +500]` | AdjustmentIncrease | `System: -1000` |
-| T07 | `[Storage A: -500]` | AdjustmentDecrease | `System: +500` |
-| T08 | `[Storage A: -200, Storage B: -300]` | AdjustmentDecrease | `System: +500` |
+| # | Postings | Ожидаемый тип |
+|---|---|---|
+| T01 | `[Storage A: -100, Storage B: +100]` | Transfer |
+| T02 | `[Storage A: -50, Storage B: -50, Storage C: +100]` | Transfer |
+| T03 | `[Storage A: -300, Category X: +300]` | Expense |
+| T04 | `[Storage A: -300, Category X: +200, Category Y: +100]` | Expense |
+| T05 | `[Storage A: +1000]` | AdjustmentIncrease |
+| T06 | `[Storage A: +500, Storage B: +500]` | AdjustmentIncrease |
+| T07 | `[Storage A: -500]` | AdjustmentDecrease |
+| T08 | `[Storage A: -200, Storage B: -300]` | AdjustmentDecrease |
 
-### 14.2 Ошибки классификации
+### 13.2 Ошибки классификации
 
 | # | Postings | Ожидаемый код ошибки |
 |---|---|---|
@@ -577,7 +504,7 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 | T13 | `[Storage A: -100, Storage B: +50, Category X: +50]` (Storage mixed signs + Category) | `INVALID_POSTING_COMBINATION` |
 | T14 | `[]` (пустой список) | `POSTINGS_EMPTY` |
 
-### 14.3 Валидация
+### 13.3 Валидация
 
 | # | Условие | Ожидаемый код |
 |---|---|---|
@@ -588,59 +515,43 @@ ALTER TABLE "TransactionEndpoints" DROP COLUMN "IsStorage";
 | T19 | AccountId не существует | `ACCOUNT_NOT_FOUND` |
 | T20 | AccountId принадлежит другому пользователю | `ACCOUNT_NOT_FOUND` |
 | T21 | AccountId — soft-deleted счёт | `ACCOUNT_NOT_FOUND` |
-| T22 | AccountId — System-счёт | `SYSTEM_ACCOUNT_NOT_ALLOWED` |
 
-### 14.4 Граничные значения
-
-| # | Условие | Ожидаемое поведение |
-|---|---|---|
-| T23 | `amount = 0.001` (малый scale) | Сохраняется как есть |
-| T24 | `amount = 999999999999.999999999999` (большой scale) | Сохраняется как есть |
-| T25 | `amount = -0.01` (минимальный отрицательный) | Валидно |
-| T26 | Баланс уходит в минус | Разрешено, без ошибок |
-| T27 | `postings.Count = 100` (ровно лимит) | Валидно |
-| T28 | `postings.Count = 1` (один posting, Adjustment) | Валидно, System posting добавляется |
-
-### 14.5 Transfer и Limitation
+### 13.4 Граничные значения
 
 | # | Условие | Ожидаемое поведение |
 |---|---|---|
-| T29 | Transfer, Storage имеет `Limitation = 100`, баланс станет ниже лимита | Транзакция проходит, Limitation не применяется |
-| T30 | Expense, Storage имеет `Limitation = 100`, баланс станет ниже лимита | Транзакция проходит, Limitation не применяется (сервер не блокирует) |
+| T22 | `amount = 0.001` (малый scale) | Сохраняется как есть |
+| T23 | `amount = 999999999999.999999999999` (большой scale) | Сохраняется как есть |
+| T24 | `amount = -0.01` (минимальный отрицательный) | Валидно |
+| T25 | Баланс уходит в минус | Разрешено, без ошибок |
+| T26 | `postings.Count = 100` (ровно лимит) | Валидно |
+| T27 | `postings.Count = 1` (один posting, Adjustment) | Валидно |
 
-### 14.6 Видимость System
-
-| # | Условие | Ожидаемое поведение |
-|---|---|---|
-| T31 | `GET /api/v1/accounts` | System не в списке |
-| T32 | `GET /api/v1/accounts/{systemId}` | 404 |
-| T33 | `GET /api/v1/transactions/{id}` для Adjustment | System postings не в ответе |
-| T34 | `POST /api/v1/transactions` response для Adjustment | System postings не в ответе |
-
-### 14.7 Атомарность
+### 13.5 Transfer и Limitation
 
 | # | Условие | Ожидаемое поведение |
 |---|---|---|
-| T35 | Ошибка валидации после загрузки счетов | Ни одна сущность не сохранена |
-| T36 | `SaveChangesAsync` откатывает при DB error | Все изменения откачены |
+| T28 | Transfer, Storage имеет `Limitation = 100`, баланс станет ниже лимита | Транзакция проходит, Limitation не применяется |
+| T29 | Expense, Storage имеет `Limitation = 100`, баланс станет ниже лимита | Транзакция проходит, Limitation не применяется (сервер не блокирует) |
 
-### 14.8 System-счёт при регистрации
+### 13.6 Атомарность
 
 | # | Условие | Ожидаемое поведение |
 |---|---|---|
-| T37 | Новый пользователь зарегистрирован | System-счёт создан с `EndpointType = System`, `Value = 0` |
-| T38 | System-счёт создан | `Name = "System"`, `Limitation = null` |
+| T30 | Ошибка валидации после загрузки счетов | Ни одна сущность не сохранена |
+| T31 | `SaveChangesAsync` откатывает при DB error | Все изменения откачены |
 
 ---
 
-## 15. Открытые вопросы
+## 14. Открытые вопросы
 
 Отсутствуют. Дизайн полностью согласован.
 
 ---
 
-## 16. Changelog
+## 15. Changelog
 
 | Дата | Изменение |
 |---|---|
 | 2026-09-21 | Первоначальная версия, согласована с командой |
+| 2026-09-22 | Удалён System-счёт. Adjustment-операции не требуют балансировки, сумма постингов может быть ненулевой |
