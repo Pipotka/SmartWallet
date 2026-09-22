@@ -17,28 +17,20 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 	{
 		switch (context.Exception)
 		{
-			case PostingsValidationException ex:
-				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+			case SmartWalletValidationException ex:
+				SetResult(context, StatusCodes.Status400BadRequest, ex.ErrorCode, ex.Message);
 				return;
 
-			case AccountNotFoundException ex:
-				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+			case EntityNotFoundByIdServiceException<TransactionEndpoint> ex:
+				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
 				return;
 
-			case EntityNotFoundByIdServiceException<TransactionEndpoint>:
-				SetResult(context, StatusCodes.Status404NotFound, ErrorCodes.AccountNotFound, context.Exception.Message);
-				return;
-
-			case EntityNotFoundByIdServiceException<Transaction>:
-				SetResult(context, StatusCodes.Status404NotFound, ErrorCodes.TransactionNotFound, context.Exception.Message);
+			case EntityNotFoundByIdServiceException<Transaction> ex:
+				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
 				return;
 
 			case EntityNotFoundServiceException ex:
-				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
-				return;
-
-			case SmartWalletValidationException ex:
-				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
 				return;
 
 			case AuthenticationServiceException:
@@ -47,7 +39,7 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 				return;
 
 			case EntityAccessServiceException ex:
-				SetResult(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+				SetResult(context, StatusCodes.Status403Forbidden, ex.ErrorCode, ex.Message);
 				return;
 		}
 

@@ -12,4 +12,15 @@ public sealed class EntityNotFoundByIdServiceException<TEntity> : EntityNotFound
 		: base($"Сущность {typeof(TEntity).Name} с id = {id} не найдена")
 	{
 	}
+
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="EntityNotFoundByIdServiceException{TEntity}"/>
+	/// </summary>
+	/// <param name="errorCode">Код ошибки</param>
+	/// <param name="id">Идентификатор сущности</param>
+	/// <param name="message">Сообщение об ошибке</param>
+	public EntityNotFoundByIdServiceException(string errorCode, object id, string message)
+		: base(message, errorCode)
+	{
+	}
 }

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Nasurino.SmartWallet.Service.Exceptions;
+﻿namespace Nasurino.SmartWallet.Service.Exceptions;
 
 /// <summary>
 /// Ошибка сервиса. Сущность не найдена
@@ -11,7 +9,15 @@ public class EntityNotFoundServiceException : EntityServiceException
 	/// Инициализирует новый экземпляр <see cref="EntityNotFoundServiceException"/>
 	/// </summary>
 	public EntityNotFoundServiceException(string message)
-		: base(message, ErrorCodes.NotFound, StatusCodes.Status404NotFound)
+		: base(message, ErrorCodes.NotFound)
+	{
+	}
+
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="EntityNotFoundServiceException"/>
+	/// </summary>
+	protected EntityNotFoundServiceException(string message, string errorCode)
+		: base(message, errorCode)
 	{
 	}
 }

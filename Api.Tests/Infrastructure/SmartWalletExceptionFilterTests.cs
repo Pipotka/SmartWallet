@@ -32,14 +32,14 @@ public class SmartWalletExceptionFilterTests
     }
 
     [Fact]
-    public void OnException_ShouldReturn400_ForPostingsValidationException()
+    public void OnException_ShouldReturn400_ForSmartWalletValidationExceptionWithErrorCode()
     {
         var filter = new SmartWalletExceptionFilter();
         var context = new ExceptionContext(
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>())
         {
-            Exception = new PostingsValidationException(ErrorCodes.PostingsEmpty, "Список проводок пуст")
+            Exception = new SmartWalletValidationException(ErrorCodes.PostingsEmpty, "Список проводок пуст")
         };
 
         filter.OnException(context);
@@ -51,15 +51,16 @@ public class SmartWalletExceptionFilterTests
     }
 
     [Fact]
-    public void OnException_ShouldReturn404_ForAccountNotFoundException()
+    public void OnException_ShouldReturn404_ForEntityNotFoundByIdTransactionEndpointWithAccountNotFound()
     {
-        var accountId = Guid.NewGuid();
         var filter = new SmartWalletExceptionFilter();
+        var accountId = Guid.NewGuid();
         var context = new ExceptionContext(
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>())
         {
-            Exception = new AccountNotFoundException(accountId)
+            Exception = new EntityNotFoundByIdServiceException<Entities.TransactionEndpoint>(
+                ErrorCodes.AccountNotFound, accountId, $"Счет {accountId} не найден")
         };
 
         filter.OnException(context);
@@ -79,7 +80,8 @@ public class SmartWalletExceptionFilterTests
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>())
         {
-            Exception = new EntityNotFoundByIdServiceException<Entities.TransactionEndpoint>(id)
+            Exception = new EntityNotFoundByIdServiceException<Entities.TransactionEndpoint>(
+                ErrorCodes.AccountNotFound, id, $"Счет {id} не найден")
         };
 
         filter.OnException(context);
@@ -87,7 +89,7 @@ public class SmartWalletExceptionFilterTests
         context.ExceptionHandled.Should().BeTrue();
         context.HttpContext.Response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         context.Result.Should().BeOfType<ObjectResult>()
-            .Which.Value.Should().BeEquivalentTo(new { Code = ErrorCodes.AccountNotFound, Message = context.Exception.Message });
+            .Which.Value.Should().BeEquivalentTo(new { Code = ErrorCodes.AccountNotFound, Message = $"Счет {id} не найден" });
     }
 
     [Fact]
@@ -99,7 +101,8 @@ public class SmartWalletExceptionFilterTests
             new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
             new List<IFilterMetadata>())
         {
-            Exception = new EntityNotFoundByIdServiceException<Entities.Transaction>(id)
+            Exception = new EntityNotFoundByIdServiceException<Entities.Transaction>(
+                ErrorCodes.TransactionNotFound, id, $"Транзакция {id} не найдена")
         };
 
         filter.OnException(context);
@@ -107,7 +110,7 @@ public class SmartWalletExceptionFilterTests
         context.ExceptionHandled.Should().BeTrue();
         context.HttpContext.Response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         context.Result.Should().BeOfType<ObjectResult>()
-            .Which.Value.Should().BeEquivalentTo(new { Code = ErrorCodes.TransactionNotFound, Message = context.Exception.Message });
+            .Which.Value.Should().BeEquivalentTo(new { Code = ErrorCodes.TransactionNotFound, Message = $"Транзакция {id} не найдена" });
     }
 
     [Fact]

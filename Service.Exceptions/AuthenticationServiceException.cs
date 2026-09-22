@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Nasurino.SmartWallet.Service.Exceptions;
+﻿namespace Nasurino.SmartWallet.Service.Exceptions;
 
 /// <summary>
 /// Ошибка аутентификации сервиса
@@ -11,7 +9,7 @@ public class AuthenticationServiceException : ServiceException
 	/// Инициализирует новый экземпляр <see cref="AuthenticationServiceException"/>
 	/// </summary>
 	public AuthenticationServiceException()
-		: base("Ошибка аутентификации.", ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized)
+		: base("Ошибка аутентификации.", ErrorCodes.Unauthorized)
 	{
 	}
 
@@ -19,7 +17,7 @@ public class AuthenticationServiceException : ServiceException
 	/// Инициализирует новый экземпляр <see cref="AuthenticationServiceException"/>
 	/// </summary>
 	public AuthenticationServiceException(string message)
-		: base(message, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized)
+		: base(message, ErrorCodes.Unauthorized)
 	{
 	}
 }

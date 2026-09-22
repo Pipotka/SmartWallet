@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Nasurino.SmartWallet.Service.Exceptions;
+﻿namespace Nasurino.SmartWallet.Service.Exceptions;
 
 /// <summary>
 /// Ошибка сервиса. Сущность недоступна
@@ -11,7 +9,7 @@ public class EntityAccessServiceException : EntityServiceException
 	/// Инициализирует новый экземпляр <see cref="EntityAccessServiceException"/>
 	/// </summary>
 	public EntityAccessServiceException(string message)
-		: base(message, ErrorCodes.AccessDenied, StatusCodes.Status403Forbidden)
+		: base(message, ErrorCodes.AccessDenied)
 	{
 	}
 }

@@ -171,12 +171,12 @@ public sealed class TransactionService(
     {
         if (postings == null || postings.Count == 0)
         {
-            throw new PostingsValidationException(ErrorCodes.PostingsEmpty, "Список проводок пуст");
+            throw new SmartWalletValidationException(ErrorCodes.PostingsEmpty, "Список проводок пуст");
         }
 
         if (postings.Count > maxPostings)
         {
-            throw new PostingsValidationException(ErrorCodes.PostingsLimitExceeded,
+            throw new SmartWalletValidationException(ErrorCodes.PostingsLimitExceeded,
                 $"Превышен лимит проводок ({maxPostings})");
         }
 
@@ -186,19 +186,19 @@ public sealed class TransactionService(
         {
             if (posting.AccountId == Guid.Empty)
             {
-                throw new PostingsValidationException(ErrorCodes.InvalidAccountId,
+                throw new SmartWalletValidationException(ErrorCodes.InvalidAccountId,
                     "Идентификатор счета не может быть пустым");
             }
 
             if (posting.Amount == 0)
             {
-                throw new PostingsValidationException(ErrorCodes.ZeroAmount,
+                throw new SmartWalletValidationException(ErrorCodes.ZeroAmount,
                     "Сумма проводки не может быть равна нулю");
             }
 
             if (!seenAccounts.Add(posting.AccountId))
             {
-                throw new PostingsValidationException(ErrorCodes.DuplicateAccountId,
+                throw new SmartWalletValidationException(ErrorCodes.DuplicateAccountId,
                     $"Счет {posting.AccountId} указан более одного раза");
             }
         }
@@ -215,7 +215,8 @@ public sealed class TransactionService(
         {
             if (!endpointsById.TryGetValue(posting.AccountId, out _))
             {
-                throw new AccountNotFoundException(posting.AccountId);
+                throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(
+                    ErrorCodes.AccountNotFound, posting.AccountId, $"Счет {posting.AccountId} не найден");
             }
         }
     }
@@ -246,7 +247,7 @@ public sealed class TransactionService(
                 return TransactionType.Expense;
             }
 
-            throw new PostingsValidationException(ErrorCodes.InvalidPostingCombination,
+            throw new SmartWalletValidationException(ErrorCodes.InvalidPostingCombination,
                 "Комбинация проводок не соответствует ни одному типу транзакции");
         }
 
@@ -270,7 +271,7 @@ public sealed class TransactionService(
             return TransactionType.AdjustmentDecrease;
         }
 
-        throw new PostingsValidationException(ErrorCodes.InvalidPostingCombination,
+        throw new SmartWalletValidationException(ErrorCodes.InvalidPostingCombination,
             "Комбинация проводок не соответствует ни одному типу транзакции");
     }
 
