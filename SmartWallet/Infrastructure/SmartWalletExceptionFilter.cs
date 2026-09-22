@@ -21,14 +21,6 @@ public sealed class SmartWalletExceptionFilter : IExceptionFilter
 				SetResult(context, StatusCodes.Status400BadRequest, ex.ErrorCode, ex.Message);
 				return;
 
-			case EntityNotFoundByIdServiceException<TransactionEndpoint> ex:
-				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
-				return;
-
-			case EntityNotFoundByIdServiceException<Transaction> ex:
-				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
-				return;
-
 			case EntityNotFoundServiceException ex:
 				SetResult(context, StatusCodes.Status404NotFound, ex.ErrorCode, ex.Message);
 				return;

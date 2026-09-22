@@ -215,8 +215,7 @@ public sealed class TransactionService(
         {
             if (!endpointsById.TryGetValue(posting.AccountId, out _))
             {
-                throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(
-                    ErrorCodes.AccountNotFound, posting.AccountId, $"Счет {posting.AccountId} не найден");
+                throw new EntityNotFoundByIdServiceException<TransactionEndpoint>(posting.AccountId);
             }
         }
     }
