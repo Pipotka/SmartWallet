@@ -5,10 +5,10 @@ using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
 using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Transaction;
-using Nasurino.SmartWallet.Service.Models;
-using Nasurino.SmartWallet.Service.Models.CreateModels;
-using Nasurino.SmartWallet.Service.Models.DeleteModels;
-using Services.Contracts;
+using Nasurino.SmartWallet.Services.Contracts;
+using Nasurino.SmartWallet.Services.Models;
+using Nasurino.SmartWallet.Services.Models.CreateModels;
+using Nasurino.SmartWallet.Services.Models.DeleteModels;
 
 namespace Nasurino.SmartWallet.Controllers;
 
@@ -41,8 +41,8 @@ public sealed class TransactionController : Controller
 	/// </summary>
 	[HttpGet]
 	[ProducesResponseType(typeof(PagedResultApiModel<TransactionApiModel>), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> GetList([FromQuery] TransactionQueryApiModel request, CancellationToken token)
 	{
@@ -55,17 +55,16 @@ public sealed class TransactionController : Controller
 	/// Создаёт новую транзакцию
 	/// </summary>
 	[HttpPost]
-	[ProducesResponseType(typeof(TransactionApiModel), StatusCodes.Status201Created)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(TransactionApiModel), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Create([FromBody] CreateTransactionApiModel request, CancellationToken token)
 	{
 		var model = _mapper.Map<CreateTransactionModel>(request);
 		model.UserId = _identityProvider.Id;
 		var response = await _transactionService.CreateAsync(model, token);
-		var apiModel = _mapper.Map<TransactionApiModel>(response);
-		return StatusCode(StatusCodes.Status201Created, apiModel);
+		return Ok(_mapper.Map<TransactionApiModel>(response));
 	}
 
 	/// <summary>
@@ -73,8 +72,8 @@ public sealed class TransactionController : Controller
 	/// </summary>
 	[HttpDelete]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ApiErrorDetails), StatusCodes.Status422UnprocessableEntity)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ApiExceptionDetails), StatusCodes.Status422UnprocessableEntity)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<IActionResult> Delete([FromBody] DeleteTransactionApiModel request, CancellationToken token)
 	{

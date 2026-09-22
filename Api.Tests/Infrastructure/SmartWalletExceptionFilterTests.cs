@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Nasurino.SmartWallet.Infrastructure;
-using Nasurino.SmartWallet.Service.Exceptions;
-using Services.Contracts.Models.Exceptions;
+using Nasurino.SmartWallet.Services.Exceptions;
+using Nasurino.SmartWallet.Services.Contracts.Models.Exceptions;
 using Xunit;
 
 namespace Nasurino.SmartWallet.Api.Tests.Infrastructure;

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Nasurino.SmartWallet.Services.Tests</RootNamespace>
+        <AssemblyName>SmartWallet.Services.Tests</AssemblyName>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Moq" />
+	  <PackageReference Include="AutoMapper" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
+      <ProjectReference Include="..\Services.Infrastructure.Contracts\Services.Infrastructure.Contracts.csproj" />
+      <ProjectReference Include="..\Services.Infrastructure\Services.Infrastructure.csproj" />
+      <ProjectReference Include="..\Services.UnitTests.Infrastructure\Services.UnitTests.Infrastructure.csproj" />
+      <ProjectReference Include="..\Services\Services.csproj" />
+    </ItemGroup>
+
+</Project>
