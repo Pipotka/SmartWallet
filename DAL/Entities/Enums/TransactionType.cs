@@ -1,4 +1,4 @@
-﻿namespace Nasurino.SmartWallet.Entities;
+﻿namespace Nasurino.SmartWallet.Entities.Enums;
 
 /// <summary>
 /// Типы финансовых транзакций в системе.

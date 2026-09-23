@@ -1,5 +1,6 @@
 ﻿using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Enums;
 
 namespace Nasurino.SmartWallet.Context.Repository.Contracts;
 

@@ -13,6 +13,7 @@ using Nasurino.SmartWallet.Services.Models;
 using Nasurino.SmartWallet.Services.Models.CreateModels;
 using Nasurino.SmartWallet.Services.Models.DeleteModels;
 using Nasurino.SmartWallet.Services.Models.Models;
+using Nasurino.SmartWallet.Entities.Enums;
 
 namespace Nasurino.SmartWallet.Services;
 

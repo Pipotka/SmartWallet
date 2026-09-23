@@ -3,6 +3,7 @@ using Moq.Language.Flow;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Enums;
 
 namespace Nasurino.SmartWallet.Services.UnitTests.Infrastructure.Mock.Extensions;
 

@@ -4,6 +4,7 @@ using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Context.Tests;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Enums;
 using Xunit;
 
 namespace Nasurino.SmartWallet.Context.Repository.Tests;

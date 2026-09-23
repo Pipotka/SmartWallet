@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Enums;
 using Xunit;
 
 namespace Nasurino.SmartWallet.Entities.Tests;

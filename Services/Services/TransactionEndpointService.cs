@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
+using Nasurino.SmartWallet.Entities.Enums;
 using Nasurino.SmartWallet.Services.Contracts;
 using Nasurino.SmartWallet.Services.Exceptions;
 using Nasurino.SmartWallet.Services.Models.CreateModels;

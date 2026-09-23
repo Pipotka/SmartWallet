@@ -13,6 +13,7 @@ using Nasurino.SmartWallet.Services.Exceptions;
 using Nasurino.SmartWallet.Services.Models.CreateModels;
 using Nasurino.SmartWallet.Services.UnitTests.Infrastructure.Mock.Extensions;
 using Xunit;
+using Nasurino.SmartWallet.Entities.Enums;
 
 namespace Nasurino.SmartWallet.Services.Tests;
 

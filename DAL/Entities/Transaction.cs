@@ -1,4 +1,6 @@
-﻿namespace Nasurino.SmartWallet.Entities;
+﻿using Nasurino.SmartWallet.Entities.Enums;
+
+namespace Nasurino.SmartWallet.Entities;
 
 /// <summary>
 /// Транзакция
