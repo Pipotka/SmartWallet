@@ -8,10 +8,10 @@ public enum EndpointType
     /// <summary>
     /// Категория трат
     /// </summary>
-    Category = 1,
+    Category = 0,
 
     /// <summary>
     /// Денежное хранилище
     /// </summary>
-    Storage = 0
+    Storage = 1
 }
