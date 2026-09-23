@@ -6,8 +6,10 @@ using Microsoft.OpenApi.Models;
 using Nasurino.SmartWallet.Context;
 using Nasurino.SmartWallet.Extensions;
 using Nasurino.SmartWallet.Infrastructure;
+using Nasurino.SmartWallet.Infrastructure.Json;
 using Nasurino.SmartWallet.Options;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,6 +106,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add(typeof(SmartWalletExceptionFilter));
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(
+        new JsonStringEnumConverter(new UpperSnakeCaseNamingPolicy()));
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
