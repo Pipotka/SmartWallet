@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
-using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Services.Models.CreateModels;
 
 namespace Nasurino.SmartWallet.Services.Validators.CreateModelValidators;

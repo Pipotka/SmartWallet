@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Nasurino.SmartWallet.Context.Repository;
 using Nasurino.SmartWallet.Context.Tests;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Entities.Enums;

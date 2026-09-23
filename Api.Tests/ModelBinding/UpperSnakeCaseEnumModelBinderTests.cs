@@ -1,4 +1,3 @@
-using System.Globalization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Nasurino.SmartWallet.Entities.Enums;
@@ -15,7 +14,6 @@ public class UpperSnakeCaseEnumModelBinderTests
     [Theory]
     [InlineData("TRANSFER", TransactionType.Transfer)]
     [InlineData("ADJUSTMENT_INCREASE", TransactionType.AdjustmentIncrease)]
-    [InlineData("FOR_TEST", TransactionType.ForTest)]
     [InlineData("CATEGORY", EndpointType.Category)]
     [InlineData("STORAGE", EndpointType.Storage)]
     [InlineData("DAY", TimeUnit.Day)]

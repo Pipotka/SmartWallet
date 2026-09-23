@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nasurino.SmartWallet.Common.Infrastructure.Contracts;
 using Nasurino.SmartWallet.Infrastructure;
-using Nasurino.SmartWallet.Models;
 using Nasurino.SmartWallet.Models.Account;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Services.Contracts;

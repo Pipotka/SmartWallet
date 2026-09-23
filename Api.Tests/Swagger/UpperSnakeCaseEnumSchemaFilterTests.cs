@@ -14,7 +14,7 @@ public class UpperSnakeCaseEnumSchemaFilterTests
     private readonly UpperSnakeCaseEnumSchemaFilter _filter = new();
 
     [Theory]
-    [InlineData(typeof(TransactionType), new[] { "TRANSFER", "EXPENSE", "ADJUSTMENT_DECREASE", "ADJUSTMENT_INCREASE", "INCOME", "FOR_TEST" })]
+    [InlineData(typeof(TransactionType), new[] { "TRANSFER", "EXPENSE", "ADJUSTMENT_DECREASE", "ADJUSTMENT_INCREASE", "INCOME" })]
     [InlineData(typeof(EndpointType), new[] { "CATEGORY", "STORAGE" })]
     [InlineData(typeof(TimeUnit), new[] { "DAY", "MONTH", "YEAR" })]
     public void Apply_ForEnum_ShouldProduceStringSchemaWithUpperSnakeCaseValues(Type enumType, string[] expected)

@@ -2,7 +2,7 @@ namespace Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 
 /// <summary>
 /// Фоновый сервис пересчёта ежедневных трат по категориям.
-/// Используется для обновления агрегата <see cref="Nasurino.SmartWallet.Entities.DailyExpenseCategorie"/>
+/// Используется для обновления агрегата <see cref="Entities.DailyExpenseCategorie"/>
 /// после изменения транзакций пользователя.
 /// </summary>
 public interface IDailyExpenseCategorieRecalculationService

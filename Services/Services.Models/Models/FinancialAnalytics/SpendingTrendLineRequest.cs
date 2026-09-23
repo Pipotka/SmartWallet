@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Nasurino.SmartWallet.Services.Models.Models.FinancialAnalytics;
 
 /// <summary>

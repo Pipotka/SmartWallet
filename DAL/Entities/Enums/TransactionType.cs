@@ -40,10 +40,5 @@ public enum TransactionType
     /// Пример: получение зарплаты или подарка.
     /// Увеличивает баланс хранилища и общий баланс системы.
     /// </summary>
-    Income,
-    
-    /// <summary>
-    /// Для тестов
-    /// </summary>
-    ForTest
+    Income
 }

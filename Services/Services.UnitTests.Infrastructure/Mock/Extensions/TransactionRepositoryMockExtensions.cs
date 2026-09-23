@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Moq.Language.Flow;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
-using Nasurino.SmartWallet.Context.Repository.Contracts.Models;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Entities.Enums;
 
@@ -36,7 +35,7 @@ public static class TransactionRepositoryMockExtensions
 
     /// <summary>
     /// Настраивает мок для возврата списка транзакций.
-    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,TransactionType,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)" path="/summary"/>
+    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid,TransactionType,DateTimeOffset,DateTimeOffset,CancellationToken)" path="/summary"/>
     /// </summary>
     /// <param name="mockedTransactionRepository">Мок репозитория транзакций</param>
     /// <param name="transactions">Список транзакций для возврата</param>
@@ -46,12 +45,12 @@ public static class TransactionRepositoryMockExtensions
     /// <param name="endTimeRange">Конец временного диапазона</param>
     /// <param name="token">Токен отмены</param>
     /// <remarks>
-    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(System.Guid,TransactionType,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)" path="/remarks"/>
+    /// <inheritdoc cref="ITransactionRepository.GetListByDateRangeAndUserIdAsync(Guid,TransactionType,DateTimeOffset,DateTimeOffset,CancellationToken)" path="/remarks"/>
     /// </remarks>
     public static void GetTypedListByTimeRangeReturnValue(this Mock<ITransactionRepository> mockedTransactionRepository,
         IReadOnlyCollection<Transaction> transactions,
         Guid userId = default,
-        TransactionType transactionType = TransactionType.ForTest,
+        TransactionType? transactionType = null,
         DateTimeOffset startTimeRange = default,
         DateTimeOffset endTimeRange = default,
         CancellationToken token = default)
@@ -75,15 +74,15 @@ public static class TransactionRepositoryMockExtensions
 	private static ISetup<ITransactionRepository, Task<IReadOnlyCollection<Transaction>>> SetupListExpenseByTimeRange(
 		this Mock<ITransactionRepository> mockedTransactionRepository,
 		Guid userId = default,
-		TransactionType transactionType = TransactionType.ForTest,
+        TransactionType? transactionType = null,
 		DateTimeOffset startTimeRange = default,
 		DateTimeOffset endTimeRange = default,
 		CancellationToken token = default)
 	{
 		return mockedTransactionRepository.Setup(x => x.GetListByDateRangeAndUserIdAsync(
 			It.Is<Guid>(g => userId == Guid.Empty || g == userId),
-			It.Is<TransactionType>(t => t == TransactionType.ForTest || t == transactionType),
-			It.Is<DateTimeOffset>(d => startTimeRange == default || d == startTimeRange),
+            It.Is<TransactionType>(t => transactionType == null || t == transactionType),
+            It.Is<DateTimeOffset>(d => startTimeRange == default || d == startTimeRange),
 			It.Is<DateTimeOffset>(d => endTimeRange == default || d == endTimeRange),
 			It.Is<CancellationToken>(ct => token == CancellationToken.None || ct == token)));
 	}

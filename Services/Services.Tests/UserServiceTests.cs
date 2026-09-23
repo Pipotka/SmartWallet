@@ -4,7 +4,6 @@ using Moq;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Options;
-using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.Services.Contracts;
 using Nasurino.SmartWallet.Services.Contracts.Models.Exceptions;
 using Nasurino.SmartWallet.Services.Exceptions;

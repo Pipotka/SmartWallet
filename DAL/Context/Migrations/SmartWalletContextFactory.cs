@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Nasurino.SmartWallet.Context;
 
 namespace Nasurino.SmartWallet.Context.Migrations;
 

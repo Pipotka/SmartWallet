@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nasurino.SmartWallet.Context.Contracts;
 using Nasurino.SmartWallet.Entity.Configuration;
-using Nasurino.SmartWallet.Entities;
 
 namespace Nasurino.SmartWallet.Context;
 

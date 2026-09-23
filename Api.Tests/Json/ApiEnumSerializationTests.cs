@@ -18,7 +18,6 @@ public class ApiEnumSerializationTests
     [Theory]
     [InlineData(TransactionType.Transfer, "TRANSFER")]
     [InlineData(TransactionType.AdjustmentIncrease, "ADJUSTMENT_INCREASE")]
-    [InlineData(TransactionType.ForTest, "FOR_TEST")]
     public void TransactionType_ShouldSerializeToUpperSnakeCase(TransactionType value, string expected)
     {
         JsonSerializer.Serialize(value, _options).Should().Be($"\"{expected}\"");
@@ -27,7 +26,6 @@ public class ApiEnumSerializationTests
     [Theory]
     [InlineData("TRANSFER", TransactionType.Transfer)]
     [InlineData("ADJUSTMENT_INCREASE", TransactionType.AdjustmentIncrease)]
-    [InlineData("FOR_TEST", TransactionType.ForTest)]
     public void TransactionType_ShouldDeserializeFromUpperSnakeCase(string value, TransactionType expected)
     {
         JsonSerializer.Deserialize<TransactionType>($"\"{value}\"", _options).Should().Be(expected);

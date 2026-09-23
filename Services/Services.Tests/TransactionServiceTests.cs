@@ -1,6 +1,5 @@
 using AutoMapper;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using Moq;
 using Nasurino.SmartWallet.Context.Repository.Contracts;
 using Nasurino.SmartWallet.BackgroundTaskSystem.Contracts;
@@ -8,7 +7,6 @@ using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Services.AutoMappers;
 using Nasurino.SmartWallet.Services.Contracts;
-using Nasurino.SmartWallet.Services.Contracts.Models.Exceptions;
 using Nasurino.SmartWallet.Services.Exceptions;
 using Nasurino.SmartWallet.Services.Models.CreateModels;
 using Nasurino.SmartWallet.Services.UnitTests.Infrastructure.Mock.Extensions;

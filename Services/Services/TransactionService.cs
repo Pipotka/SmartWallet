@@ -7,7 +7,6 @@ using Nasurino.SmartWallet.Services.Contracts.BackgroundService;
 using Nasurino.SmartWallet.Entities;
 using Nasurino.SmartWallet.Options;
 using Nasurino.SmartWallet.Services.Contracts;
-using Nasurino.SmartWallet.Services.Contracts.Models.Exceptions;
 using Nasurino.SmartWallet.Services.Exceptions;
 using Nasurino.SmartWallet.Services.Models;
 using Nasurino.SmartWallet.Services.Models.CreateModels;
