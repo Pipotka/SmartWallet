@@ -108,6 +108,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers(x =>
 {
     x.Filters.Add(typeof(SmartWalletExceptionFilter));
+    x.ModelBinderProviders.Insert(0, new Nasurino.SmartWallet.Infrastructure.ModelBinding.UpperSnakeCaseEnumModelBinderProvider());
 });
 
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
