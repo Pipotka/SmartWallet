@@ -37,6 +37,8 @@ if (args.Length > 0)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SchemaFilter<Nasurino.SmartWallet.Infrastructure.Swagger.UpperSnakeCaseEnumSchemaFilter>();
+
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
         new OpenApiSecurityScheme
         {
